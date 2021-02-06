@@ -1,5 +1,5 @@
-{-# LANGUAGE        KindSignatures    #-}
-{-# LANGUAGE        DataKinds         #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE DataKinds      #-}
 
 module Teleport where
 

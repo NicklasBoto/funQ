@@ -23,6 +23,8 @@ dependencies:
 - hmatrix
 - bitvec
 - type-natural
+- ghc-typelits-knownnat
+- MonadRandom
 
 library:
   source-dirs: src
