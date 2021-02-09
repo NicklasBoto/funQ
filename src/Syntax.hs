@@ -1,10 +1,11 @@
-{-# LANGUAGE        UndecidableInstances                  #-}
+{-# LANGUAGE        ScopedTypeVariables                     #-}
 {-# LANGUAGE        NoImplicitPrelude                     #-}
 {-# LANGUAGE        FlexibleInstances                     #-}
 {-# LANGUAGE        OverloadedLists                       #-}
 {-# LANGUAGE        BlockArguments                        #-}
 {-# LANGUAGE        TypeOperators                         #-}
 {-# LANGUAGE        TypeFamilies                          #-}
+{-# LANGUAGE        Rank2Types                            #-}
 {-# LANGUAGE        PolyKinds                             #-}
 {-# LANGUAGE        DataKinds                             #-}
 {-# OPTIONS_GHC     -fplugin GHC.TypeLits.KnownNat.Solver #-}
@@ -20,10 +21,11 @@ Contains all of the language as of now, but will be split in the future
 module Syntax where -- strictly export safe functions
 
 import Numeric.LinearAlgebra.Static as V hiding ( outer )
-import Numeric.LinearAlgebra ( flatten, outer, kronecker, toList )
+import Numeric.LinearAlgebra ( flatten, outer, kronecker, ident, toList )
 import qualified Numeric.LinearAlgebra as LA ( (><) )
-import GHC.TypeLits ( Nat, type (+), type (^), KnownNat )
-import Data.Bit
+import GHC.TypeLits ( Nat, type (+), type (^),  KnownNat, natVal )
+import Data.Bit ( Bit )
+import Data.Proxy ( Proxy(..) )
 import Prelude
 import Control.Monad.Random as Rand
 
@@ -56,7 +58,7 @@ type instance Bit >< Bit = Bit
 type T = ()
 
 -- | Matrix gate representation
-type Gate n = L (2^n) (2^n)
+type Gate (n :: Nat) = Sq (2^n)
 
 -- | Constructs new qubits
 new :: Bit -> QBit 1
@@ -67,7 +69,7 @@ new 1 = Q $ V.vector [ 0
                      , 1 ]
 
 -- | Collapses a qubit state (of size 1) to a single bit
-measure :: QBit 1 -> Bit
+measure :: QBit 1 -> Int
 measure = undefined
 
 -- | We define the tensor product of qbits as the flattened
@@ -85,24 +87,16 @@ infixl 7 ><
 
 -- | Combine the action of two gates
 --
--- @
--- matrixI :: Gate 1
--- matrixI = matrix [ 1 , 0 
---                  , 0 , 1 ]
--- 
--- comb = combine matrixH kroneckermatrixI
--- @
--- 
--- >>> gate comb (new 0 >< new 0)
+-- >>> gate (combine matrixH matrixI) (new 0 >< new 0)
 -- Q {getState = (vector [0.7071067811865476,0.0,0.7071067811865476,0.0] :: R 4)}
 -- 
--- >>> hadamard (new 0) >< new 0
+-- >>> hadamard (new 0) >< id (new 0)
 -- Q {getState = (vector [0.7071067811865476,0.0,0.7071067811865476,0.0] :: R 4)}
 combine :: (KnownNat n, KnownNat m) => Gate n -> Gate m -> Gate (n + m)
 combine p q = let pm = extract p
                   qm = extract q
               in case create $ pm `kronecker` qm of
-                  Just m -> m
+                  Just  m -> m
                   Nothing -> errorWithoutStackTrace
                     $ "Incorrect matrices " ++ show p ++ " and " ++ show q
 
@@ -149,10 +143,10 @@ measureLA (Q q) = (evalRandIO
     where projOp b = V.mul (V.col b) (V.row b)
           prob b = ((^2) . V.norm_0) $ V.mul (projOp b) (V.col q)
 
-plus :: Bit -> Bit -> Bit
-plus 1 0 = 1
-plus 0 1 = 1
-plus _ _ = 0
-
-m :: IO Bit
-m = (\x -> plus x x) <$> measureN (hadamard (new 0))
+-- | The identity matrix
+matrixI :: forall (n :: Nat) . KnownNat n => Gate n
+matrixI = let dim = natVal (Proxy :: Proxy n)
+          in case create $ ident $ fromInteger $ 2^dim of
+              Just  i -> i
+              Nothing -> errorWithoutStackTrace
+                "Could not deduce matrix dimensions"
