@@ -20,11 +20,12 @@ Contains all of the language as of now, but will be split in the future
 module Syntax where -- strictly export safe functions
 
 import Numeric.LinearAlgebra.Static as V hiding ( outer )
-import Numeric.LinearAlgebra ( flatten, outer, kronecker )
+import Numeric.LinearAlgebra ( flatten, outer, kronecker, toList )
 import qualified Numeric.LinearAlgebra as LA ( (><) )
 import GHC.TypeLits ( Nat, type (+), type (^), KnownNat )
 import Data.Bit
 import Prelude
+import Control.Monad.Random as Rand
 
 -- | The type of the quantum state. \(Q\) in \(\left[Q, L^*, \Lambda \right]\).
 type QState (d :: Nat) = R d  
@@ -89,7 +90,7 @@ infixl 7 ><
 -- matrixI = matrix [ 1 , 0 
 --                  , 0 , 1 ]
 -- 
--- comb = combine matrixH matrixI
+-- comb = combine matrixH kroneckermatrixI
 -- @
 -- 
 -- >>> gate comb (new 0 >< new 0)
@@ -128,3 +129,30 @@ matrixC = matrix [ 1, 0, 0, 0
 -- | CNOT gate acting on two qubits
 cnot :: QBit 2 -> QBit 2 
 cnot = gate matrixC
+
+
+measureN :: QBit 1 -> IO Bit 
+measureN = evalRandIO 
+        . Rand.fromList 
+        . zip [0,1] 
+        . map (toRational . (^2)) 
+        . toList 
+        . extract 
+        . getState
+
+measureLA :: QBit 1 -> IO Bit
+measureLA (Q q) = (evalRandIO 
+               . Rand.fromList 
+               . zip [0,1] 
+               . map toRational) 
+               [prob  (V.vector [1,0]), prob (V.vector [0,1])]
+    where projOp b = V.mul (V.col b) (V.row b)
+          prob b = ((^2) . V.norm_0) $ V.mul (projOp b) (V.col q)
+
+plus :: Bit -> Bit -> Bit
+plus 1 0 = 1
+plus 0 1 = 1
+plus _ _ = 0
+
+m :: IO Bit
+m = (\x -> plus x x) <$> measureN (hadamard (new 0))
