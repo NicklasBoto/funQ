@@ -4,6 +4,7 @@
 {-# LANGUAGE        NoImplicitPrelude                     #-}
 {-# LANGUAGE        FlexibleInstances                     #-}
 {-# LANGUAGE        ConstraintKinds                       #-}
+{-# LANGUAGE        RecordWildCards                       #-}
 {-# LANGUAGE        BlockArguments                        #-}
 {-# LANGUAGE        TypeOperators                         #-}
 {-# LANGUAGE        TypeFamilies                          #-}
@@ -28,12 +29,8 @@ import GHC.TypeLits (KnownNat, Nat, natVal, type (+), type (^))
 import Numeric.LinearAlgebra (flatten, ident, kronecker, outer, toList)
 import qualified Numeric.LinearAlgebra as LA ((><))
 import Numeric.LinearAlgebra.Static as V
-    ( R, Sized(create, extract), Sq )
+    ( R, Sized(create, extract), Sq, (#>) )
 import Prelude
-
-
-
-
 
 -- | The type of the quantum state. \(Q\) in \(\left[Q, L^*, \Lambda \right]\).
 type QState (d :: Nat) = R d
@@ -41,7 +38,7 @@ type QState (d :: Nat) = R d
 -- | Vector state representation of qubit state.
 --   Dependent on the number of bits @n@ where the vector becomes
 --   \( \otimes_{i=0}^{n-1} \mathbb{C}^2 \)
-newtype QBit (n :: Nat) = Q {getState :: QState (2 ^ n)}
+newtype QBit (n :: Nat) = Q { getState :: QState (2 ^ n) }
   deriving (Show)
 
 data Bit (n :: Nat) where
@@ -52,26 +49,29 @@ deriving instance Show (Bit n)
 
 instance Num (Bit 1) where
   fromInteger x = B.Bit (odd x) ::: NoBit
+  (a ::: NoBit) * (b ::: NoBit) = (a * b) ::: NoBit
+  (a ::: NoBit) + (b ::: NoBit) = (a + b) ::: NoBit
+  (a ::: NoBit) - (b ::: NoBit) = (a - b) ::: NoBit
+  negate = id
+  abs    = id
+  signum = id
 
 -- | Experimental product type family
 type family (p :: b) >< (q :: b) :: b
 
 type instance (QBit n) >< (QBit m) = QBit (n + m)
-
-type instance (Bit n) >< (Bit m) = Bit (n + m)
+type instance (Bit  n) >< (Bit  m) = Bit  (n + m)
+type instance (Gate n) >< (Gate m) = Gate (n + m)
 
 class Prod (p :: Nat -> *) where
   infixl 7 ><
-  (><) ::
-    (KnownNat n, KnownNat m, ((p n >< p m) ~ p (n + m))) =>
+  (><) :: (KnownNat n, KnownNat m, ((p n >< p m) ~ p (n + m))) =>
     p n ->
     p m ->
     p n >< p m
 
-
 instance Prod QBit where
-  (Q p) >< (Q q) =
-    Q
+  (Q p) >< (Q q) = Q
       let pv = extract p
           pq = extract q
           v = flatten $ outer pv pq
@@ -84,13 +84,38 @@ instance Prod QBit where
 -- | The unit type \(* : \top\)
 type T = ()
 
--- data Gate (n :: Nat) = Gate { gmatrix :: Sq (2^n), runGate :: QBit n -> QBit n }
+data Gate (n :: Nat) = Gate 
+  { matrix :: Sq (2^n)
+  , run    :: QBit n -> QBit n
+  }
 
--- fromMatrix :: Sq (2^n) -> Gate n
--- fromMatrix mx = Gate
---     { gmatrix = mx
---     , runGate = \(Q q) -> Q $ mx #> q
---     }
+fromMatrix :: KnownNat n => Sq (2^n) -> Gate n
+fromMatrix mx = Gate
+    { matrix = mx
+    , run    = \(Q q) -> Q $ mx #> q
+    }
+
+instance KnownNat n => Show (Gate n) where
+  show Gate{..} = show matrix
+
+-- | Combine the action of two gates
+--
+-- >>> gate (combine matrixH matrixI) (new 0 >< new 0)
+-- Q {getState = (vector [0.7071067811865476,0.0,0.7071067811865476,0.0] :: R 4)}
+-- 
+-- >>> hadamard (new 0) >< id (new 0)
+-- Q {getState = (vector [0.7071067811865476,0.0,0.7071067811865476,0.0] :: R 4)}
+combine :: (KnownNat n, KnownNat m) => Gate n -> Gate m -> Gate (n + m)
+combine p q = fromMatrix
+              let pm = extract $ matrix p
+                  qm = extract $ matrix q
+              in case create $ pm `kronecker` qm of
+                  Just m  -> m
+                  Nothing -> errorWithoutStackTrace
+                    $ "Incorrect matrices " ++ show p ++ " and " ++ show q
+
+instance Prod Gate where
+  (><) = combine
 
 -- | Matrix gate representation
-type Gate (n :: Nat) = Sq (2 ^ n)
+-- type Gate (n :: Nat) = Sq (2 ^ n)
