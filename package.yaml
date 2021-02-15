@@ -1,13 +1,20 @@
 name:                qfunc
 version:             0.1.0.0
-github:              "githubuser/qfunc"
-license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2020 Author name here"
+github:              "NicklasBoto/qfunc"
+license:             GPL-3
+author:
+  - Nicklas Botö
+  - Fabian Forslund
+  - Matilda Blomqvist
+  - Beata Burreau
+  - Marcus Jörgensson
+  - Joel Rudsberg
+maintainer:          "qfunc@nicbot.xyz"
+copyright:           "2020 Nicklas Botö"
 
 extra-source-files:
 - README.md
+- LICENSE
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
@@ -50,3 +57,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - qfunc
+    - QuickCheck

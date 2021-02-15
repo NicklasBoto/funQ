@@ -1,30 +1,41 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.3.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
+--
+-- hash: a7fe717fb4f866c92325c842acd6187b9fc1b1ff5974b6de45e1c391c96e86ce
 
 name:           qfunc
 version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/githubuser/qfunc#readme>
-homepage:       https://github.com/githubuser/qfunc#readme
-bug-reports:    https://github.com/githubuser/qfunc/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2020 Author name here
-license:        BSD3
+homepage:       https://github.com/NicklasBoto/qfunc#readme
+bug-reports:    https://github.com/NicklasBoto/qfunc/issues
+author:         Nicklas Botö,
+                Fabian Forslund,
+                Matilda Blomqvist,
+                Beata Burreau,
+                Marcus Jörgensson,
+                Joel Rudsberg
+maintainer:     qfunc@nicbot.xyz
+copyright:      2020 Nicklas Botö
+license:        GPL-3
+license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
+    LICENSE
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/qfunc
+  location: https://github.com/NicklasBoto/qfunc
 
 library
   exposed-modules:
+      Gates
       Lib
-      Syntax
+      QData
+      QOps
   other-modules:
       Paths_qfunc
   hs-source-dirs:
@@ -67,6 +78,7 @@ test-suite qfunc-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       MonadRandom
+    , QuickCheck
     , base >=4.7 && <5
     , bitvec
     , ghc-typelits-knownnat
