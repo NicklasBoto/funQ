@@ -1,13 +1,19 @@
-{-# LANGUAGE        ScopedTypeVariables                     #-}
+{-# LANGUAGE        ScopedTypeVariables                   #-}
+{-# LANGUAGE        LiberalTypeSynonyms                   #-}
+{-# LANGUAGE        StandaloneDeriving                    #-}
 {-# LANGUAGE        NoImplicitPrelude                     #-}
 {-# LANGUAGE        FlexibleInstances                     #-}
 {-# LANGUAGE        OverloadedLists                       #-}
+{-# LANGUAGE        ConstraintKinds                       #-}
+{-# LANGUAGE        RecordWildCards                       #-}
 {-# LANGUAGE        BlockArguments                        #-}
 {-# LANGUAGE        TypeOperators                         #-}
 {-# LANGUAGE        TypeFamilies                          #-}
+{-# LANGUAGE        DerivingVia                           #-}
 {-# LANGUAGE        Rank2Types                            #-}
 {-# LANGUAGE        PolyKinds                             #-}
 {-# LANGUAGE        DataKinds                             #-}
+{-# LANGUAGE        GADTs                                 #-}
 {-# OPTIONS_GHC     -fplugin GHC.TypeLits.KnownNat.Solver #-}
 {-# OPTIONS_HADDOCK not-home                              #-}
 
@@ -24,12 +30,13 @@ import Numeric.LinearAlgebra.Static as V hiding ( outer )
 import Numeric.LinearAlgebra ( flatten, outer, kronecker, ident )
 import qualified Numeric.LinearAlgebra as LA ( (><) )
 import GHC.TypeLits ( Nat, type (+), type (^),  KnownNat, natVal )
-import Data.Bit ( Bit )
+import GHC.Exts ( IsList(..), Item )
+import qualified Data.Bit as B ( Bit(..) )
 import Data.Proxy ( Proxy(..) )
 import Prelude
 
 -- | The type of the quantum state. \(Q\) in \(\left[Q, L^*, \Lambda \right]\).
-type QState (d :: Nat) = R d  
+type QState (d :: Nat) = R d
 
 -- | Vector state representation of qubit state.
 --   Dependent on the number of bits @n@ where the vector becomes 
@@ -37,52 +44,69 @@ type QState (d :: Nat) = R d
 newtype QBit (n :: Nat) = Q { getState :: QState (2^n) }
     deriving Show
 
+data Bit (n :: Nat) where
+    (:::) :: B.Bit -> Bit n -> Bit (n + 1)
+    NoBit :: Bit 0
+
+deriving instance Show (Bit n)
+
+instance Num (Bit 1) where
+    fromInteger x = B.Bit (odd x) ::: NoBit
+
+-- | Experimental product type family
+type family (p :: b) >< (q :: b) :: b
+type instance (QBit n) >< (QBit m) = QBit (n + m)
+type instance (Bit n) >< (Bit m) = Bit (n + m)
+
+class Prod (p :: Nat -> *) where
+    infixl 7 ><
+    (><) :: (KnownNat n, KnownNat m, ((p n >< p m) ~ p (n + m))) 
+         => p n -> p m -> p n >< p m
+
+instance Prod QBit where
+    -- | We define the tensor product of qbits as the flattened
+    --   outer product of the state vectors. Note the summed qubit size.
+    (Q p) >< (Q q) = Q
+        let pv = extract p
+            pq = extract q
+            v  = flatten $ outer pv pq
+        in case create v of
+            Just v' -> v'
+            Nothing -> errorWithoutStackTrace
+                $ "Incorrect vectors " ++ show p ++ " and " ++ show q
+
 -- | Highly experimental inner type for some stateful monad
-data ProgramState = 
+data ProgramState =
         ProgramState { vector :: *
                      , lambda :: *
                      , linker :: *
                      }
 
--- | The product type \(\otimes\)
-infixr 0 |><|
-data m |><| n = m :>< n
-
--- | Experimental product type family
-type family (p :: b) >< (q :: b) :: b
-type instance (QBit n) >< (QBit m) = QBit (n + m)
-type instance Bit >< Bit = Bit
-
 -- | The unit type \(* : \top\)
 type T = ()
+
+-- data Gate (n :: Nat) = Gate { gmatrix :: Sq (2^n), runGate :: QBit n -> QBit n }
+
+-- fromMatrix :: Sq (2^n) -> Gate n
+-- fromMatrix mx = Gate 
+--     { gmatrix = mx
+--     , runGate = \(Q q) -> Q $ mx #> q
+--     }
 
 -- | Matrix gate representation
 type Gate (n :: Nat) = Sq (2^n)
 
 -- | Constructs new qubits
-new :: Bit -> QBit 1
-new 0 = Q $ V.vector [ 1
-                     , 0 ] 
+new :: Bit 1 -> QBit 1
+new (0 ::: NoBit) = Q $ V.vector [ 1
+                                 , 0 ]
 
-new 1 = Q $ V.vector [ 0
-                     , 1 ]
+new (1 ::: NoBit) = Q $ V.vector [ 0
+                                 , 1 ]
 
 -- | Collapses a qubit state (of size 1) to a single bit
-measure :: QBit 1 -> Int
+measure :: QBit n -> Bit n
 measure = undefined
-
--- | We define the tensor product of qbits as the flattened
---   outer product of the state vectors. Note the summed qubit size.
-infixl 7 ><
-(><) :: (KnownNat n, KnownNat m) => QBit n -> QBit m -> QBit (n + m)
-(Q p) >< (Q q) = Q
-    let pv = extract p
-        pq = extract q
-        v  = flatten $ outer pv pq
-    in case create v of
-        Just v' -> v'
-        Nothing -> errorWithoutStackTrace 
-            $ "Incorrect vectors " ++ show p ++ " and " ++ show q
 
 -- | Combine the action of two gates
 --
@@ -103,6 +127,16 @@ combine p q = let pm = extract p
 gate :: KnownNat n => Gate n -> (QBit n -> QBit n)
 gate mx (Q q) = Q $ mx #> q
 
+isUnitary :: forall n . KnownNat n => Gate n -> Bool
+isUnitary m = mcm == mi && mmc == mi
+    where mcm = extract $ tr m V.<> m
+          mmc = extract $ m V.<> tr m
+          mi  = extract (matrixI :: Gate n)
+
+matrixN :: Gate 1
+matrixN = matrix [ 0 , 1 
+                 , 1 , 0 ]
+
 -- | Hadamard matrix
 matrixH :: Gate 1
 matrixH = sqrt 0.5 * matrix [ 1 ,  1
@@ -113,14 +147,14 @@ hadamard :: QBit 1 -> QBit 1
 hadamard = gate matrixH
 
 -- | CNOT matrix
-matrixC :: Gate 2 
+matrixC :: Gate 2
 matrixC = matrix [ 1, 0, 0, 0
                  , 0, 1, 0, 0
                  , 0, 0, 0, 1
                  , 0, 0, 1, 0 ]
 
 -- | CNOT gate acting on two qubits
-cnot :: QBit 2 -> QBit 2 
+cnot :: QBit 2 -> QBit 2
 cnot = gate matrixC
 
 -- | The identity matrix
