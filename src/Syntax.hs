@@ -27,13 +27,14 @@ Contains all of the language as of now, but will be split in the future
 module Syntax where -- strictly export safe functions
 
 import Numeric.LinearAlgebra.Static as V hiding ( outer )
-import Numeric.LinearAlgebra ( flatten, outer, kronecker, ident )
+import Numeric.LinearAlgebra ( flatten, outer, kronecker, ident, toList )
 import qualified Numeric.LinearAlgebra as LA ( (><) )
 import GHC.TypeLits ( Nat, type (+), type (^),  KnownNat, natVal )
 import GHC.Exts ( IsList(..), Item )
 import qualified Data.Bit as B ( Bit(..) )
 import Data.Proxy ( Proxy(..) )
 import Prelude
+import Control.Monad.Random as Rand
 
 -- | The type of the quantum state. \(Q\) in \(\left[Q, L^*, \Lambda \right]\).
 type QState (d :: Nat) = R d
@@ -156,6 +157,25 @@ matrixC = matrix [ 1, 0, 0, 0
 -- | CNOT gate acting on two qubits
 cnot :: QBit 2 -> QBit 2
 cnot = gate matrixC
+
+
+measureN :: QBit 1 -> IO Bit 
+measureN = evalRandIO 
+        . Rand.fromList 
+        . zip [0,1] 
+        . map (toRational . (^2)) 
+        . toList 
+        . extract 
+        . getState
+
+measureLA :: QBit 1 -> IO Bit
+measureLA (Q q) = (evalRandIO 
+               . Rand.fromList 
+               . zip [0,1] 
+               . map toRational) 
+               [prob  (V.vector [1,0]), prob (V.vector [0,1])]
+    where projOp b = V.mul (V.col b) (V.row b)
+          prob b = ((^2) . V.norm_0) $ V.mul (projOp b) (V.col q)
 
 -- | The identity matrix
 matrixI :: forall (n :: Nat) . KnownNat n => Gate n
