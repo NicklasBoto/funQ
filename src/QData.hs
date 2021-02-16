@@ -48,7 +48,9 @@ data Bit (n :: Nat) where
 deriving instance Show (Bit n)
 
 instance Num (Bit 1) where
-  fromInteger x = B.Bit (odd x) ::: NoBit
+  fromInteger x | x == 0     =  B.Bit False ::: NoBit 
+                | x == 1     =  B.Bit True ::: NoBit
+                | otherwise  =  errorWithoutStackTrace "Cannot derive bits from non-binary values"
   (a ::: NoBit) * (b ::: NoBit) = (a * b) ::: NoBit
   (a ::: NoBit) + (b ::: NoBit) = (a + b) ::: NoBit
   (a ::: NoBit) - (b ::: NoBit) = (a - b) ::: NoBit
