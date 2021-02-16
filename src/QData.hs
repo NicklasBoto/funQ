@@ -30,6 +30,8 @@ import qualified Numeric.LinearAlgebra as LA ((><))
 import Numeric.LinearAlgebra.Static as V
     ( R, Sized(create, extract), Sq )
 import Prelude
+--import Control.Monad.State (StateT, MonadState(put), gets, MonadIO(liftIO), modify, evalStateT)
+--import Control.Monad.Except ( runExceptT, MonadError(catchError, throwError), ExceptT )
 
 
 
@@ -38,20 +40,33 @@ import Prelude
 -- | The type of the quantum state. \(Q\) in \(\left[Q, L^*, \Lambda \right]\).
 type QState (d :: Nat) = R d
 
+-- | Program state
+data ProgramSt = ProgramSt {
+      q  :: QState 1,
+      l  :: T,
+      m  :: T        -- can we have a common type for all terms?
+}
+
+--type QuantMon = StateT ProgramSt (ExceptT IO) 
+
+
 -- | Vector state representation of qubit state.
 --   Dependent on the number of bits @n@ where the vector becomes
 --   \( \otimes_{i=0}^{n-1} \mathbb{C}^2 \)
 newtype QBit (n :: Nat) = Q {getState :: QState (2 ^ n)}
   deriving (Show)
 
-data Bit (n :: Nat) where
+-- | Representation of a classical bit 
+data Bit (n :: Nat) where 
   (:::) :: B.Bit -> Bit n -> Bit (n + 1)
-  NoBit :: Bit 0
-
+  NoBit :: Bit 0 
 deriving instance Show (Bit n)
 
+-- Ensures that only 0 and 1 bits can be created
 instance Num (Bit 1) where
-  fromInteger x = B.Bit (odd x) ::: NoBit
+  fromInteger x | x == 0     =  B.Bit False ::: NoBit 
+                | x == 1     =  B.Bit True ::: NoBit
+                | otherwise  =  errorWithoutStackTrace "Cannot derive bits from non-binary values" 
 
 -- | Experimental product type family
 type family (p :: b) >< (q :: b) :: b
