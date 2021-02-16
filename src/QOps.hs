@@ -40,16 +40,29 @@ new (1 ::: NoBit) = Q $ V.vector [ 0
 measure :: QBit n -> Bit n
 measure = undefined
 
-measureN :: QBit 1 -> IO (Bit 1)
-measureN = evalRandIO 
+measureN :: KnownNat n => QBit n -> IO Bit
+measureN = evalRandIO
         . Rand.fromList 
-        . zip [0,1] 
+        . zip ([0..] :: [Bit])
         . map (toRational . (^2)) 
         . toList 
-        . extract 
+        . extract
         . getState
 
-measureLA :: QBit 1 -> IO (Bit 1)
+
+
+measureNN :: (MonadRandom m, Enum a, Num a, KnownNat n) => QBit n -> m a
+measureNN = Rand.fromList
+        . zip [0..]
+        . map (toRational . (^2)) 
+        . toList 
+        . extract
+        . getState
+
+measureNR :: KnownNat n => QBit n -> IO Bit
+measureNR = evalRandIO . measureNN
+
+measureLA :: KnownNat n => QBit n -> IO Bit
 measureLA (Q q) = (evalRandIO 
                . Rand.fromList 
                . zip [0,1] 
@@ -57,3 +70,16 @@ measureLA (Q q) = (evalRandIO
                [prob  (V.vector [1,0]), prob (V.vector [0,1])]
     where projOp b = V.mul (V.col b) (V.row b)
           prob b = ((^2) . V.norm_0) $ V.mul (projOp b) (V.col q)
+
+measureLAM :: KnownNat n => QBit n -> IO Bit
+measureLAM (Q q) = (evalRandIO 
+               . Rand.fromList 
+               . zip [0,1,2,3] 
+               . map toRational)
+               (map (prob . V.vector) 
+               (bases (size q)))
+    where   projOp b = V.mul (V.col b) (V.row b)
+            prob b = ((^2) . V.norm_0) $ V.mul (projOp b) (V.col q)
+            bases n = [rotate (replicate (n-1) 0) i | i <- [0..n-1]]
+            rotate as i = b ++ [1] ++ a
+                where (b,a) = splitAt i as 
