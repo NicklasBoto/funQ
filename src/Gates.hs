@@ -34,7 +34,7 @@ import Prelude hiding ( id )
 --
 -- ![pauliX](images/x.PNG)
 pauliX :: Gate 1
-pauliX = fromMatrix $ V.matrix 
+pauliX = fromMatrix $ fromList
   [ 0 , 1 
   , 1 , 0 ]
 
@@ -48,7 +48,7 @@ pauliX = fromMatrix $ V.matrix
 -- ![hadamard](images/h.PNG)
 
 hadamard :: Gate 1
-hadamard = fromMatrix $ sqrt 0.5 * V.matrix 
+hadamard = fromMatrix $ sqrt 0.5 * fromList
   [ 1 ,  1
   , 1 , -1 ]
 
@@ -64,7 +64,7 @@ hadamard = fromMatrix $ sqrt 0.5 * V.matrix
 -- 
 -- ![cnot](images/cnot.PNG)
 cnot :: Gate 2
-cnot = fromMatrix $ V.matrix 
+cnot = fromMatrix $ fromList
   [ 1, 0, 0, 0
   , 0, 1, 0, 0
   , 0, 0, 0, 1
@@ -85,7 +85,7 @@ cnot = fromMatrix $ V.matrix
 --
 --  ![toffoli](images/toffoli.PNG)
 toffoli :: Gate 3
-toffoli = fromMatrix $ V.matrix 
+toffoli = fromMatrix $ fromList
   [ 1, 0, 0, 0, 0, 0, 0, 0 
   , 0, 1, 0, 0, 0, 0, 0, 0 
   , 0, 0, 1, 0, 0, 0, 0, 0 
