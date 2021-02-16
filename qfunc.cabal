@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a7fe717fb4f866c92325c842acd6187b9fc1b1ff5974b6de45e1c391c96e86ce
+-- hash: a3f0f888bfe1c9fe1e262f96204eaae59e1303addbb2a814fc663772bac7a244
 
 name:           qfunc
 version:        0.1.0.0
@@ -18,7 +18,7 @@ author:         Nicklas Botö,
                 Marcus Jörgensson,
                 Joel Rudsberg
 maintainer:     qfunc@nicbot.xyz
-copyright:      2020 Nicklas Botö
+copyright:      2021 Nicklas Botö
 license:        GPL-3
 license-file:   LICENSE
 build-type:     Simple
