@@ -103,18 +103,10 @@ instance KnownNat n => Show (Gate n) where
 -- | Combine the action of two gates
 --
 -- >>> gate (combine matrixH matrixI) (new 0 >< new 0)
--- WAS Q {getState = (vector [0.7071067811865476,0.0,0.7071067811865476,0.0] :: R 4)}
--- NOW Variable not in scope: gate :: Gate (n0 + m0) -> p0 (n1 + m1) -> f0
--- NOW Variable not in scope: matrixH :: Gate n0
--- NOW Variable not in scope: matrixI :: Gate m0
--- NOW Variable not in scope: new :: Integer -> p0 n1
--- NOW Variable not in scope: new :: Integer -> p0 m1
+-- Q {getState = (vector [0.7071067811865476,0.0,0.7071067811865476,0.0] :: R 4)}
 -- 
 -- >>> hadamard (new 0) >< id (new 0)
--- WAS Q {getState = (vector [0.7071067811865476,0.0,0.7071067811865476,0.0] :: R 4)}
--- NOW Variable not in scope: hadamard :: t0 -> p0 n0
--- NOW Variable not in scope: new :: Integer -> t0
--- NOW Variable not in scope: new :: Integer -> p0 m0
+-- Q {getState = (vector [0.7071067811865476,0.0,0.7071067811865476,0.0] :: R 4)}
 combine :: (KnownNat n, KnownNat m) => Gate n -> Gate m -> Gate (n + m)
 combine p q = fromMatrix
               let pm = extract $ matrix p
