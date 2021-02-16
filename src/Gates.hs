@@ -20,13 +20,13 @@ import Prelude
 
 matrixN :: Gate 1
 matrixN = 
-  fromMatrix $ V.matrix [ 0 , 1 
+  fromMatrix $ fromList [ 0 , 1 
                         , 1 , 0 ]
 
 -- | Hadamard matrix
 matrixH :: Gate 1
 matrixH = 
-  fromMatrix $ sqrt 0.5 * V.matrix [ 1 ,  1
+  fromMatrix $ sqrt 0.5 * fromList [ 1 ,  1
                                    , 1 , -1 ]
 
 -- | Hadamard gate acting on single qubits
@@ -36,7 +36,7 @@ hadamard = run matrixH
 -- | CNOT matrix
 matrixC :: Gate 2
 matrixC = 
-  fromMatrix $ V.matrix [ 1, 0, 0, 0
+  fromMatrix $ fromList [ 1, 0, 0, 0
                         , 0, 1, 0, 0
                         , 0, 0, 0, 1
                         , 0, 0, 1, 0 ]

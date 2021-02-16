@@ -44,11 +44,11 @@ import GHC.TypeLits (KnownNat, Nat, natVal, type (+), type (^))
 import Numeric.LinearAlgebra (flatten, ident, kronecker, outer, toList)
 import qualified Numeric.LinearAlgebra as LA ((><))
 import Numeric.LinearAlgebra.Static as V
-    ( R, Sized(create, extract), Sq, (#>) )
+    ( C, M, Sized(create, extract), Sq, (#>), mul, app )
 import Prelude
 
 -- | The type of the quantum state. \(Q\) in \(\left[Q, L^*, \Lambda \right]\).
-type QState (d :: Nat) = R d
+type QState (d :: Nat) = C d
 
 -- | The product type family. Represents all types @Nat -> *@ that
 -- has a product operation, producing the sum of their type indexed size.
@@ -114,7 +114,7 @@ instance Eq (Bit 1) where
 -- | Matrix gate representation. 
 -- Also wraps a function acting on the `QBit` type
 data Gate (n :: Nat) = Gate 
-  { matrix :: Sq (2^n)
+  { matrix :: V.M (2^n) (2^n)
   , run    :: QBit n -> QBit n
   }
 
@@ -132,16 +132,16 @@ instance Prod Gate where
   m >< n = fromMatrix
               let pm = extract $ matrix n
                   qm = extract $ matrix n
-              in case create $ pm `kronecker` qm of
+              in case create $ kronecker pm qm of
                   Just m  -> m
                   Nothing -> errorWithoutStackTrace
                     $ "Incorrect matrices " ++ show m ++ " and " ++ show n
 
 -- | Converts a unitary matrix to the gate type
-fromMatrix :: KnownNat n => Sq (2^n) -> Gate n
+fromMatrix :: KnownNat n => M (2^n) (2^n) -> Gate n
 fromMatrix mx = Gate
     { matrix = mx
-    , run    = \(Q q) -> Q $ mx #> q
+    , run    = \(Q q) -> Q $ app mx q
     }
 
 instance KnownNat n => Show (Gate n) where
