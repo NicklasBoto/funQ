@@ -4,6 +4,7 @@
 {-# LANGUAGE        NoImplicitPrelude                     #-}
 {-# LANGUAGE        FlexibleInstances                     #-}
 {-# LANGUAGE        ConstraintKinds                       #-}
+{-# LANGUAGE        RecordWildCards                       #-}
 {-# LANGUAGE        BlockArguments                        #-}
 {-# LANGUAGE        NamedFieldPuns                        #-}
 {-# LANGUAGE        TypeOperators                         #-}
@@ -24,7 +25,7 @@ Stability   : experimental
 This is the core module of the language. This module contains the definitions
 of all the types exposed to the user.
 -}
-module QData 
+module QData
   ( -- * Core types
     QBit(..)
   , Bit
@@ -44,10 +45,10 @@ import GHC.TypeLits (KnownNat, Nat, natVal, type (+), type (^))
 import Numeric.LinearAlgebra (flatten, ident, kronecker, outer, toList)
 import qualified Numeric.LinearAlgebra as LA ((><))
 import Numeric.LinearAlgebra.Static as V
-    ( R, Sized(create, extract), Sq, (#>) )
+    ( R, Sized(create, extract), Sq, (#>), vector )
 import Prelude
 
--- | The type of the quantum state. \(Q\) in \(\left[Q, L^*, \Lambda \right]\).
+-- | The type of the quantum state.
 type QState (d :: Nat) = R d
 
 -- | The product type family. Represents all types @Nat -> *@ that
@@ -86,10 +87,14 @@ instance Prod QBit where
 -- | Type indexed bit strings. Should behave like a list of bits.
 data Bit (n :: Nat) where
   (:+) :: B.Bit -> Bit n -> Bit (n + 1)
-  NoBit :: Bit 0
+  Sing :: B.Bit -> Bit 1
 
-deriving instance Show (Bit n)
+infixr 6 :+
 type instance (Bit n) >< (Bit m) = Bit (n + m)
+
+instance Show (Bit n) where
+  show (Sing x) = show x
+  show (x :+ xs) = show x ++ show xs
 
 -- | Ease of use case where a single bit string behaves like bit
 --
@@ -99,23 +104,23 @@ type instance (Bit n) >< (Bit m) = Bit (n + m)
 -- new (0 :+ NoBit)
 -- @
 instance Num (Bit 1) where
-  fromInteger x | x == 0     =  B.Bit False :+ NoBit 
-                | x == 1     =  B.Bit True :+ NoBit
+  fromInteger x | x == 0     =  Sing $ B.Bit False
+                | x == 1     =  Sing $ B.Bit True
                 | otherwise  =  errorWithoutStackTrace "Cannot derive bits from non-binary values"
-  (a :+ NoBit) * (b :+ NoBit) = (a * b) :+ NoBit
-  (a :+ NoBit) + (b :+ NoBit) = (a + b) :+ NoBit
-  (a :+ NoBit) - (b :+ NoBit) = (a - b) :+ NoBit
+  (Sing a) * (Sing b) = Sing (a * b)
+  (Sing a) + (Sing b) = Sing (a + b)
+  (Sing a) - (Sing b) = Sing (a - b)
   negate = id
   abs    = id
   signum = id
 
 -- | Ease of use case for pattern matching on single bits
 instance Eq (Bit 1) where
-  (a :+ NoBit) == (b :+ NoBit) = a == b
+  (Sing a) == (Sing b) = a == b
 
 -- | Matrix gate representation. 
 -- Also wraps a function acting on the `QBit` type
-data Gate (n :: Nat) = Gate 
+data Gate (n :: Nat) = Gate
   { matrix :: Sq (2^n)
   , run    :: QBit n -> QBit n
   }
