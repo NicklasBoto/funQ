@@ -51,7 +51,6 @@ import Prelude
 -- | The type of the quantum state. \(Q\) in \(\left[Q, L^*, \Lambda \right]\).
 type QState (d :: Nat) = C d
 
-
 -- | The product type family. Represents all types @Nat -> *@ that
 -- has a product operation, producing the sum of their type indexed size.
 type family (p :: b) >< (q :: b) :: b
@@ -84,6 +83,11 @@ instance Prod QBit where
             Nothing ->
               errorWithoutStackTrace $
                 "Incorrect vectors " ++ show p ++ " and " ++ show q
+
+-- | Equals instance for qubits.
+-- Two qubits are equal if their vectors are equal.
+instance KnownNat n => Eq (QBit n) where
+  (Q a) == (Q b) = extract a == extract b
 
 -- | Type indexed bit strings. Should behave like a list of bits.
 data Bit (n :: Nat) where
