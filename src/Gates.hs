@@ -38,6 +38,11 @@ pauliX = fromMatrix $ V.matrix
   [ 0 , 1 
   , 1 , 0 ]
 
+pauliZ :: Gate 1
+pauliZ = fromMatrix $ V.matrix
+  [ 1 ,  0 
+  , 0 , -1 ]
+
 -- | Hadamard gate
 -- 
 -- \[ \text{X} = \frac1{\sqrt2} \begin{bmatrix}

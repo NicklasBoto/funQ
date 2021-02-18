@@ -48,8 +48,18 @@ new 1 = Q $ vector [ 0
                    , 1 ]
 
 -- | Collapses a qubit state (of size 1) to a single bit
-measure :: QBit n -> Bit n
-measure = undefined
+measure :: KnownNat n => QBit n -> IO Int
+measure = measureI
+
+-- | Measurement using list operations
+measureI :: KnownNat n => QBit n -> IO Int
+measureI = evalRandIO 
+        . Rand.fromList 
+        . zip [0..] 
+        . map (toRational . (^2)) 
+        . toList 
+        . extract 
+        . getState
 
 -- | Measurement using list operations
 measureN :: QBit 1 -> IO (Bit 1)
