@@ -47,14 +47,19 @@ import GHC.TypeLits (KnownNat, Nat, natVal, type (+), type (^), type(-))
 import Numeric.LinearAlgebra (flatten, ident, kronecker, outer, toList)
 import qualified Numeric.LinearAlgebra as LA ((><))
 import Numeric.LinearAlgebra.Static as V
+<<<<<<< HEAD
     ( R, Sized(create, extract), Sq, (#>), vector, (<>) )
+=======
+    ( C, M, Sized(create, extract), Sq, (#>), mul, app )
+>>>>>>> c2f6e8015855ba23d564ce5a9bb8b9727c84214a
 import Prelude
 import GHC.Exts as E
 import Data.Bits
 import Foreign.Storable
 
--- | The type of the quantum state.
-type QState (d :: Nat) = R d
+-- | The type of the quantum state. \(Q\) in \(\left[Q, L^*, \Lambda \right]\).
+type QState (d :: Nat) = C d
+
 
 -- | The product type family. Represents all types @Nat -> *@ that
 -- has a product operation, producing the sum of their type indexed size.
@@ -135,8 +140,8 @@ bits x = map (B.Bit . testBit x) [0..8*sizeOf x-1]
 
 -- | Matrix gate representation. 
 -- Also wraps a function acting on the `QBit` type
-data Gate (n :: Nat) = Gate
-  { matrix :: Sq (2^n)
+data Gate (n :: Nat) = Gate 
+  { matrix :: V.M (2^n) (2^n)
   , run    :: QBit n -> QBit n
   }
 
@@ -154,19 +159,26 @@ instance KnownNat n => Semigroup (Gate n) where
 -- >>> run hadamard (new 0) >< run id (new 0)
 -- Q {getState = (vector [0.7071067811865476,0.0,0.7071067811865476,0.0] :: R 4)}
 instance Prod Gate where
+<<<<<<< HEAD
   p >< q = fromMatrix
               let pm = extract $ matrix p
                   qm = extract $ matrix q
               in case create $ pm `kronecker` qm of
+=======
+  m >< n = fromMatrix
+              let pm = extract $ matrix n
+                  qm = extract $ matrix n
+              in case create $ kronecker pm qm of
+>>>>>>> c2f6e8015855ba23d564ce5a9bb8b9727c84214a
                   Just m  -> m
                   Nothing -> errorWithoutStackTrace
                     $ "Incorrect matrices " ++ show p ++ " and " ++ show q
 
 -- | Converts a unitary matrix to the gate type
-fromMatrix :: KnownNat n => Sq (2^n) -> Gate n
+fromMatrix :: KnownNat n => M (2^n) (2^n) -> Gate n
 fromMatrix mx = Gate
     { matrix = mx
-    , run    = \(Q q) -> Q $ mx #> q
+    , run    = \(Q q) -> Q $ app mx q
     }
 
 instance KnownNat n => Show (Gate n) where
