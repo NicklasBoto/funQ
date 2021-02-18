@@ -30,11 +30,11 @@ import QData
 
 -- | Constructs new qubits
 new :: Bit 1 -> QBit 1
-new (0 ::: NoBit) = Q $ V.vector [ 1
-                                 , 0 ]
+new 0 = Q $ V.vector [ 1
+                     , 0 ]
 
-new (1 ::: NoBit) = Q $ V.vector [ 0
-                                 , 1 ]
+new 1 = Q $ V.vector [ 0
+                     , 1 ]
 
 -- | Collapses a qubit state (of size 1) to a single bit
 measure :: QBit n -> Bit n
