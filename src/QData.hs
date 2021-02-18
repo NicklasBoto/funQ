@@ -47,11 +47,7 @@ import GHC.TypeLits (KnownNat, Nat, natVal, type (+), type (^), type(-))
 import Numeric.LinearAlgebra (flatten, ident, kronecker, outer, toList)
 import qualified Numeric.LinearAlgebra as LA ((><))
 import Numeric.LinearAlgebra.Static as V
-<<<<<<< HEAD
     ( R, Sized(create, extract), Sq, (#>), vector, (<>) )
-=======
-    ( C, M, Sized(create, extract), Sq, (#>), mul, app )
->>>>>>> c2f6e8015855ba23d564ce5a9bb8b9727c84214a
 import Prelude
 import GHC.Exts as E
 import Data.Bits
@@ -159,17 +155,10 @@ instance KnownNat n => Semigroup (Gate n) where
 -- >>> run hadamard (new 0) >< run id (new 0)
 -- Q {getState = (vector [0.7071067811865476,0.0,0.7071067811865476,0.0] :: R 4)}
 instance Prod Gate where
-<<<<<<< HEAD
   p >< q = fromMatrix
               let pm = extract $ matrix p
                   qm = extract $ matrix q
               in case create $ pm `kronecker` qm of
-=======
-  m >< n = fromMatrix
-              let pm = extract $ matrix n
-                  qm = extract $ matrix n
-              in case create $ kronecker pm qm of
->>>>>>> c2f6e8015855ba23d564ce5a9bb8b9727c84214a
                   Just m  -> m
                   Nothing -> errorWithoutStackTrace
                     $ "Incorrect matrices " ++ show p ++ " and " ++ show q
