@@ -29,6 +29,7 @@ module QM (
     -- * Helpers
     , checkState
     , getState
+    , stateSize
     , i
     ) where
 
