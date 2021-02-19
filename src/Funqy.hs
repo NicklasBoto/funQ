@@ -18,7 +18,7 @@ module Funqy (
     , controlbit
 ) where
 
-import QM ( QM, QState(..), QBit(..), Ix, io, put, get, modify, getState )
+import QM ( QM, QState(..), QBit(..), Ix, io, put, get, modify, getState, stateSize )
 import Data.Bit ( Bit )
 import Data.Bits ( Bits((.&.)) )
 import qualified Control.Monad.Random as Rand ( fromList, evalRandIO )
@@ -56,16 +56,6 @@ new x = do
 newVector :: Bit -> QState
 newVector 0 = QState [1, 0]
 newVector 1 = QState [0, 1]
-
--- | Given a QState, returns how many qbits it consists of.
-stateSize :: QState -> Ix
-stateSize q = case size (state q) of
-                0 -> 0
-                x -> log2 x
-
--- | Normal integer log with base 2.
-log2 :: Integral a => a -> Ix
-log2 = floor . logBase 2 . fromIntegral
 
 -- | Performs a measurement operation, collapsing a `QBit` to a `Bit`.
 -- Here comes a long explanation of the algorithm correcting the state
