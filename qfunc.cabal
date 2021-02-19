@@ -4,11 +4,11 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a3f0f888bfe1c9fe1e262f96204eaae59e1303addbb2a814fc663772bac7a244
+-- hash: 8ecabe4c3dd42c9a4637b5e76187864b74d2b322277f76e926c562be4ff7a94d
 
 name:           qfunc
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/qfunc#readme>
+description:    Please see the README on GitHub at <https://github.com/NicklasBoto/qfunc#readme>
 homepage:       https://github.com/NicklasBoto/qfunc#readme
 bug-reports:    https://github.com/NicklasBoto/qfunc/issues
 author:         Nicklas Botö,
@@ -32,10 +32,10 @@ source-repository head
 
 library
   exposed-modules:
+      Funqy
       Gates
       Lib
-      QData
-      QOps
+      QM
   other-modules:
       Paths_qfunc
   hs-source-dirs:
@@ -46,6 +46,7 @@ library
     , bitvec
     , ghc-typelits-knownnat
     , hmatrix
+    , mtl
     , type-natural
   default-language: Haskell2010
 
@@ -62,6 +63,7 @@ executable qfunc-exe
     , bitvec
     , ghc-typelits-knownnat
     , hmatrix
+    , mtl
     , qfunc
     , type-natural
   default-language: Haskell2010
@@ -83,6 +85,7 @@ test-suite qfunc-test
     , bitvec
     , ghc-typelits-knownnat
     , hmatrix
+    , mtl
     , qfunc
     , type-natural
   default-language: Haskell2010
