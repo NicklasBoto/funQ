@@ -56,7 +56,7 @@ measureI :: KnownNat n => QBit n -> IO Int
 measureI = evalRandIO 
         . Rand.fromList 
         . zip [0..] 
-        . map (toRational . (^2)) 
+        . map (toRational . (^2) . magnitude) 
         . toList 
         . extract 
         . getState

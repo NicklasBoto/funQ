@@ -1,11 +1,8 @@
 {-# LANGUAGE        ScopedTypeVariables                   #-}
 {-# LANGUAGE        LiberalTypeSynonyms                   #-}
-
 {-# LANGUAGE        NoImplicitPrelude                     #-}
 {-# LANGUAGE        FlexibleInstances                     #-}
 {-# LANGUAGE        ConstraintKinds                       #-}
-
-
 {-# LANGUAGE        BlockArguments                        #-}
 {-# LANGUAGE        NamedFieldPuns                        #-}
 {-# LANGUAGE        TypeOperators                         #-}
@@ -40,6 +37,7 @@ module QData
   -- * Helpers
   , bits
   , fromMatrix
+  , i
   ) where
 
 import qualified Data.Bit as B (Bit (..))
@@ -47,11 +45,12 @@ import GHC.TypeLits (KnownNat, Nat, natVal, type (+), type (^), type(-))
 import Numeric.LinearAlgebra (flatten, ident, kronecker, outer, toList)
 import qualified Numeric.LinearAlgebra as LA ((><))
 import Numeric.LinearAlgebra.Static as V
-    ( R, Sized(create, extract), Sq, (#>), vector, (<>) )
+  ( C, M, Sized(create, extract), Sq, (#>), mul, app )
 import Prelude
 import GHC.Exts as E
 import Data.Bits
 import Foreign.Storable
+import qualified Data.Complex
 
 -- | The type of the quantum state. \(Q\) in \(\left[Q, L^*, \Lambda \right]\).
 type QState (d :: Nat) = C d
@@ -144,7 +143,7 @@ data Gate (n :: Nat) = Gate
 type instance (Gate n) >< (Gate m) = Gate (n + m)
 
 instance KnownNat n => Semigroup (Gate n) where
-  Gate{matrix=a} <> Gate{matrix=b} = fromMatrix $ a V.<> b
+  Gate{matrix=a} <> Gate{matrix=b} = fromMatrix $ mul a b
 
 -- | The product type for Gates is defined as the kronecker product
 -- This combines the action of two gates, running in paralell
@@ -175,3 +174,7 @@ instance KnownNat n => Show (Gate n) where
 
 -- | The unit type \(* : \top\)
 type T = ()
+
+-- | The imaginary unit
+i :: Data.Complex.Complex Double
+i = 0 Data.Complex.:+ 1

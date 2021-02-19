@@ -1,12 +1,4 @@
-
-{-# LANGUAGE        ScopedTypeVariables                   #-}
-{-# LANGUAGE        NoImplicitPrelude                     #-}
-{-# LANGUAGE        BlockArguments                        #-}
-{-# LANGUAGE        TypeFamilies                          #-}
-{-# LANGUAGE        Rank2Types                            #-}
-{-# LANGUAGE        DataKinds                             #-}
-{-# OPTIONS_GHC     -fplugin GHC.TypeLits.KnownNat.Solver #-}
-{-# OPTIONS_HADDOCK not-home                              #-}
+{-# OPTIONS_HADDOCK not-home        #-}
 
 {-| 
 Module      : Gates
@@ -15,15 +7,45 @@ Stability   : experimental
 
 Module containing unitary gates and their matrix representations.
 -}
-module Gates where
+module Gates (
+    -- * Unitary gates
+      pauliX
+    , pauliY
+    , pauliZ
+    , hadamard
+    , phase
+    , phasePi8
+) where
 
-import QData
-import Numeric.LinearAlgebra.Static as V hiding ( outer )
-import Numeric.LinearAlgebra ( flatten, outer, kronecker, ident, toList )
-import qualified Numeric.LinearAlgebra as LA ( (><) )
-import GHC.TypeLits ( Nat, type (+), type (^),  KnownNat, natVal )
-import Data.Proxy ( Proxy(..) )
-import Prelude hiding ( id )
+import QM ( QM, QState(QState), QBit(link), i, getState, put, get )
+import Numeric.LinearAlgebra
+    ( (#>), (><), ident, kronecker, Matrix, Linear(scale), C )
+
+applyParallell :: Matrix C -> Matrix C -> Matrix C
+applyParallell = kronecker
+
+-- | Apply gate to the current quantum state
+applyGate :: Matrix C -> QM ()
+applyGate g = do
+    (QState v) <- get
+    put $ QState $ g #> v
+
+-- | Insert an element at a specific index in a list.
+insertAt :: a -> Int -> [a] -> [a]
+insertAt x index [] = [x]
+insertAt x index xs = l ++ [x] ++ r
+    where (l, r) = splitAt index xs
+
+-- | Apply a 2x2 gate, to a specific qubit.
+--
+-- It will update the qstate. 
+runGate :: Matrix C -> (QBit -> QM ())
+runGate g x = do
+    (state, size) <- getState
+    let ids = replicate (size - 1) (ident 2)
+    let list = insertAt g (link x) ids
+    let m = foldr1 applyParallell list
+    applyGate m
 
 -- | Pauli-X gate
 --
@@ -33,14 +55,35 @@ import Prelude hiding ( id )
 -- \end{bmatrix} \]
 --
 -- ![pauliX](images/x.PNG)
-pauliX :: Gate 1
-pauliX = fromMatrix $ fromList
-  [ 0 , 1 
+pauliX :: QBit -> QM ()
+pauliX = runGate $ (2 >< 2)
+  [ 0 , 1
   , 1 , 0 ]
 
-pauliZ :: Gate 1
-pauliZ = fromMatrix $ V.matrix
-  [ 1 ,  0 
+-- | Pauli-Y gate
+--
+-- \[ \text{Y} = \begin{bmatrix}
+--    0 & -i \\
+--    i & 0
+-- \end{bmatrix} \]
+--
+-- ![pauliY](images/y.PNG)
+pauliY :: QBit -> QM ()
+pauliY = runGate $ (2 >< 2)
+  [ 0 , -i
+  , i ,  0 ]
+
+-- | Pauli-Z gate
+--
+-- \[ \text{Z} = \begin{bmatrix}
+--    1 & 0 \\
+--    0 & -1
+-- \end{bmatrix} \]
+--
+-- ![pauliZ](images/z.PNG)
+pauliZ :: QBit -> QM ()
+pauliZ = runGate $ (2 >< 2)
+  [ 1 ,  0
   , 0 , -1 ]
 
 -- | Hadamard gate
@@ -51,59 +94,34 @@ pauliZ = fromMatrix $ V.matrix
 -- \end{bmatrix} \]
 --
 -- ![hadamard](images/h.PNG)
+hadamard :: QBit -> QM ()
+hadamard = runGate $ scale (sqrt 0.5) $ (2 >< 2)
+    [ 1 ,  1
+    , 1 , -1 ]
 
-hadamard :: Gate 1
-hadamard = fromMatrix $ sqrt 0.5 * fromList
-  [ 1 ,  1
-  , 1 , -1 ]
-
--- | CNOT gate
--- 
--- \[ \text{CNOT} = \begin{bmatrix} 
---    1 & 0 & 0 & 0 \\
---    0 & 1 & 0 & 0 \\
---    0 & 0 & 0 & 1 \\ 
---    0 & 0 & 1 & 0 
---  \end{bmatrix}
--- \]
--- 
--- ![cnot](images/cnot.PNG)
-cnot :: Gate 2
-cnot = fromMatrix $ fromList
-  [ 1, 0, 0, 0
-  , 0, 1, 0, 0
-  , 0, 0, 0, 1
-  , 0, 0, 1, 0 ]
-
--- | Toffoli gate
+-- | Phase gate
 --
--- \[ \begin{bmatrix}
---    1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ 
---    0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\ 
---    0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\ 
---    0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\ 
---    0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\ 
---    0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\ 
---    0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\ 
---    0 & 0 & 0 & 0 & 0 & 0 & 1 & 0
+-- \[ \text{S} = \begin{bmatrix}
+--    1 & 0 \\
+--    0 & i
 -- \end{bmatrix} \]
 --
---  ![toffoli](images/toffoli.PNG)
-toffoli :: Gate 3
-toffoli = fromMatrix $ fromList
-  [ 1, 0, 0, 0, 0, 0, 0, 0 
-  , 0, 1, 0, 0, 0, 0, 0, 0 
-  , 0, 0, 1, 0, 0, 0, 0, 0 
-  , 0, 0, 0, 1, 0, 0, 0, 0 
-  , 0, 0, 0, 0, 1, 0, 0, 0 
-  , 0, 0, 0, 0, 0, 1, 0, 0 
-  , 0, 0, 0, 0, 0, 0, 0, 1 
-  , 0, 0, 0, 0, 0, 0, 1, 0 ]
+-- ![phase](images/s.PNG)
+phase :: QBit -> QM ()
+phase = runGate $ (2 >< 2)
+  [ 1 , 0
+  , 0 , i ]
 
--- | The identity gate
-identity :: forall (n :: Nat) . KnownNat n => Gate n
-identity = fromMatrix let dim = natVal (Proxy :: Proxy n)
-          in case create $ ident $ fromInteger $ 2^dim of
-              Just  i -> i
-              Nothing -> errorWithoutStackTrace
-                "Could not deduce matrix dimensions"
+-- | Pi/8 gate (T gate)
+--
+-- \[ \text{T} = \begin{bmatrix}
+--    1 & 0 \\
+--    0 & e^{i\pi/4}
+-- \end{bmatrix} \]
+--
+-- ![pi8](images/t.PNG)
+phasePi8 :: QBit -> QM ()
+phasePi8 = runGate $ (2 >< 2)
+  [ 1 , 0
+  , 0 , p ]
+  where p = exp (i * pi / 8)
