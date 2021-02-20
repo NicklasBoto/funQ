@@ -16,11 +16,22 @@ module Funqy (
 
     -- * Control functions
     , controlbit
+    , (===)
+    
+    -- * Distribution functions
+    , dist
+
+    -- * The Quantum Monad
+    , module QM
+
+    -- * Bit
+    , Data.Bit.Bit
 ) where
 
-import QM ( QM, QState(..), QBit(..), Ix, io, put, get, modify, getState, stateSize )
+import QM
 import Data.Bit ( Bit )
 import Data.Bits ( Bits((.&.)) )
+import Control.Monad ( replicateM, void ) 
 import qualified Control.Monad.Random as Rand ( fromList, evalRandIO )
 import Numeric.LinearAlgebra
     ( Complex,
@@ -103,6 +114,28 @@ maskMatch ixMeas ixComp size = ixComp .&. mask == mask
 
 -- | Sets a classical bit as the controlbit for a quantum gate.
 -- Making it run only when the classical bit is equal to one.
-controlbit :: QM () -> Bit -> QM ()
-controlbit m 1 = m
+controlbit :: QM a -> Bit -> QM ()
+controlbit m 1 = void m
 controlbit m 0 = return ()
+
+-- | Synonym for controlbit
+(===) :: QM a -> Bit -> QM ()
+(===) = controlbit
+
+-- | Run a quantum program producing a single bit @reps@ times
+-- and print the results
+ndist :: Int -> QM Bit -> IO ()
+ndist reps meas = do
+    putStrLn $ "Runs : " ++ show reps
+    ms <- replicateM reps (run meas)
+    let is = map fromIntegral ms
+    let ones = sum is :: Double
+    let zeros = fromIntegral reps - ones
+    let pones = 100 * (ones / fromIntegral reps)
+    let pzeros = 100 - pones
+    putStrLn $ "|0>  : " ++ show zeros ++ " (" ++ show pones ++ " %)"
+    putStrLn $ "|1>  : " ++ show ones ++ " (" ++ show pzeros ++ " %)"
+
+-- | Print results from a 100 runs of a program
+dist :: QM Bit -> IO ()
+dist = ndist 100
