@@ -133,8 +133,8 @@ ndist reps meas = do
     let zeros = fromIntegral reps - ones
     let pones = 100 * (ones / fromIntegral reps)
     let pzeros = 100 - pones
-    putStrLn $ "|0>  : " ++ show zeros ++ " (" ++ show pones ++ " %)"
-    putStrLn $ "|1>  : " ++ show ones ++ " (" ++ show pzeros ++ " %)"
+    putStrLn $ "|0>  : " ++ show zeros ++ " (" ++ show pzeros ++ " %)"
+    putStrLn $ "|1>  : " ++ show ones ++ " (" ++ show pones ++ " %)"
 
 -- | Print results from a 100 runs of a program
 dist :: QM Bit -> IO ()
