@@ -115,7 +115,7 @@ maskMatch ixMeas ixComp size = ixComp .&. mask == mask
 -- | Sets a classical bit as the controlbit for a quantum gate.
 -- Making it run only when the classical bit is equal to one.
 controlbit :: QM a -> Bit -> QM ()
-controlbit m 1 = void m
+controlbit m 1 = m >> return ()
 controlbit m 0 = return ()
 
 -- | Synonym for controlbit
