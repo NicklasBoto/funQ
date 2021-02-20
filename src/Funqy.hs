@@ -106,17 +106,3 @@ maskMatch ixMeas ixComp size = ixComp .&. mask == mask
 controlbit :: QM () -> Bit -> QM ()
 controlbit m 1 = m
 controlbit m 0 = return ()
-
--- teleport :: QBit -> QM Bit
--- teleport psi = do
---     a <- new 0
---     b <- new 0
---     hadamard a
---     cnot a b
---     cnot psi a
---     hadamard psi
---     m_psi <- measure psi
---     m_a <- measure a
---     pauliX b `controlbit` m_a
---     pauliZ b `controlbit` m_psi
---     measure b

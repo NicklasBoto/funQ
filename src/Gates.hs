@@ -15,11 +15,12 @@ module Gates (
     , hadamard
     , phase
     , phasePi8
+    , cnot
 ) where
 
-import QM ( QM, QState(QState), QBit(link), i, getState, put, get )
+import QM ( QM, QState(QState), QBit(..), i, getState, put, get)
 import Numeric.LinearAlgebra
-    ( (#>), (><), ident, kronecker, Matrix, Linear(scale), C )
+    ( (#>), (><), ident, kronecker, Matrix, Linear(scale), C, ident )
 
 applyParallell :: Matrix C -> Matrix C -> Matrix C
 applyParallell = kronecker
@@ -46,6 +47,47 @@ runGate g x = do
     let list = insertAt g (link x) ids
     let m = foldr1 applyParallell list
     applyGate m
+
+-- | Projection of the zero basis vector
+proj0 :: Matrix C
+proj0 = (2 >< 2)
+  [ 1 , 0
+  , 0 , 0 ]
+
+-- | Projection of the one basis vector
+proj1 :: Matrix C
+proj1 = (2 >< 2)
+  [ 0 , 0
+  , 0 , 1 ]
+
+-- | Produce matrix running a gate controlled by another bit
+controlMatrix :: Int -> QBit -> QBit -> Matrix C -> Matrix C
+controlMatrix size (Ptr c) (Ptr t) g = fl + fr
+  where idsl = replicate (size - 1) (ident 2)
+        idsr = replicate (size - 2) (ident 2)
+        l = insertAt proj0 c idsl
+        rc = insertAt proj1 c idsr
+        r = insertAt g t rc
+        fl = foldr1 applyParallell l
+        fr = foldr1 applyParallell r
+
+-- | CNOT gate
+-- 
+-- \[ \text{CNOT} = \begin{bmatrix} 
+--    1 & 0 & 0 & 0 \\
+--    0 & 1 & 0 & 0 \\
+--    0 & 0 & 0 & 1 \\ 
+--    0 & 0 & 1 & 0 
+--  \end{bmatrix}
+-- \]
+-- 
+-- ![cnot](images/cnot.PNG)
+cnot :: QBit -> QBit -> QM ()
+cnot c t = do
+  (_, size) <- getState
+  let matrixX = (2 >< 2) [ 0, 1, 1, 0]
+  let g = controlMatrix size c t matrixX
+  applyGate g
 
 -- | Pauli-X gate
 --
