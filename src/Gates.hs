@@ -16,6 +16,7 @@ module Gates (
     , phase
     , phasePi8
     , cnot
+    , identity
 ) where
 
 import QM ( QM, QState(QState), QBit(..), i, getState, put, get)
@@ -40,13 +41,14 @@ insertAt x index xs = l ++ [x] ++ r
 -- | Apply a 2x2 gate, to a specific qubit.
 --
 -- It will update the qstate. 
-runGate :: Matrix C -> (QBit -> QM ())
+runGate :: Matrix C -> (QBit -> QM QBit)
 runGate g x = do
     (state, size) <- getState
     let ids = replicate (size - 1) (ident 2)
     let list = insertAt g (link x) ids
     let m = foldr1 applyParallell list
     applyGate m
+    return x
 
 -- | Projection of the zero basis vector
 proj0 :: Matrix C
@@ -82,12 +84,13 @@ controlMatrix size (Ptr c) (Ptr t) g = fl + fr
 -- \]
 -- 
 -- ![cnot](images/cnot.PNG)
-cnot :: QBit -> QBit -> QM ()
+cnot :: QBit -> QBit -> QM (QBit, QBit)
 cnot c t = do
   (_, size) <- getState
-  let matrixX = (2 >< 2) [ 0, 1, 1, 0]
+  let matrixX = (2 >< 2) [ 0, 1, 1, 0 ]
   let g = controlMatrix size c t matrixX
   applyGate g
+  return (c,t)
 
 -- | Pauli-X gate
 --
@@ -97,7 +100,7 @@ cnot c t = do
 -- \end{bmatrix} \]
 --
 -- ![pauliX](images/x.PNG)
-pauliX :: QBit -> QM ()
+pauliX :: QBit -> QM QBit
 pauliX = runGate $ (2 >< 2)
   [ 0 , 1
   , 1 , 0 ]
@@ -110,7 +113,7 @@ pauliX = runGate $ (2 >< 2)
 -- \end{bmatrix} \]
 --
 -- ![pauliY](images/y.PNG)
-pauliY :: QBit -> QM ()
+pauliY :: QBit -> QM QBit
 pauliY = runGate $ (2 >< 2)
   [ 0 , -i
   , i ,  0 ]
@@ -123,7 +126,7 @@ pauliY = runGate $ (2 >< 2)
 -- \end{bmatrix} \]
 --
 -- ![pauliZ](images/z.PNG)
-pauliZ :: QBit -> QM ()
+pauliZ :: QBit -> QM QBit
 pauliZ = runGate $ (2 >< 2)
   [ 1 ,  0
   , 0 , -1 ]
@@ -136,7 +139,7 @@ pauliZ = runGate $ (2 >< 2)
 -- \end{bmatrix} \]
 --
 -- ![hadamard](images/h.PNG)
-hadamard :: QBit -> QM ()
+hadamard :: QBit -> QM QBit
 hadamard = runGate $ scale (sqrt 0.5) $ (2 >< 2)
     [ 1 ,  1
     , 1 , -1 ]
@@ -149,7 +152,7 @@ hadamard = runGate $ scale (sqrt 0.5) $ (2 >< 2)
 -- \end{bmatrix} \]
 --
 -- ![phase](images/s.PNG)
-phase :: QBit -> QM ()
+phase :: QBit -> QM QBit
 phase = runGate $ (2 >< 2)
   [ 1 , 0
   , 0 , i ]
@@ -162,8 +165,20 @@ phase = runGate $ (2 >< 2)
 -- \end{bmatrix} \]
 --
 -- ![pi8](images/t.PNG)
-phasePi8 :: QBit -> QM ()
+phasePi8 :: QBit -> QM QBit
 phasePi8 = runGate $ (2 >< 2)
   [ 1 , 0
   , 0 , p ]
   where p = exp (i * pi / 8)
+
+-- | Identity gate
+--
+-- \[ \text{I} = \begin{bmatrix}
+--    1 & 0 \\
+--    0 & 1
+-- \end{bmatrix} \]
+--
+identity :: QBit -> QM QBit
+identity = runGate $ (2 >< 2)
+  [ 1 , 0
+  , 0 , 1 ]
