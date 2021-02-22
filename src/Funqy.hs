@@ -83,15 +83,12 @@ measure (Ptr ix) = do
 -- | (probToBeZero, probToBeOne)
 -- ix is index of qubit to measure
 findProb :: Ix -> QState -> (Rational, Rational)
-findProb ixMeas s = (1 - prob, prob) -- 
-    where size  = stateSize s -- Number of qubits.
-          mask  = 2^(size - ixMeas - 1) :: Int -- Create a mask to recognize correct indicies 
-          slist = toList $ state s -- Convert vector to a list
-          zlist = zip [0..] slist -- Pair each component with its index
-          match = \(x,_) -> x .&. mask == mask -- Bit mask on index position to see if it's a one, if so it should add to the probability of that bit being one.
-          list  = map snd $ filter match zlist -- Apply filter, will result in list of components of those who match
-          probs = map (toRational . (^2) . magnitude) list -- Map components to probabilites
-          prob  = sum probs -- Sum the probabilities
+findProb ixMeas qs@(QState s) = (1 - prob, prob) 
+    where match (x,y) -- Matches indices with bitmask, if index matches then return the squared magnitude of the corresponding probability, else return 0
+            | x .&. mask == mask = (toRational . (^2) . magnitude) y
+            | otherwise = 0 -- This isn't so nice, we're creating useless data
+            where mask = 2^(stateSize qs - ixMeas - 1) :: Int -- Create a mask to recognize correct indicies 
+          prob = sum $ zipWith (curry match) [0..] (toList s) -- Applies match to the list of indices and probabilities, then sums the probabilities
 
 --eliminateImpossibleProbabilities 
 remBadProbs :: Bit -> Ix -> QState -> QState
