@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE        ScopedTypeVariables                   #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE        LiberalTypeSynonyms                   #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE        StandaloneDeriving                    #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE        NoImplicitPrelude                     #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE        FlexibleInstances                     #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE        OverloadedLists                       #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE        ConstraintKinds                       #-}</span><span>
+</span><span id="line-8"></span><span class="hs-pragma">{-# LANGUAGE        BlockArguments                        #-}</span><span>
+</span><span id="line-9"></span><span class="hs-pragma">{-# LANGUAGE        TypeOperators                         #-}</span><span>
+</span><span id="line-10"></span><span class="hs-pragma">{-# LANGUAGE        TypeFamilies                          #-}</span><span>
+</span><span id="line-11"></span><span class="hs-pragma">{-# LANGUAGE        DerivingVia                           #-}</span><span>
+</span><span id="line-12"></span><span class="hs-pragma">{-# LANGUAGE        Rank2Types                            #-}</span><span>
+</span><span id="line-13"></span><span class="hs-pragma">{-# LANGUAGE        PolyKinds                             #-}</span><span>
+</span><span id="line-14"></span><span class="hs-pragma">{-# LANGUAGE        DataKinds                             #-}</span><span>
+</span><span id="line-15"></span><span class="hs-pragma">{-# LANGUAGE        GADTs                                 #-}</span><span>
+</span><span id="line-16"></span><span class="hs-pragma">{-# OPTIONS_GHC     -fplugin GHC.TypeLits.KnownNat.Solver #-}</span><span>
+</span><span id="line-17"></span><span class="hs-pragma">{-# OPTIONS_HADDOCK not-home                              #-}</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="hs-comment">{-|
+Module      : QData
+Description : qfunc datatypes
+Stability   : experimental
+
+The basic language operations.
+-}</span><span>
+</span><span id="line-26"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">QOps</span><span> </span><span>
+</span><span id="line-27"></span><span>        </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Q/Bit conversions</span></span><span>
+</span><span id="line-28"></span><span>          </span><span class="annot"><a href="QOps.html#new"><span class="hs-identifier">new</span></a></span><span>
+</span><span id="line-29"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QOps.html#measure"><span class="hs-identifier">measure</span></a></span><span>
+</span><span id="line-30"></span><span>        </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Numeric.LinearAlgebra.Static</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">V</span></span><span> </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">outer</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Numeric.LinearAlgebra</span></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">flatten</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">outer</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">kronecker</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ident</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">toList</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">asColumn</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">asRow</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">magnitude</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Numeric.LinearAlgebra</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">LA</span></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-operator">(&gt;&lt;)</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">fromList</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.TypeLits</span></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Nat</span></span><span class="hs-special">,</span><span> </span><span class="hs-keyword">type</span><span> </span><span class="annot"><span class="hs-operator">(+)</span></span><span class="hs-special">,</span><span> </span><span class="hs-keyword">type</span><span> </span><span class="annot"><span class="hs-operator">(^)</span></span><span class="hs-special">,</span><span>  </span><span class="annot"><span class="hs-identifier">KnownNat</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">natVal</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Bit</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">B</span></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Bit</span></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Proxy</span></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Proxy</span></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Prelude</span></span><span>
+</span><span id="line-39"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.Random</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Rand</span></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">fromList</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">evalRandIO</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="QData.html"><span class="hs-identifier">QData</span></a></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="QData.html#Bit"><span class="hs-identifier">Bit</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QData.html#QBit"><span class="hs-identifier">QBit</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="hs-comment">-- | Constructs new qubits</span><span>
+</span><span id="line-43"></span><span class="annot"><a href="QOps.html#new"><span class="hs-identifier hs-type">new</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QData.html#Bit"><span class="hs-identifier hs-type">Bit</span></a></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QData.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span>
+</span><span id="line-44"></span><span id="new"><span class="annot"><span class="annottext">new :: Bit 1 -&gt; QBit 1
+</span><a href="QOps.html#new"><span class="hs-identifier hs-var hs-var">new</span></a></span></span><span> </span><span class="hs-number">0</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">QState (2 ^ 1) -&gt; QBit 1
+forall (n :: Nat). QState (2 ^ n) -&gt; QBit n
+</span><a href="QData.html#Q"><span class="hs-identifier hs-var">Q</span></a></span><span> </span><span class="annot"><span class="annottext">(QState (2 ^ 1) -&gt; QBit 1) -&gt; QState (2 ^ 1) -&gt; QBit 1
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[&#8450;] -&gt; QState 2
+forall t s (d :: * -&gt; *). Sized t s d =&gt; [t] -&gt; s
+</span><span class="hs-identifier hs-var">V.fromList</span></span><span> </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span>
+</span><span id="line-45"></span><span>                       </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-special">]</span><span>
+</span><span id="line-46"></span><span>
+</span><span id="line-47"></span><span class="annot"><a href="QOps.html#new"><span class="hs-identifier hs-var">new</span></a></span><span> </span><span class="hs-number">1</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">QState (2 ^ 1) -&gt; QBit 1
+forall (n :: Nat). QState (2 ^ n) -&gt; QBit n
+</span><a href="QData.html#Q"><span class="hs-identifier hs-var">Q</span></a></span><span> </span><span class="annot"><span class="annottext">(QState (2 ^ 1) -&gt; QBit 1) -&gt; QState (2 ^ 1) -&gt; QBit 1
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[&#8450;] -&gt; QState 2
+forall t s (d :: * -&gt; *). Sized t s d =&gt; [t] -&gt; s
+</span><span class="hs-identifier hs-var">V.fromList</span></span><span> </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
+</span><span id="line-48"></span><span>                       </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">]</span><span>
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span class="hs-comment">-- | Collapses a qubit state (of size 1) to a single bit</span><span>
+</span><span id="line-51"></span><span id="local-6989586621679091874"><span class="annot"><a href="QOps.html#measure"><span class="hs-identifier hs-type">measure</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="annot"><a href="#local-6989586621679091874"><span class="hs-identifier hs-type">n</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="QData.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679091874"><span class="hs-identifier hs-type">n</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span></span><span>
+</span><span id="line-52"></span><span id="measure"><span class="annot"><span class="annottext">measure :: QBit n -&gt; IO Int
+</span><a href="QOps.html#measure"><span class="hs-identifier hs-var hs-var">measure</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">QBit n -&gt; IO Int
+forall (n :: Nat). KnownNat n =&gt; QBit n -&gt; IO Int
+</span><a href="QOps.html#measureI"><span class="hs-identifier hs-var">measureI</span></a></span><span>
+</span><span id="line-53"></span><span>
+</span><span id="line-54"></span><span class="hs-comment">-- | Measurement using list operations</span><span>
+</span><span id="line-55"></span><span id="local-6989586621679091926"><span class="annot"><a href="QOps.html#measureI"><span class="hs-identifier hs-type">measureI</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">KnownNat</span></span><span> </span><span class="annot"><a href="#local-6989586621679091926"><span class="hs-identifier hs-type">n</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="QData.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679091926"><span class="hs-identifier hs-type">n</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span></span><span>
+</span><span id="line-56"></span><span id="measureI"><span class="annot"><span class="annottext">measureI :: QBit n -&gt; IO Int
+</span><a href="QOps.html#measureI"><span class="hs-identifier hs-var hs-var">measureI</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Rand StdGen Int -&gt; IO Int
+forall a. Rand StdGen a -&gt; IO a
+</span><span class="hs-identifier hs-var">evalRandIO</span></span><span> </span><span>
+</span><span id="line-57"></span><span>        </span><span class="annot"><span class="annottext">(Rand StdGen Int -&gt; IO Int)
+-&gt; (QBit n -&gt; Rand StdGen Int) -&gt; QBit n -&gt; IO Int
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">[(Int, Rational)] -&gt; Rand StdGen Int
+forall (m :: * -&gt; *) a. MonadRandom m =&gt; [(a, Rational)] -&gt; m a
+</span><span class="hs-identifier hs-var">Rand.fromList</span></span><span> </span><span>
+</span><span id="line-58"></span><span>        </span><span class="annot"><span class="annottext">([(Int, Rational)] -&gt; Rand StdGen Int)
+-&gt; (QBit n -&gt; [(Int, Rational)]) -&gt; QBit n -&gt; Rand StdGen Int
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; [Rational] -&gt; [(Int, Rational)]
+forall a b. [a] -&gt; [b] -&gt; [(a, b)]
+</span><span class="hs-identifier hs-var">zip</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-number">0</span></span><span class="hs-glyph">..</span><span class="hs-special">]</span><span> </span><span>
+</span><span id="line-59"></span><span>        </span><span class="annot"><span class="annottext">([Rational] -&gt; [(Int, Rational)])
+-&gt; (QBit n -&gt; [Rational]) -&gt; QBit n -&gt; [(Int, Rational)]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(&#8450; -&gt; Rational) -&gt; [&#8450;] -&gt; [Rational]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; Rational
+forall a. Real a =&gt; a -&gt; Rational
+</span><span class="hs-identifier hs-var">toRational</span></span><span> </span><span class="annot"><span class="annottext">(Double -&gt; Rational) -&gt; (&#8450; -&gt; Double) -&gt; &#8450; -&gt; Rational
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; Integer -&gt; Double
+forall a b. (Num a, Integral b) =&gt; a -&gt; b -&gt; a
+</span><span class="hs-operator hs-var">^</span></span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Double -&gt; Double) -&gt; (&#8450; -&gt; Double) -&gt; &#8450; -&gt; Double
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">&#8450; -&gt; Double
+forall a. RealFloat a =&gt; Complex a -&gt; a
+</span><span class="hs-identifier hs-var">magnitude</span></span><span class="hs-special">)</span><span> </span><span>
+</span><span id="line-60"></span><span>        </span><span class="annot"><span class="annottext">([&#8450;] -&gt; [Rational]) -&gt; (QBit n -&gt; [&#8450;]) -&gt; QBit n -&gt; [Rational]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Vector &#8450; -&gt; [&#8450;]
+forall a. Storable a =&gt; Vector a -&gt; [a]
+</span><span class="hs-identifier hs-var">toList</span></span><span> </span><span>
+</span><span id="line-61"></span><span>        </span><span class="annot"><span class="annottext">(Vector &#8450; -&gt; [&#8450;]) -&gt; (QBit n -&gt; Vector &#8450;) -&gt; QBit n -&gt; [&#8450;]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">QState (2 ^ n) -&gt; Vector &#8450;
+forall t s (d :: * -&gt; *). Sized t s d =&gt; s -&gt; d t
+</span><span class="hs-identifier hs-var">extract</span></span><span> </span><span>
+</span><span id="line-62"></span><span>        </span><span class="annot"><span class="annottext">(QState (2 ^ n) -&gt; Vector &#8450;)
+-&gt; (QBit n -&gt; QState (2 ^ n)) -&gt; QBit n -&gt; Vector &#8450;
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">QBit n -&gt; QState (2 ^ n)
+forall (n :: Nat). QBit n -&gt; QState (2 ^ n)
+</span><a href="QData.html#getState"><span class="hs-identifier hs-var hs-var">getState</span></a></span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span class="hs-comment">-- | Measurement using list operations</span><span>
+</span><span id="line-65"></span><span class="annot"><a href="QOps.html#measureN"><span class="hs-identifier hs-type">measureN</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QData.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QData.html#Bit"><span class="hs-identifier hs-type">Bit</span></a></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">)</span><span>
+</span><span id="line-66"></span><span id="measureN"><span class="annot"><span class="annottext">measureN :: QBit 1 -&gt; IO (Bit 1)
+</span><a href="QOps.html#measureN"><span class="hs-identifier hs-var hs-var">measureN</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Rand StdGen (Bit 1) -&gt; IO (Bit 1)
+forall a. Rand StdGen a -&gt; IO a
+</span><span class="hs-identifier hs-var">evalRandIO</span></span><span> </span><span>
+</span><span id="line-67"></span><span>        </span><span class="annot"><span class="annottext">(Rand StdGen (Bit 1) -&gt; IO (Bit 1))
+-&gt; (QBit 1 -&gt; Rand StdGen (Bit 1)) -&gt; QBit 1 -&gt; IO (Bit 1)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">[(Bit 1, Rational)] -&gt; Rand StdGen (Bit 1)
+forall (m :: * -&gt; *) a. MonadRandom m =&gt; [(a, Rational)] -&gt; m a
+</span><span class="hs-identifier hs-var">Rand.fromList</span></span><span> </span><span>
+</span><span id="line-68"></span><span>        </span><span class="annot"><span class="annottext">([(Bit 1, Rational)] -&gt; Rand StdGen (Bit 1))
+-&gt; (QBit 1 -&gt; [(Bit 1, Rational)]) -&gt; QBit 1 -&gt; Rand StdGen (Bit 1)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">[Bit 1] -&gt; [Rational] -&gt; [(Bit 1, Rational)]
+forall a b. [a] -&gt; [b] -&gt; [(a, b)]
+</span><span class="hs-identifier hs-var">zip</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-number">0</span></span><span class="hs-special">,</span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">]</span><span> </span><span>
+</span><span id="line-69"></span><span>        </span><span class="annot"><span class="annottext">([Rational] -&gt; [(Bit 1, Rational)])
+-&gt; (QBit 1 -&gt; [Rational]) -&gt; QBit 1 -&gt; [(Bit 1, Rational)]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(&#8450; -&gt; Rational) -&gt; [&#8450;] -&gt; [Rational]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; Rational
+forall a. Real a =&gt; a -&gt; Rational
+</span><span class="hs-identifier hs-var">toRational</span></span><span> </span><span class="annot"><span class="annottext">(Double -&gt; Rational) -&gt; (&#8450; -&gt; Double) -&gt; &#8450; -&gt; Rational
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; Integer -&gt; Double
+forall a b. (Num a, Integral b) =&gt; a -&gt; b -&gt; a
+</span><span class="hs-operator hs-var">^</span></span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Double -&gt; Double) -&gt; (&#8450; -&gt; Double) -&gt; &#8450; -&gt; Double
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">&#8450; -&gt; Double
+forall a. RealFloat a =&gt; Complex a -&gt; a
+</span><span class="hs-identifier hs-var">magnitude</span></span><span class="hs-special">)</span><span> </span><span>
+</span><span id="line-70"></span><span>        </span><span class="annot"><span class="annottext">([&#8450;] -&gt; [Rational]) -&gt; (QBit 1 -&gt; [&#8450;]) -&gt; QBit 1 -&gt; [Rational]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Vector &#8450; -&gt; [&#8450;]
+forall a. Storable a =&gt; Vector a -&gt; [a]
+</span><span class="hs-identifier hs-var">toList</span></span><span> </span><span>
+</span><span id="line-71"></span><span>        </span><span class="annot"><span class="annottext">(Vector &#8450; -&gt; [&#8450;]) -&gt; (QBit 1 -&gt; Vector &#8450;) -&gt; QBit 1 -&gt; [&#8450;]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">QState 2 -&gt; Vector &#8450;
+forall t s (d :: * -&gt; *). Sized t s d =&gt; s -&gt; d t
+</span><span class="hs-identifier hs-var">extract</span></span><span> </span><span>
+</span><span id="line-72"></span><span>        </span><span class="annot"><span class="annottext">(QState 2 -&gt; Vector &#8450;)
+-&gt; (QBit 1 -&gt; QState 2) -&gt; QBit 1 -&gt; Vector &#8450;
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">QBit 1 -&gt; QState 2
+forall (n :: Nat). QBit n -&gt; QState (2 ^ n)
+</span><a href="QData.html#getState"><span class="hs-identifier hs-var hs-var">getState</span></a></span><span>
+</span><span id="line-73"></span><span>
+</span><span id="line-74"></span><span class="hs-comment">-- | Measurement using vector operations</span><span>
+</span><span id="line-75"></span><span class="annot"><a href="QOps.html#measureLA"><span class="hs-identifier hs-type">measureLA</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QData.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QData.html#Bit"><span class="hs-identifier hs-type">Bit</span></a></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">)</span><span>
+</span><span id="line-76"></span><span id="measureLA"><span class="annot"><span class="annottext">measureLA :: QBit 1 -&gt; IO (Bit 1)
+</span><a href="QOps.html#measureLA"><span class="hs-identifier hs-var hs-var">measureLA</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QData.html#Q"><span class="hs-identifier hs-type">Q</span></a></span><span> </span><span id="local-6989586621679091866"><span class="annot"><span class="annottext">q :: QState (2 ^ 1)
+</span><a href="#local-6989586621679091866"><span class="hs-identifier hs-var">q</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Rand StdGen (Bit 1) -&gt; IO (Bit 1)
+forall a. Rand StdGen a -&gt; IO a
+</span><span class="hs-identifier hs-var">evalRandIO</span></span><span> </span><span>
+</span><span id="line-77"></span><span>               </span><span class="annot"><span class="annottext">(Rand StdGen (Bit 1) -&gt; IO (Bit 1))
+-&gt; ([Double] -&gt; Rand StdGen (Bit 1)) -&gt; [Double] -&gt; IO (Bit 1)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">[(Bit 1, Rational)] -&gt; Rand StdGen (Bit 1)
+forall (m :: * -&gt; *) a. MonadRandom m =&gt; [(a, Rational)] -&gt; m a
+</span><span class="hs-identifier hs-var">Rand.fromList</span></span><span> </span><span>
+</span><span id="line-78"></span><span>               </span><span class="annot"><span class="annottext">([(Bit 1, Rational)] -&gt; Rand StdGen (Bit 1))
+-&gt; ([Double] -&gt; [(Bit 1, Rational)])
+-&gt; [Double]
+-&gt; Rand StdGen (Bit 1)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">[Bit 1] -&gt; [Rational] -&gt; [(Bit 1, Rational)]
+forall a b. [a] -&gt; [b] -&gt; [(a, b)]
+</span><span class="hs-identifier hs-var">zip</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-number">0</span></span><span class="hs-special">,</span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">]</span><span> </span><span>
+</span><span id="line-79"></span><span>               </span><span class="annot"><span class="annottext">([Rational] -&gt; [(Bit 1, Rational)])
+-&gt; ([Double] -&gt; [Rational]) -&gt; [Double] -&gt; [(Bit 1, Rational)]
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(Double -&gt; Rational) -&gt; [Double] -&gt; [Rational]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Rational
+forall a. Real a =&gt; a -&gt; Rational
+</span><span class="hs-identifier hs-var">toRational</span></span><span class="hs-special">)</span><span> </span><span>
+</span><span id="line-80"></span><span>               </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Vector &#8450; -&gt; Double
+</span><a href="#local-6989586621679091865"><span class="hs-identifier hs-var">prob</span></a></span><span>  </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[&#8450;] -&gt; Vector &#8450;
+forall a. Storable a =&gt; [a] -&gt; Vector a
+</span><span class="hs-identifier hs-var">LA.fromList</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">,</span><span class="annot"><span class="hs-number">0</span></span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Vector &#8450; -&gt; Double
+</span><a href="#local-6989586621679091865"><span class="hs-identifier hs-var">prob</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[&#8450;] -&gt; Vector &#8450;
+forall a. Storable a =&gt; [a] -&gt; Vector a
+</span><span class="hs-identifier hs-var">LA.fromList</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-number">0</span></span><span class="hs-special">,</span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-81"></span><span>    </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679091864"><span class="annot"><span class="annottext">projOp :: Vector a -&gt; Matrix a
+</span><a href="#local-6989586621679091864"><span class="hs-identifier hs-var hs-var">projOp</span></a></span></span><span> </span><span id="local-6989586621679091863"><span class="annot"><span class="annottext">b :: Vector a
+</span><a href="#local-6989586621679091863"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix a -&gt; Matrix a -&gt; Matrix a
+forall t. Product t =&gt; Matrix t -&gt; Matrix t -&gt; Matrix t
+</span><span class="hs-identifier hs-var">kronecker</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector a -&gt; Matrix a
+forall a. Storable a =&gt; Vector a -&gt; Matrix a
+</span><span class="hs-identifier hs-var">asColumn</span></span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679091863"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector a -&gt; Matrix a
+forall a. Storable a =&gt; Vector a -&gt; Matrix a
+</span><span class="hs-identifier hs-var">asRow</span></span><span> </span><span class="annot"><span class="annottext">Vector a
+</span><a href="#local-6989586621679091863"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-82"></span><span>          </span><span id="local-6989586621679091865"><span class="annot"><span class="annottext">prob :: Vector &#8450; -&gt; Double
+</span><a href="#local-6989586621679091865"><span class="hs-identifier hs-var hs-var">prob</span></a></span></span><span> </span><span id="local-6989586621679091862"><span class="annot"><span class="annottext">b :: Vector &#8450;
+</span><a href="#local-6989586621679091862"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; Integer -&gt; Double
+forall a b. (Num a, Integral b) =&gt; a -&gt; b -&gt; a
+</span><span class="hs-operator hs-var">^</span></span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Double -&gt; Double) -&gt; (Matrix &#8450; -&gt; Double) -&gt; Matrix &#8450; -&gt; Double
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Matrix &#8450; -&gt; Double
+forall a. Normed a =&gt; a -&gt; Double
+</span><span class="hs-identifier hs-var">norm_0</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Matrix &#8450; -&gt; Double) -&gt; Matrix &#8450; -&gt; Double
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Matrix &#8450; -&gt; Matrix &#8450; -&gt; Matrix &#8450;
+forall t. Product t =&gt; Matrix t -&gt; Matrix t -&gt; Matrix t
+</span><span class="hs-identifier hs-var">kronecker</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector &#8450; -&gt; Matrix &#8450;
+forall a. Product a =&gt; Vector a -&gt; Matrix a
+</span><a href="#local-6989586621679091864"><span class="hs-identifier hs-var">projOp</span></a></span><span> </span><span class="annot"><span class="annottext">Vector &#8450;
+</span><a href="#local-6989586621679091862"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector &#8450; -&gt; Matrix &#8450;
+forall a. Storable a =&gt; Vector a -&gt; Matrix a
+</span><span class="hs-identifier hs-var">asColumn</span></span><span> </span><span class="annot"><span class="annottext">(Vector &#8450; -&gt; Matrix &#8450;)
+-&gt; (QState 2 -&gt; Vector &#8450;) -&gt; QState 2 -&gt; Matrix &#8450;
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">QState 2 -&gt; Vector &#8450;
+forall t s (d :: * -&gt; *). Sized t s d =&gt; s -&gt; d t
+</span><span class="hs-identifier hs-var">extract</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">QState 2
+QState (2 ^ 1)
+</span><a href="#local-6989586621679091866"><span class="hs-identifier hs-var">q</span></a></span><span class="hs-special">)</span></pre></body></html>
