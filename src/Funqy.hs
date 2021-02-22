@@ -20,6 +20,7 @@ module Funqy (
     
     -- * Distribution functions
     , dist
+    , ndist
 
     -- * The Quantum Monad
     , module QM
