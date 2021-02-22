@@ -60,6 +60,9 @@ instance Show QState where
 -- pseudo-random number generation
 newtype QM a = QM { runQM :: QState -> IO (a, QState) }
 
+instance Show (QM a) where
+    show _q = "Please use the function 'run' to perform the simulation"
+
 instance Functor QM where
     fmap f m = f <$> m
 
