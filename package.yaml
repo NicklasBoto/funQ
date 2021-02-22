@@ -29,8 +29,6 @@ dependencies:
 - base >= 4.7 && < 5
 - hmatrix
 - bitvec
-- type-natural
-- ghc-typelits-knownnat
 - MonadRandom
 - mtl
 
