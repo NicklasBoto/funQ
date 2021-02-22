@@ -8,3 +8,6 @@
 .log
 .pdf
 .synctex.gz
+
+# Ignore haddock
+docs/
