@@ -30,11 +30,10 @@ module QM (
     , checkState
     , getState
     , stateSize
-    , i
     ) where
 
 import Numeric.LinearAlgebra
-    ( Complex(..), size, toList, C, Vector )
+    ( size, toList, C, Vector )
 import Data.List ( intercalate )
 import qualified Control.Monad.Random as Rand ( fromList, evalRandIO )
 
@@ -64,7 +63,7 @@ instance Show (QM a) where
     show _q = "Please use the function 'run' to perform the simulation"
 
 instance Functor QM where
-    fmap f m = f <$> m
+    fmap f m = m >>= return . f
 
 instance Applicative QM where
     pure a = QM \s -> return (a,s)
@@ -134,7 +133,3 @@ checkState :: QM ()
 checkState = do
     state <- get
     io $ print state
-
--- | The imaginary unit
-i :: Complex Double
-i = 0 :+ 1
