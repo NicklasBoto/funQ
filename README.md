@@ -1,5 +1,5 @@
 # qfunc
 
-Working name: funqy
+Working name: FunQ
 
 ![logo](funqy.png)
