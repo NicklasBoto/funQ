@@ -85,11 +85,11 @@ measure (Ptr ix) = do
 -- ix is index of qubit to measure
 findProb :: Ix -> QState -> (Rational, Rational)
 findProb ixMeas qs@(QState s) = (1 - prob, prob) 
-    where match (x,y) -- Matches indices with bitmask, if index matches then return the squared magnitude of the corresponding probability, else return 0
+    where match x y -- Matches indices with bitmask, if index matches then return the squared magnitude of the corresponding probability, else return 0
             | x .&. mask == mask = (toRational . (^2) . magnitude) y
             | otherwise = 0 -- This isn't so nice, we're creating useless data
             where mask = 2^(stateSize qs - ixMeas - 1) :: Int -- Create a mask to recognize correct indicies 
-          prob = sum $ zipWith (curry match) [0..] (toList s) -- Applies match to the list of indices and probabilities, then sums the probabilities
+          prob = sum $ zipWith match [0..] (toList s) -- Applies match to the list of indices and probabilities, then sums the probabilities
 
 --eliminateImpossibleProbabilities 
 remBadProbs :: Bit -> Ix -> QState -> QState
