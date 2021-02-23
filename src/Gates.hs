@@ -19,9 +19,14 @@ module Gates (
     , identity
 ) where
 
-import QM ( QM, QState(QState), QBit(..), i, getState, put, get)
+import QM ( QM, QState(QState), QBit(..), getState, put, get)
 import Numeric.LinearAlgebra
-    ( (#>), (><), ident, kronecker, Matrix, Linear(scale), C, ident )
+    ( Complex(..), (#>), (><), ident, kronecker, Matrix, Linear(scale), C, ident )
+
+
+-- | The imaginary unit
+i :: Complex Double
+i = 0 :+ 1
 
 applyParallell :: Matrix C -> Matrix C -> Matrix C
 applyParallell = kronecker
