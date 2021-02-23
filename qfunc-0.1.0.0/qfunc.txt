@@ -59,9 +59,6 @@ getState :: QM (QState, Int)
 
 -- | Given a QState, returns how many qbits it consists of.
 stateSize :: QState -> Ix
-
--- | The imaginary unit
-i :: Complex Double
 instance GHC.Show.Show QM.QBit
 instance GHC.Show.Show (QM.QM a)
 instance GHC.Base.Functor QM.QM
