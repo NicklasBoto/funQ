@@ -13,6 +13,7 @@ module QM (
     -- * The Quantum Monad
       QM
     , run
+    , runDebug
     , eval
     , put
     , get
@@ -110,6 +111,13 @@ eval qm = runQM qm (QState [])
 run :: QM a -> IO a
 run qm = fst <$> eval qm
 {-# INLINE run #-}
+
+-- | Run quantum program, prints the final quantum state and returns the result
+runDebug :: QM a -> IO a
+runDebug qm = do
+    (a, s) <- eval qm
+    print s
+    return a
 
 -- | Given a QState, returns how many qbits it consists of.
 stateSize :: QState -> Ix
