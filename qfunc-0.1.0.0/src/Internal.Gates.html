@@ -31,10 +31,10 @@ forall t. Product t =&gt; Matrix t -&gt; Matrix t -&gt; Matrix t
 </span><span id="line-23"></span><span class="hs-comment">-- | Apply gate to the current quantum state</span><span>
 </span><span id="line-24"></span><span class="annot"><a href="Internal.Gates.html#applyGate"><span class="hs-identifier hs-type">applyGate</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Matrix</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">C</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-25"></span><span id="applyGate"><span class="annot"><span class="annottext">applyGate :: Matrix (Complex Double) -&gt; QM ()
-</span><a href="Internal.Gates.html#applyGate"><span class="hs-identifier hs-var hs-var">applyGate</span></a></span></span><span> </span><span id="local-6989586621679091616"><span class="annot"><span class="annottext">g :: Matrix (Complex Double)
-</span><a href="#local-6989586621679091616"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-26"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span id="local-6989586621679091615"><span class="annot"><span class="annottext">v :: Vector (Complex Double)
-</span><a href="#local-6989586621679091615"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QM QState
+</span><a href="Internal.Gates.html#applyGate"><span class="hs-identifier hs-var hs-var">applyGate</span></a></span></span><span> </span><span id="local-6989586621679091639"><span class="annot"><span class="annottext">g :: Matrix (Complex Double)
+</span><a href="#local-6989586621679091639"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span id="local-6989586621679091638"><span class="annot"><span class="annottext">v :: Vector (Complex Double)
+</span><a href="#local-6989586621679091638"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QM QState
 </span><a href="QM.html#get"><span class="hs-identifier hs-var">get</span></a></span><span>
 </span><span id="line-27"></span><span>    </span><span class="annot"><span class="annottext">QState -&gt; QM ()
 </span><a href="QM.html#put"><span class="hs-identifier hs-var">put</span></a></span><span> </span><span class="annot"><span class="annottext">(QState -&gt; QM ()) -&gt; QState -&gt; QM ()
@@ -44,84 +44,84 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 -&gt; Vector (Complex Double) -&gt; QState
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
-</span><a href="#local-6989586621679091616"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
+</span><a href="#local-6989586621679091639"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
 -&gt; Vector (Complex Double) -&gt; Vector (Complex Double)
 forall t. Numeric t =&gt; Matrix t -&gt; Vector t -&gt; Vector t
 </span><span class="hs-operator hs-var">#&gt;</span></span><span> </span><span class="annot"><span class="annottext">Vector (Complex Double)
-</span><a href="#local-6989586621679091615"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><a href="#local-6989586621679091638"><span class="hs-identifier hs-var">v</span></a></span><span>
 </span><span id="line-28"></span><span>
 </span><span id="line-29"></span><span class="hs-comment">-- | Insert an element at a specific index in a list.</span><span>
-</span><span id="line-30"></span><span id="local-6989586621679091639"><span class="annot"><a href="Internal.Gates.html#insertAt"><span class="hs-identifier hs-type">insertAt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679091639"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679091639"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679091639"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span></span><span>
+</span><span id="line-30"></span><span id="local-6989586621679091662"><span class="annot"><a href="Internal.Gates.html#insertAt"><span class="hs-identifier hs-type">insertAt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679091662"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679091662"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679091662"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span></span><span>
 </span><span id="line-31"></span><span id="insertAt"><span class="annot"><span class="annottext">insertAt :: a -&gt; Int -&gt; [a] -&gt; [a]
-</span><a href="Internal.Gates.html#insertAt"><span class="hs-identifier hs-var hs-var">insertAt</span></a></span></span><span> </span><span id="local-6989586621679091613"><span class="annot"><span class="annottext">x :: a
-</span><a href="#local-6989586621679091613"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span id="local-6989586621679091612"><span class="annot"><span class="annottext">index :: Int
-</span><a href="#local-6989586621679091612"><span class="hs-identifier hs-var">index</span></a></span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679091613"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">]</span><span>
-</span><span id="line-32"></span><span class="annot"><a href="Internal.Gates.html#insertAt"><span class="hs-identifier hs-var">insertAt</span></a></span><span> </span><span id="local-6989586621679091611"><span class="annot"><span class="annottext">x :: a
-</span><a href="#local-6989586621679091611"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span id="local-6989586621679091610"><span class="annot"><span class="annottext">index :: Int
-</span><a href="#local-6989586621679091610"><span class="hs-identifier hs-var">index</span></a></span></span><span> </span><span id="local-6989586621679091609"><span class="annot"><span class="annottext">xs :: [a]
-</span><a href="#local-6989586621679091609"><span class="hs-identifier hs-var">xs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[a]
-</span><a href="#local-6989586621679091608"><span class="hs-identifier hs-var">l</span></a></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a] -&gt; [a]
+</span><a href="Internal.Gates.html#insertAt"><span class="hs-identifier hs-var hs-var">insertAt</span></a></span></span><span> </span><span id="local-6989586621679091636"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679091636"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span id="local-6989586621679091635"><span class="annot"><span class="annottext">index :: Int
+</span><a href="#local-6989586621679091635"><span class="hs-identifier hs-var">index</span></a></span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679091636"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-32"></span><span class="annot"><a href="Internal.Gates.html#insertAt"><span class="hs-identifier hs-var">insertAt</span></a></span><span> </span><span id="local-6989586621679091634"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679091634"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span id="local-6989586621679091633"><span class="annot"><span class="annottext">index :: Int
+</span><a href="#local-6989586621679091633"><span class="hs-identifier hs-var">index</span></a></span></span><span> </span><span id="local-6989586621679091632"><span class="annot"><span class="annottext">xs :: [a]
+</span><a href="#local-6989586621679091632"><span class="hs-identifier hs-var">xs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679091631"><span class="hs-identifier hs-var">l</span></a></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a] -&gt; [a]
 forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-operator hs-var">++</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679091611"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a] -&gt; [a]
+</span><a href="#local-6989586621679091634"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a] -&gt; [a]
 forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">[a]
-</span><a href="#local-6989586621679091607"><span class="hs-identifier hs-var">r</span></a></span><span>
-</span><span id="line-33"></span><span>    </span><span class="hs-keyword">where</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679091608"><span class="annot"><span class="annottext">l :: [a]
-</span><a href="#local-6989586621679091608"><span class="hs-identifier hs-var">l</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679091607"><span class="annot"><span class="annottext">r :: [a]
-</span><a href="#local-6989586621679091607"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [a] -&gt; ([a], [a])
+</span><a href="#local-6989586621679091630"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><span id="line-33"></span><span>    </span><span class="hs-keyword">where</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679091631"><span class="annot"><span class="annottext">l :: [a]
+</span><a href="#local-6989586621679091631"><span class="hs-identifier hs-var">l</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679091630"><span class="annot"><span class="annottext">r :: [a]
+</span><a href="#local-6989586621679091630"><span class="hs-identifier hs-var">r</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [a] -&gt; ([a], [a])
 forall a. Int -&gt; [a] -&gt; ([a], [a])
 </span><span class="hs-identifier hs-var">splitAt</span></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679091610"><span class="hs-identifier hs-var">index</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
-</span><a href="#local-6989586621679091609"><span class="hs-identifier hs-var">xs</span></a></span><span>
+</span><a href="#local-6989586621679091633"><span class="hs-identifier hs-var">index</span></a></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679091632"><span class="hs-identifier hs-var">xs</span></a></span><span>
 </span><span id="line-34"></span><span>
 </span><span id="line-35"></span><span class="hs-comment">-- | Apply a 2x2 gate, to a specific qubit.</span><span>
 </span><span id="line-36"></span><span class="hs-comment">--</span><span>
 </span><span id="line-37"></span><span class="hs-comment">-- It will update the qstate. </span><span>
 </span><span id="line-38"></span><span class="annot"><a href="Internal.Gates.html#runGate"><span class="hs-identifier hs-type">runGate</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Matrix</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">C</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-39"></span><span id="runGate"><span class="annot"><span class="annottext">runGate :: Matrix (Complex Double) -&gt; QBit -&gt; QM QBit
-</span><a href="Internal.Gates.html#runGate"><span class="hs-identifier hs-var hs-var">runGate</span></a></span></span><span> </span><span id="local-6989586621679091604"><span class="annot"><span class="annottext">g :: Matrix (Complex Double)
-</span><a href="#local-6989586621679091604"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span id="local-6989586621679091603"><span class="annot"><span class="annottext">x :: QBit
-</span><a href="#local-6989586621679091603"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-40"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679091602"><span class="annot"><span class="annottext">state :: QState
-</span><a href="#local-6989586621679091602"><span class="hs-identifier hs-var">state</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679091601"><span class="annot"><span class="annottext">size :: Int
-</span><a href="#local-6989586621679091601"><span class="hs-identifier hs-var">size</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QM (QState, Int)
+</span><a href="Internal.Gates.html#runGate"><span class="hs-identifier hs-var hs-var">runGate</span></a></span></span><span> </span><span id="local-6989586621679091627"><span class="annot"><span class="annottext">g :: Matrix (Complex Double)
+</span><a href="#local-6989586621679091627"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span id="local-6989586621679091626"><span class="annot"><span class="annottext">x :: QBit
+</span><a href="#local-6989586621679091626"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-40"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679091625"><span class="annot"><span class="annottext">state :: QState
+</span><a href="#local-6989586621679091625"><span class="hs-identifier hs-var">state</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679091624"><span class="annot"><span class="annottext">size :: Int
+</span><a href="#local-6989586621679091624"><span class="hs-identifier hs-var">size</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QM (QState, Int)
 </span><a href="QM.html#getState"><span class="hs-identifier hs-var">getState</span></a></span><span>
-</span><span id="line-41"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679091600"><span class="annot"><span class="annottext">ids :: [Matrix (Complex Double)]
-</span><a href="#local-6989586621679091600"><span class="hs-identifier hs-var hs-var">ids</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Matrix (Complex Double) -&gt; [Matrix (Complex Double)]
+</span><span id="line-41"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679091623"><span class="annot"><span class="annottext">ids :: [Matrix (Complex Double)]
+</span><a href="#local-6989586621679091623"><span class="hs-identifier hs-var hs-var">ids</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Matrix (Complex Double) -&gt; [Matrix (Complex Double)]
 forall a. Int -&gt; a -&gt; [a]
 </span><span class="hs-identifier hs-var">replicate</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679091601"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+</span><a href="#local-6989586621679091624"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Matrix (Complex Double)
 forall a. (Num a, Element a) =&gt; Int -&gt; Matrix a
 </span><span class="hs-identifier hs-var">ident</span></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">)</span><span>
-</span><span id="line-42"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679091598"><span class="annot"><span class="annottext">list :: [Matrix (Complex Double)]
-</span><a href="#local-6989586621679091598"><span class="hs-identifier hs-var hs-var">list</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
+</span><span id="line-42"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679091621"><span class="annot"><span class="annottext">list :: [Matrix (Complex Double)]
+</span><a href="#local-6989586621679091621"><span class="hs-identifier hs-var hs-var">list</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
 -&gt; Int -&gt; [Matrix (Complex Double)] -&gt; [Matrix (Complex Double)]
 forall a. a -&gt; Int -&gt; [a] -&gt; [a]
 </span><a href="Internal.Gates.html#insertAt"><span class="hs-identifier hs-var">insertAt</span></a></span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
-</span><a href="#local-6989586621679091604"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit -&gt; Int
+</span><a href="#local-6989586621679091627"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit -&gt; Int
 </span><a href="QM.html#link"><span class="hs-identifier hs-var hs-var">link</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679091603"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Matrix (Complex Double)]
-</span><a href="#local-6989586621679091600"><span class="hs-identifier hs-var">ids</span></a></span><span>
-</span><span id="line-43"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679091596"><span class="annot"><span class="annottext">m :: Matrix (Complex Double)
-</span><a href="#local-6989586621679091596"><span class="hs-identifier hs-var hs-var">m</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Matrix (Complex Double)
+</span><a href="#local-6989586621679091626"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Matrix (Complex Double)]
+</span><a href="#local-6989586621679091623"><span class="hs-identifier hs-var">ids</span></a></span><span>
+</span><span id="line-43"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679091619"><span class="annot"><span class="annottext">m :: Matrix (Complex Double)
+</span><a href="#local-6989586621679091619"><span class="hs-identifier hs-var hs-var">m</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Matrix (Complex Double)
  -&gt; Matrix (Complex Double) -&gt; Matrix (Complex Double))
 -&gt; [Matrix (Complex Double)] -&gt; Matrix (Complex Double)
 forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; a -&gt; a) -&gt; t a -&gt; a
 </span><span class="hs-identifier hs-var">foldr1</span></span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
 -&gt; Matrix (Complex Double) -&gt; Matrix (Complex Double)
 </span><a href="Internal.Gates.html#applyParallel"><span class="hs-identifier hs-var">applyParallel</span></a></span><span> </span><span class="annot"><span class="annottext">[Matrix (Complex Double)]
-</span><a href="#local-6989586621679091598"><span class="hs-identifier hs-var">list</span></a></span><span>
+</span><a href="#local-6989586621679091621"><span class="hs-identifier hs-var">list</span></a></span><span>
 </span><span id="line-44"></span><span>    </span><span class="annot"><span class="annottext">Matrix (Complex Double) -&gt; QM ()
 </span><a href="Internal.Gates.html#applyGate"><span class="hs-identifier hs-var">applyGate</span></a></span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
-</span><a href="#local-6989586621679091596"><span class="hs-identifier hs-var">m</span></a></span><span>
+</span><a href="#local-6989586621679091619"><span class="hs-identifier hs-var">m</span></a></span><span>
 </span><span id="line-45"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679091603"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><a href="#local-6989586621679091626"><span class="hs-identifier hs-var">x</span></a></span><span>
 </span><span id="line-46"></span><span>
 </span><span id="line-47"></span><span class="hs-comment">-- run specified gates in parallel</span><span>
 </span><span id="line-48"></span><span class="hs-comment">-- TODO</span><span>
@@ -156,74 +156,74 @@ forall a. Storable a =&gt; Int -&gt; Int -&gt; [a] -&gt; Matrix a
 -&gt; QBit
 -&gt; Matrix (Complex Double)
 -&gt; Matrix (Complex Double)
-</span><a href="Internal.Gates.html#controlMatrix"><span class="hs-identifier hs-var hs-var">controlMatrix</span></a></span></span><span> </span><span id="local-6989586621679091589"><span class="annot"><span class="annottext">size :: Int
-</span><a href="#local-6989586621679091589"><span class="hs-identifier hs-var">size</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#Ptr"><span class="hs-identifier hs-type">Ptr</span></a></span><span> </span><span id="local-6989586621679091587"><span class="annot"><span class="annottext">c :: Int
-</span><a href="#local-6989586621679091587"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#Ptr"><span class="hs-identifier hs-type">Ptr</span></a></span><span> </span><span id="local-6989586621679091586"><span class="annot"><span class="annottext">t :: Int
-</span><a href="#local-6989586621679091586"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679091585"><span class="annot"><span class="annottext">g :: Matrix (Complex Double)
-</span><a href="#local-6989586621679091585"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
-</span><a href="#local-6989586621679091584"><span class="hs-identifier hs-var">fl</span></a></span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
+</span><a href="Internal.Gates.html#controlMatrix"><span class="hs-identifier hs-var hs-var">controlMatrix</span></a></span></span><span> </span><span id="local-6989586621679091612"><span class="annot"><span class="annottext">size :: Int
+</span><a href="#local-6989586621679091612"><span class="hs-identifier hs-var">size</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#Ptr"><span class="hs-identifier hs-type">Ptr</span></a></span><span> </span><span id="local-6989586621679091610"><span class="annot"><span class="annottext">c :: Int
+</span><a href="#local-6989586621679091610"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#Ptr"><span class="hs-identifier hs-type">Ptr</span></a></span><span> </span><span id="local-6989586621679091609"><span class="annot"><span class="annottext">t :: Int
+</span><a href="#local-6989586621679091609"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679091608"><span class="annot"><span class="annottext">g :: Matrix (Complex Double)
+</span><a href="#local-6989586621679091608"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
+</span><a href="#local-6989586621679091607"><span class="hs-identifier hs-var">fl</span></a></span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
 -&gt; Matrix (Complex Double) -&gt; Matrix (Complex Double)
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
-</span><a href="#local-6989586621679091582"><span class="hs-identifier hs-var">fr</span></a></span><span>
-</span><span id="line-67"></span><span>  </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679091581"><span class="annot"><span class="annottext">idsl :: [Matrix (Complex Double)]
-</span><a href="#local-6989586621679091581"><span class="hs-identifier hs-var hs-var">idsl</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Matrix (Complex Double) -&gt; [Matrix (Complex Double)]
+</span><a href="#local-6989586621679091605"><span class="hs-identifier hs-var">fr</span></a></span><span>
+</span><span id="line-67"></span><span>  </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679091604"><span class="annot"><span class="annottext">idsl :: [Matrix (Complex Double)]
+</span><a href="#local-6989586621679091604"><span class="hs-identifier hs-var hs-var">idsl</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Matrix (Complex Double) -&gt; [Matrix (Complex Double)]
 forall a. Int -&gt; a -&gt; [a]
 </span><span class="hs-identifier hs-var">replicate</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679091589"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+</span><a href="#local-6989586621679091612"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Matrix (Complex Double)
 forall a. (Num a, Element a) =&gt; Int -&gt; Matrix a
 </span><span class="hs-identifier hs-var">ident</span></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">)</span><span>
-</span><span id="line-68"></span><span>        </span><span id="local-6989586621679091580"><span class="annot"><span class="annottext">idsr :: [Matrix (Complex Double)]
-</span><a href="#local-6989586621679091580"><span class="hs-identifier hs-var hs-var">idsr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Matrix (Complex Double) -&gt; [Matrix (Complex Double)]
+</span><span id="line-68"></span><span>        </span><span id="local-6989586621679091603"><span class="annot"><span class="annottext">idsr :: [Matrix (Complex Double)]
+</span><a href="#local-6989586621679091603"><span class="hs-identifier hs-var hs-var">idsr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Matrix (Complex Double) -&gt; [Matrix (Complex Double)]
 forall a. Int -&gt; a -&gt; [a]
 </span><span class="hs-identifier hs-var">replicate</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679091589"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+</span><a href="#local-6989586621679091612"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Matrix (Complex Double)
 forall a. (Num a, Element a) =&gt; Int -&gt; Matrix a
 </span><span class="hs-identifier hs-var">ident</span></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">)</span><span>
-</span><span id="line-69"></span><span>        </span><span id="local-6989586621679091579"><span class="annot"><span class="annottext">l :: [Matrix (Complex Double)]
-</span><a href="#local-6989586621679091579"><span class="hs-identifier hs-var hs-var">l</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
+</span><span id="line-69"></span><span>        </span><span id="local-6989586621679091602"><span class="annot"><span class="annottext">l :: [Matrix (Complex Double)]
+</span><a href="#local-6989586621679091602"><span class="hs-identifier hs-var hs-var">l</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
 -&gt; Int -&gt; [Matrix (Complex Double)] -&gt; [Matrix (Complex Double)]
 forall a. a -&gt; Int -&gt; [a] -&gt; [a]
 </span><a href="Internal.Gates.html#insertAt"><span class="hs-identifier hs-var">insertAt</span></a></span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
 </span><a href="Internal.Gates.html#proj0"><span class="hs-identifier hs-var">proj0</span></a></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679091587"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">[Matrix (Complex Double)]
-</span><a href="#local-6989586621679091581"><span class="hs-identifier hs-var">idsl</span></a></span><span>
-</span><span id="line-70"></span><span>        </span><span id="local-6989586621679091578"><span class="annot"><span class="annottext">rc :: [Matrix (Complex Double)]
-</span><a href="#local-6989586621679091578"><span class="hs-identifier hs-var hs-var">rc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
+</span><a href="#local-6989586621679091610"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">[Matrix (Complex Double)]
+</span><a href="#local-6989586621679091604"><span class="hs-identifier hs-var">idsl</span></a></span><span>
+</span><span id="line-70"></span><span>        </span><span id="local-6989586621679091601"><span class="annot"><span class="annottext">rc :: [Matrix (Complex Double)]
+</span><a href="#local-6989586621679091601"><span class="hs-identifier hs-var hs-var">rc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
 -&gt; Int -&gt; [Matrix (Complex Double)] -&gt; [Matrix (Complex Double)]
 forall a. a -&gt; Int -&gt; [a] -&gt; [a]
 </span><a href="Internal.Gates.html#insertAt"><span class="hs-identifier hs-var">insertAt</span></a></span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
 </span><a href="Internal.Gates.html#proj1"><span class="hs-identifier hs-var">proj1</span></a></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679091587"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">[Matrix (Complex Double)]
-</span><a href="#local-6989586621679091580"><span class="hs-identifier hs-var">idsr</span></a></span><span>
-</span><span id="line-71"></span><span>        </span><span id="local-6989586621679091577"><span class="annot"><span class="annottext">r :: [Matrix (Complex Double)]
-</span><a href="#local-6989586621679091577"><span class="hs-identifier hs-var hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
+</span><a href="#local-6989586621679091610"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">[Matrix (Complex Double)]
+</span><a href="#local-6989586621679091603"><span class="hs-identifier hs-var">idsr</span></a></span><span>
+</span><span id="line-71"></span><span>        </span><span id="local-6989586621679091600"><span class="annot"><span class="annottext">r :: [Matrix (Complex Double)]
+</span><a href="#local-6989586621679091600"><span class="hs-identifier hs-var hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
 -&gt; Int -&gt; [Matrix (Complex Double)] -&gt; [Matrix (Complex Double)]
 forall a. a -&gt; Int -&gt; [a] -&gt; [a]
 </span><a href="Internal.Gates.html#insertAt"><span class="hs-identifier hs-var">insertAt</span></a></span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
-</span><a href="#local-6989586621679091585"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679091586"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">[Matrix (Complex Double)]
-</span><a href="#local-6989586621679091578"><span class="hs-identifier hs-var">rc</span></a></span><span>
-</span><span id="line-72"></span><span>        </span><span id="local-6989586621679091584"><span class="annot"><span class="annottext">fl :: Matrix (Complex Double)
-</span><a href="#local-6989586621679091584"><span class="hs-identifier hs-var hs-var">fl</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Matrix (Complex Double)
+</span><a href="#local-6989586621679091608"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679091609"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">[Matrix (Complex Double)]
+</span><a href="#local-6989586621679091601"><span class="hs-identifier hs-var">rc</span></a></span><span>
+</span><span id="line-72"></span><span>        </span><span id="local-6989586621679091607"><span class="annot"><span class="annottext">fl :: Matrix (Complex Double)
+</span><a href="#local-6989586621679091607"><span class="hs-identifier hs-var hs-var">fl</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Matrix (Complex Double)
  -&gt; Matrix (Complex Double) -&gt; Matrix (Complex Double))
 -&gt; [Matrix (Complex Double)] -&gt; Matrix (Complex Double)
 forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; a -&gt; a) -&gt; t a -&gt; a
 </span><span class="hs-identifier hs-var">foldr1</span></span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
 -&gt; Matrix (Complex Double) -&gt; Matrix (Complex Double)
 </span><a href="Internal.Gates.html#applyParallel"><span class="hs-identifier hs-var">applyParallel</span></a></span><span> </span><span class="annot"><span class="annottext">[Matrix (Complex Double)]
-</span><a href="#local-6989586621679091579"><span class="hs-identifier hs-var">l</span></a></span><span>
-</span><span id="line-73"></span><span>        </span><span id="local-6989586621679091582"><span class="annot"><span class="annottext">fr :: Matrix (Complex Double)
-</span><a href="#local-6989586621679091582"><span class="hs-identifier hs-var hs-var">fr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Matrix (Complex Double)
+</span><a href="#local-6989586621679091602"><span class="hs-identifier hs-var">l</span></a></span><span>
+</span><span id="line-73"></span><span>        </span><span id="local-6989586621679091605"><span class="annot"><span class="annottext">fr :: Matrix (Complex Double)
+</span><a href="#local-6989586621679091605"><span class="hs-identifier hs-var hs-var">fr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Matrix (Complex Double)
  -&gt; Matrix (Complex Double) -&gt; Matrix (Complex Double))
 -&gt; [Matrix (Complex Double)] -&gt; Matrix (Complex Double)
 forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; a -&gt; a) -&gt; t a -&gt; a
 </span><span class="hs-identifier hs-var">foldr1</span></span><span> </span><span class="annot"><span class="annottext">Matrix (Complex Double)
 -&gt; Matrix (Complex Double) -&gt; Matrix (Complex Double)
 </span><a href="Internal.Gates.html#applyParallel"><span class="hs-identifier hs-var">applyParallel</span></a></span><span> </span><span class="annot"><span class="annottext">[Matrix (Complex Double)]
-</span><a href="#local-6989586621679091577"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><a href="#local-6989586621679091600"><span class="hs-identifier hs-var">r</span></a></span><span>
 </span><span id="line-74"></span></pre></body></html>

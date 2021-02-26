@@ -164,6 +164,12 @@ cnot :: (QBit, QBit) -> QM (QBit, QBit)
 --   &lt;math&gt;
 identity :: QBit -> QM QBit
 
+-- | SWAP gate
+--   
+--   &lt;math&gt;
+--   
+swap :: (QBit, QBit) -> QM (QBit, QBit)
+
 
 -- | The core language operations.
 module Core
@@ -269,6 +275,12 @@ cnot :: (QBit, QBit) -> QM (QBit, QBit)
 --   
 --   &lt;math&gt;
 identity :: QBit -> QM QBit
+
+-- | SWAP gate
+--   
+--   &lt;math&gt;
+--   
+swap :: (QBit, QBit) -> QM (QBit, QBit)
 
 -- | Run quantum program, discarding it's final state
 run :: QM a -> IO a

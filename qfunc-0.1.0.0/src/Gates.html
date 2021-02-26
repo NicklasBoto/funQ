@@ -17,122 +17,123 @@ Module containing unitary gates and their matrix representations.
 </span><span id="line-17"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Gates.html#phasePi8"><span class="hs-identifier">phasePi8</span></a></span><span>
 </span><span id="line-18"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Gates.html#cnot"><span class="hs-identifier">cnot</span></a></span><span>
 </span><span id="line-19"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Gates.html#identity"><span class="hs-identifier">identity</span></a></span><span>
-</span><span id="line-20"></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-21"></span><span>
-</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Internal.Gates.html"><span class="hs-identifier">Internal.Gates</span></a></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Internal.Gates.html#i"><span class="hs-identifier">i</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Internal.Gates.html#applyGate"><span class="hs-identifier">applyGate</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Internal.Gates.html#runGate"><span class="hs-identifier">runGate</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Internal.Gates.html#controlMatrix"><span class="hs-identifier">controlMatrix</span></a></span><span> </span><span class="hs-special">)</span><span>
-</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="QM.html"><span class="hs-identifier">QM</span></a></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier">QM</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier">QState</span></a></span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier">QState</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier">QBit</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#getState"><span class="hs-identifier">getState</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#put"><span class="hs-identifier">put</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#get"><span class="hs-identifier">get</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Numeric.LinearAlgebra</span></span><span>
-</span><span id="line-25"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Complex</span></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-operator">(#&gt;)</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-operator">(&gt;&lt;)</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ident</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">kronecker</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Matrix</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Linear</span></span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">scale</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">C</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ident</span></span><span> </span><span class="hs-special">)</span><span>
-</span><span id="line-26"></span><span>
+</span><span id="line-20"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Gates.html#swap"><span class="hs-identifier">swap</span></a></span><span>
+</span><span id="line-21"></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Internal.Gates.html"><span class="hs-identifier">Internal.Gates</span></a></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Internal.Gates.html#i"><span class="hs-identifier">i</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Internal.Gates.html#applyGate"><span class="hs-identifier">applyGate</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Internal.Gates.html#runGate"><span class="hs-identifier">runGate</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Internal.Gates.html#controlMatrix"><span class="hs-identifier">controlMatrix</span></a></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="QM.html"><span class="hs-identifier">QM</span></a></span><span> </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier">QM</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier">QState</span></a></span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier">QState</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier">QBit</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#getState"><span class="hs-identifier">getState</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#put"><span class="hs-identifier">put</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#get"><span class="hs-identifier">get</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Numeric.LinearAlgebra</span></span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-identifier">Complex</span></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-operator">(#&gt;)</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-operator">(&gt;&lt;)</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ident</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">kronecker</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Matrix</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Linear</span></span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">scale</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">C</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ident</span></span><span> </span><span class="hs-special">)</span><span>
 </span><span id="line-27"></span><span>
-</span><span id="line-28"></span><span class="hs-comment">-- | CNOT gate</span><span>
-</span><span id="line-29"></span><span class="hs-comment">-- </span><span>
-</span><span id="line-30"></span><span class="hs-comment">-- \[ \text{CNOT} = \begin{bmatrix} </span><span>
-</span><span id="line-31"></span><span class="hs-comment">--    1 &amp; 0 &amp; 0 &amp; 0 \\</span><span>
-</span><span id="line-32"></span><span class="hs-comment">--    0 &amp; 1 &amp; 0 &amp; 0 \\</span><span>
-</span><span id="line-33"></span><span class="hs-comment">--    0 &amp; 0 &amp; 0 &amp; 1 \\ </span><span>
-</span><span id="line-34"></span><span class="hs-comment">--    0 &amp; 0 &amp; 1 &amp; 0 </span><span>
-</span><span id="line-35"></span><span class="hs-comment">--  \end{bmatrix}</span><span>
-</span><span id="line-36"></span><span class="hs-comment">-- \]</span><span>
-</span><span id="line-37"></span><span class="hs-comment">-- </span><span>
-</span><span id="line-38"></span><span class="hs-comment">-- ![cnot](images/cnot.PNG)</span><span>
-</span><span id="line-39"></span><span class="annot"><a href="Gates.html#cnot"><span class="hs-identifier hs-type">cnot</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-40"></span><span id="cnot"><span class="annot"><span class="annottext">cnot :: (QBit, QBit) -&gt; QM (QBit, QBit)
-</span><a href="Gates.html#cnot"><span class="hs-identifier hs-var hs-var">cnot</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679091758"><span class="annot"><span class="annottext">c :: QBit
-</span><a href="#local-6989586621679091758"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679091757"><span class="annot"><span class="annottext">t :: QBit
-</span><a href="#local-6989586621679091757"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-41"></span><span>  </span><span class="hs-special">(</span><span class="hs-identifier">_</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679091756"><span class="annot"><span class="annottext">size :: Int
-</span><a href="#local-6989586621679091756"><span class="hs-identifier hs-var">size</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QM (QState, Int)
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="hs-comment">-- | CNOT gate</span><span>
+</span><span id="line-30"></span><span class="hs-comment">-- </span><span>
+</span><span id="line-31"></span><span class="hs-comment">-- \[ \text{CNOT} = \begin{bmatrix} </span><span>
+</span><span id="line-32"></span><span class="hs-comment">--    1 &amp; 0 &amp; 0 &amp; 0 \\</span><span>
+</span><span id="line-33"></span><span class="hs-comment">--    0 &amp; 1 &amp; 0 &amp; 0 \\</span><span>
+</span><span id="line-34"></span><span class="hs-comment">--    0 &amp; 0 &amp; 0 &amp; 1 \\ </span><span>
+</span><span id="line-35"></span><span class="hs-comment">--    0 &amp; 0 &amp; 1 &amp; 0 </span><span>
+</span><span id="line-36"></span><span class="hs-comment">--  \end{bmatrix}</span><span>
+</span><span id="line-37"></span><span class="hs-comment">-- \]</span><span>
+</span><span id="line-38"></span><span class="hs-comment">-- </span><span>
+</span><span id="line-39"></span><span class="hs-comment">-- ![cnot](images/cnot.PNG)</span><span>
+</span><span id="line-40"></span><span class="annot"><a href="Gates.html#cnot"><span class="hs-identifier hs-type">cnot</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span id="cnot"><span class="annot"><span class="annottext">cnot :: (QBit, QBit) -&gt; QM (QBit, QBit)
+</span><a href="Gates.html#cnot"><span class="hs-identifier hs-var hs-var">cnot</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679091783"><span class="annot"><span class="annottext">c :: QBit
+</span><a href="#local-6989586621679091783"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679091782"><span class="annot"><span class="annottext">t :: QBit
+</span><a href="#local-6989586621679091782"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-special">(</span><span class="hs-identifier">_</span><span class="hs-special">,</span><span> </span><span id="local-6989586621679091781"><span class="annot"><span class="annottext">size :: Int
+</span><a href="#local-6989586621679091781"><span class="hs-identifier hs-var">size</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QM (QState, Int)
 </span><a href="QM.html#getState"><span class="hs-identifier hs-var">getState</span></a></span><span>
-</span><span id="line-42"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679091755"><span class="annot"><span class="annottext">matrixX :: Matrix C
-</span><a href="#local-6989586621679091755"><span class="hs-identifier hs-var hs-var">matrixX</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-number">2</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; [C] -&gt; Matrix C
+</span><span id="line-43"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679091780"><span class="annot"><span class="annottext">matrixX :: Matrix C
+</span><a href="#local-6989586621679091780"><span class="hs-identifier hs-var hs-var">matrixX</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-number">2</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; [C] -&gt; Matrix C
 forall a. Storable a =&gt; Int -&gt; Int -&gt; [a] -&gt; Matrix a
 </span><span class="hs-operator hs-var">&gt;&lt;</span></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-special">]</span><span>
-</span><span id="line-43"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679091754"><span class="annot"><span class="annottext">g :: Matrix C
-</span><a href="#local-6989586621679091754"><span class="hs-identifier hs-var hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; QBit -&gt; QBit -&gt; Matrix C -&gt; Matrix C
+</span><span id="line-44"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679091779"><span class="annot"><span class="annottext">g :: Matrix C
+</span><a href="#local-6989586621679091779"><span class="hs-identifier hs-var hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; QBit -&gt; QBit -&gt; Matrix C -&gt; Matrix C
 </span><a href="Internal.Gates.html#controlMatrix"><span class="hs-identifier hs-var">controlMatrix</span></a></span><span> </span><span class="annot"><span class="annottext">Int
-</span><a href="#local-6989586621679091756"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679091758"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679091757"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">Matrix C
-</span><a href="#local-6989586621679091755"><span class="hs-identifier hs-var">matrixX</span></a></span><span>
-</span><span id="line-44"></span><span>  </span><span class="annot"><span class="annottext">Matrix C -&gt; QM ()
+</span><a href="#local-6989586621679091781"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679091783"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679091782"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">Matrix C
+</span><a href="#local-6989586621679091780"><span class="hs-identifier hs-var">matrixX</span></a></span><span>
+</span><span id="line-45"></span><span>  </span><span class="annot"><span class="annottext">Matrix C -&gt; QM ()
 </span><a href="Internal.Gates.html#applyGate"><span class="hs-identifier hs-var">applyGate</span></a></span><span> </span><span class="annot"><span class="annottext">Matrix C
-</span><a href="#local-6989586621679091754"><span class="hs-identifier hs-var">g</span></a></span><span>
-</span><span id="line-45"></span><span>  </span><span class="annot"><span class="annottext">(QBit, QBit) -&gt; QM (QBit, QBit)
+</span><a href="#local-6989586621679091779"><span class="hs-identifier hs-var">g</span></a></span><span>
+</span><span id="line-46"></span><span>  </span><span class="annot"><span class="annottext">(QBit, QBit) -&gt; QM (QBit, QBit)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679091758"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679091757"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span>
-</span><span id="line-46"></span><span>
-</span><span id="line-47"></span><span class="hs-comment">-- | Pauli-X gate</span><span>
-</span><span id="line-48"></span><span class="hs-comment">--</span><span>
-</span><span id="line-49"></span><span class="hs-comment">-- \[ \text{X} = \begin{bmatrix}</span><span>
-</span><span id="line-50"></span><span class="hs-comment">--    0 &amp; 1 \\</span><span>
-</span><span id="line-51"></span><span class="hs-comment">--    1 &amp; 0</span><span>
-</span><span id="line-52"></span><span class="hs-comment">-- \end{bmatrix} \]</span><span>
-</span><span id="line-53"></span><span class="hs-comment">--</span><span>
-</span><span id="line-54"></span><span class="hs-comment">-- ![pauliX](images/x.PNG)</span><span>
-</span><span id="line-55"></span><span class="annot"><a href="Gates.html#pauliX"><span class="hs-identifier hs-type">pauliX</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
-</span><span id="line-56"></span><span id="pauliX"><span class="annot"><span class="annottext">pauliX :: QBit -&gt; QM QBit
+</span><a href="#local-6989586621679091783"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679091782"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span>
+</span><span id="line-48"></span><span class="hs-comment">-- | Pauli-X gate</span><span>
+</span><span id="line-49"></span><span class="hs-comment">--</span><span>
+</span><span id="line-50"></span><span class="hs-comment">-- \[ \text{X} = \begin{bmatrix}</span><span>
+</span><span id="line-51"></span><span class="hs-comment">--    0 &amp; 1 \\</span><span>
+</span><span id="line-52"></span><span class="hs-comment">--    1 &amp; 0</span><span>
+</span><span id="line-53"></span><span class="hs-comment">-- \end{bmatrix} \]</span><span>
+</span><span id="line-54"></span><span class="hs-comment">--</span><span>
+</span><span id="line-55"></span><span class="hs-comment">-- ![pauliX](images/x.PNG)</span><span>
+</span><span id="line-56"></span><span class="annot"><a href="Gates.html#pauliX"><span class="hs-identifier hs-type">pauliX</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
+</span><span id="line-57"></span><span id="pauliX"><span class="annot"><span class="annottext">pauliX :: QBit -&gt; QM QBit
 </span><a href="Gates.html#pauliX"><span class="hs-identifier hs-var hs-var">pauliX</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix C -&gt; QBit -&gt; QM QBit
 </span><a href="Internal.Gates.html#runGate"><span class="hs-identifier hs-var">runGate</span></a></span><span> </span><span class="annot"><span class="annottext">(Matrix C -&gt; QBit -&gt; QM QBit) -&gt; Matrix C -&gt; QBit -&gt; QM QBit
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-number">2</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; [C] -&gt; Matrix C
 forall a. Storable a =&gt; Int -&gt; Int -&gt; [a] -&gt; Matrix a
 </span><span class="hs-operator hs-var">&gt;&lt;</span></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">)</span><span>
-</span><span id="line-57"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span>
-</span><span id="line-58"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-special">]</span><span>
-</span><span id="line-59"></span><span>
-</span><span id="line-60"></span><span class="hs-comment">-- | Pauli-Y gate</span><span>
-</span><span id="line-61"></span><span class="hs-comment">--</span><span>
-</span><span id="line-62"></span><span class="hs-comment">-- \[ \text{Y} = \begin{bmatrix}</span><span>
-</span><span id="line-63"></span><span class="hs-comment">--    0 &amp; -i \\</span><span>
-</span><span id="line-64"></span><span class="hs-comment">--    i &amp; 0</span><span>
-</span><span id="line-65"></span><span class="hs-comment">-- \end{bmatrix} \]</span><span>
-</span><span id="line-66"></span><span class="hs-comment">--</span><span>
-</span><span id="line-67"></span><span class="hs-comment">-- ![pauliY](images/y.PNG)</span><span>
-</span><span id="line-68"></span><span class="annot"><a href="Gates.html#pauliY"><span class="hs-identifier hs-type">pauliY</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
-</span><span id="line-69"></span><span id="pauliY"><span class="annot"><span class="annottext">pauliY :: QBit -&gt; QM QBit
+</span><span id="line-58"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-special">]</span><span>
+</span><span id="line-60"></span><span>
+</span><span id="line-61"></span><span class="hs-comment">-- | Pauli-Y gate</span><span>
+</span><span id="line-62"></span><span class="hs-comment">--</span><span>
+</span><span id="line-63"></span><span class="hs-comment">-- \[ \text{Y} = \begin{bmatrix}</span><span>
+</span><span id="line-64"></span><span class="hs-comment">--    0 &amp; -i \\</span><span>
+</span><span id="line-65"></span><span class="hs-comment">--    i &amp; 0</span><span>
+</span><span id="line-66"></span><span class="hs-comment">-- \end{bmatrix} \]</span><span>
+</span><span id="line-67"></span><span class="hs-comment">--</span><span>
+</span><span id="line-68"></span><span class="hs-comment">-- ![pauliY](images/y.PNG)</span><span>
+</span><span id="line-69"></span><span class="annot"><a href="Gates.html#pauliY"><span class="hs-identifier hs-type">pauliY</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
+</span><span id="line-70"></span><span id="pauliY"><span class="annot"><span class="annottext">pauliY :: QBit -&gt; QM QBit
 </span><a href="Gates.html#pauliY"><span class="hs-identifier hs-var hs-var">pauliY</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix C -&gt; QBit -&gt; QM QBit
 </span><a href="Internal.Gates.html#runGate"><span class="hs-identifier hs-var">runGate</span></a></span><span> </span><span class="annot"><span class="annottext">(Matrix C -&gt; QBit -&gt; QM QBit) -&gt; Matrix C -&gt; QBit -&gt; QM QBit
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-number">2</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; [C] -&gt; Matrix C
 forall a. Storable a =&gt; Int -&gt; Int -&gt; [a] -&gt; Matrix a
 </span><span class="hs-operator hs-var">&gt;&lt;</span></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">)</span><span>
-</span><span id="line-70"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">C
+</span><span id="line-71"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="annottext">C
 </span><a href="Internal.Gates.html#i"><span class="hs-identifier hs-var">i</span></a></span><span>
-</span><span id="line-71"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">C
+</span><span id="line-72"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">C
 </span><a href="Internal.Gates.html#i"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="hs-special">,</span><span>  </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-special">]</span><span>
-</span><span id="line-72"></span><span>
-</span><span id="line-73"></span><span class="hs-comment">-- | Pauli-Z gate</span><span>
-</span><span id="line-74"></span><span class="hs-comment">--</span><span>
-</span><span id="line-75"></span><span class="hs-comment">-- \[ \text{Z} = \begin{bmatrix}</span><span>
-</span><span id="line-76"></span><span class="hs-comment">--    1 &amp; 0 \\</span><span>
-</span><span id="line-77"></span><span class="hs-comment">--    0 &amp; -1</span><span>
-</span><span id="line-78"></span><span class="hs-comment">-- \end{bmatrix} \]</span><span>
-</span><span id="line-79"></span><span class="hs-comment">--</span><span>
-</span><span id="line-80"></span><span class="hs-comment">-- ![pauliZ](images/z.PNG)</span><span>
-</span><span id="line-81"></span><span class="annot"><a href="Gates.html#pauliZ"><span class="hs-identifier hs-type">pauliZ</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
-</span><span id="line-82"></span><span id="pauliZ"><span class="annot"><span class="annottext">pauliZ :: QBit -&gt; QM QBit
+</span><span id="line-73"></span><span>
+</span><span id="line-74"></span><span class="hs-comment">-- | Pauli-Z gate</span><span>
+</span><span id="line-75"></span><span class="hs-comment">--</span><span>
+</span><span id="line-76"></span><span class="hs-comment">-- \[ \text{Z} = \begin{bmatrix}</span><span>
+</span><span id="line-77"></span><span class="hs-comment">--    1 &amp; 0 \\</span><span>
+</span><span id="line-78"></span><span class="hs-comment">--    0 &amp; -1</span><span>
+</span><span id="line-79"></span><span class="hs-comment">-- \end{bmatrix} \]</span><span>
+</span><span id="line-80"></span><span class="hs-comment">--</span><span>
+</span><span id="line-81"></span><span class="hs-comment">-- ![pauliZ](images/z.PNG)</span><span>
+</span><span id="line-82"></span><span class="annot"><a href="Gates.html#pauliZ"><span class="hs-identifier hs-type">pauliZ</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
+</span><span id="line-83"></span><span id="pauliZ"><span class="annot"><span class="annottext">pauliZ :: QBit -&gt; QM QBit
 </span><a href="Gates.html#pauliZ"><span class="hs-identifier hs-var hs-var">pauliZ</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix C -&gt; QBit -&gt; QM QBit
 </span><a href="Internal.Gates.html#runGate"><span class="hs-identifier hs-var">runGate</span></a></span><span> </span><span class="annot"><span class="annottext">(Matrix C -&gt; QBit -&gt; QM QBit) -&gt; Matrix C -&gt; QBit -&gt; QM QBit
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-number">2</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; [C] -&gt; Matrix C
 forall a. Storable a =&gt; Int -&gt; Int -&gt; [a] -&gt; Matrix a
 </span><span class="hs-operator hs-var">&gt;&lt;</span></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">)</span><span>
-</span><span id="line-83"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">,</span><span>  </span><span class="annot"><span class="hs-number">0</span></span><span>
-</span><span id="line-84"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">]</span><span>
-</span><span id="line-85"></span><span>
-</span><span id="line-86"></span><span class="hs-comment">-- | Hadamard gate</span><span>
-</span><span id="line-87"></span><span class="hs-comment">-- </span><span>
-</span><span id="line-88"></span><span class="hs-comment">-- \[ \text{X} = \frac1{\sqrt2} \begin{bmatrix}</span><span>
-</span><span id="line-89"></span><span class="hs-comment">--    0 &amp; 1 \\</span><span>
-</span><span id="line-90"></span><span class="hs-comment">--    1 &amp; 0</span><span>
-</span><span id="line-91"></span><span class="hs-comment">-- \end{bmatrix} \]</span><span>
-</span><span id="line-92"></span><span class="hs-comment">--</span><span>
-</span><span id="line-93"></span><span class="hs-comment">-- ![hadamard](images/h.PNG)</span><span>
-</span><span id="line-94"></span><span class="annot"><a href="Gates.html#hadamard"><span class="hs-identifier hs-type">hadamard</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
-</span><span id="line-95"></span><span id="hadamard"><span class="annot"><span class="annottext">hadamard :: QBit -&gt; QM QBit
+</span><span id="line-84"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">,</span><span>  </span><span class="annot"><span class="hs-number">0</span></span><span>
+</span><span id="line-85"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">]</span><span>
+</span><span id="line-86"></span><span>
+</span><span id="line-87"></span><span class="hs-comment">-- | Hadamard gate</span><span>
+</span><span id="line-88"></span><span class="hs-comment">-- </span><span>
+</span><span id="line-89"></span><span class="hs-comment">-- \[ \text{X} = \frac1{\sqrt2} \begin{bmatrix}</span><span>
+</span><span id="line-90"></span><span class="hs-comment">--    0 &amp; 1 \\</span><span>
+</span><span id="line-91"></span><span class="hs-comment">--    1 &amp; 0</span><span>
+</span><span id="line-92"></span><span class="hs-comment">-- \end{bmatrix} \]</span><span>
+</span><span id="line-93"></span><span class="hs-comment">--</span><span>
+</span><span id="line-94"></span><span class="hs-comment">-- ![hadamard](images/h.PNG)</span><span>
+</span><span id="line-95"></span><span class="annot"><a href="Gates.html#hadamard"><span class="hs-identifier hs-type">hadamard</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
+</span><span id="line-96"></span><span id="hadamard"><span class="annot"><span class="annottext">hadamard :: QBit -&gt; QM QBit
 </span><a href="Gates.html#hadamard"><span class="hs-identifier hs-var hs-var">hadamard</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix C -&gt; QBit -&gt; QM QBit
 </span><a href="Internal.Gates.html#runGate"><span class="hs-identifier hs-var">runGate</span></a></span><span> </span><span class="annot"><span class="annottext">(Matrix C -&gt; QBit -&gt; QM QBit) -&gt; Matrix C -&gt; QBit -&gt; QM QBit
 forall a b. (a -&gt; b) -&gt; a -&gt; b
@@ -145,50 +146,50 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-number">2</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; [C] -&gt; Matrix C
 forall a. Storable a =&gt; Int -&gt; Int -&gt; [a] -&gt; Matrix a
 </span><span class="hs-operator hs-var">&gt;&lt;</span></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">)</span><span>
-</span><span id="line-96"></span><span>    </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">,</span><span>  </span><span class="annot"><span class="hs-number">1</span></span><span>
-</span><span id="line-97"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">]</span><span>
-</span><span id="line-98"></span><span>
-</span><span id="line-99"></span><span class="hs-comment">-- | Phase gate</span><span>
-</span><span id="line-100"></span><span class="hs-comment">--</span><span>
-</span><span id="line-101"></span><span class="hs-comment">-- \[ \text{S} = \begin{bmatrix}</span><span>
-</span><span id="line-102"></span><span class="hs-comment">--    1 &amp; 0 \\</span><span>
-</span><span id="line-103"></span><span class="hs-comment">--    0 &amp; i</span><span>
-</span><span id="line-104"></span><span class="hs-comment">-- \end{bmatrix} \]</span><span>
-</span><span id="line-105"></span><span class="hs-comment">--</span><span>
-</span><span id="line-106"></span><span class="hs-comment">-- ![phase](images/s.PNG)</span><span>
-</span><span id="line-107"></span><span class="annot"><a href="Gates.html#phase"><span class="hs-identifier hs-type">phase</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
-</span><span id="line-108"></span><span id="phase"><span class="annot"><span class="annottext">phase :: QBit -&gt; QM QBit
+</span><span id="line-97"></span><span>    </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">,</span><span>  </span><span class="annot"><span class="hs-number">1</span></span><span>
+</span><span id="line-98"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="hs-glyph">-</span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">]</span><span>
+</span><span id="line-99"></span><span>
+</span><span id="line-100"></span><span class="hs-comment">-- | Phase gate</span><span>
+</span><span id="line-101"></span><span class="hs-comment">--</span><span>
+</span><span id="line-102"></span><span class="hs-comment">-- \[ \text{S} = \begin{bmatrix}</span><span>
+</span><span id="line-103"></span><span class="hs-comment">--    1 &amp; 0 \\</span><span>
+</span><span id="line-104"></span><span class="hs-comment">--    0 &amp; i</span><span>
+</span><span id="line-105"></span><span class="hs-comment">-- \end{bmatrix} \]</span><span>
+</span><span id="line-106"></span><span class="hs-comment">--</span><span>
+</span><span id="line-107"></span><span class="hs-comment">-- ![phase](images/s.PNG)</span><span>
+</span><span id="line-108"></span><span class="annot"><a href="Gates.html#phase"><span class="hs-identifier hs-type">phase</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
+</span><span id="line-109"></span><span id="phase"><span class="annot"><span class="annottext">phase :: QBit -&gt; QM QBit
 </span><a href="Gates.html#phase"><span class="hs-identifier hs-var hs-var">phase</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix C -&gt; QBit -&gt; QM QBit
 </span><a href="Internal.Gates.html#runGate"><span class="hs-identifier hs-var">runGate</span></a></span><span> </span><span class="annot"><span class="annottext">(Matrix C -&gt; QBit -&gt; QM QBit) -&gt; Matrix C -&gt; QBit -&gt; QM QBit
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-number">2</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; [C] -&gt; Matrix C
 forall a. Storable a =&gt; Int -&gt; Int -&gt; [a] -&gt; Matrix a
 </span><span class="hs-operator hs-var">&gt;&lt;</span></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">)</span><span>
-</span><span id="line-109"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
-</span><span id="line-110"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">C
+</span><span id="line-110"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
+</span><span id="line-111"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">C
 </span><a href="Internal.Gates.html#i"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="hs-special">]</span><span>
-</span><span id="line-111"></span><span>
-</span><span id="line-112"></span><span class="hs-comment">-- | Pi/8 gate (T gate)</span><span>
-</span><span id="line-113"></span><span class="hs-comment">--</span><span>
-</span><span id="line-114"></span><span class="hs-comment">-- \[ \text{T} = \begin{bmatrix}</span><span>
-</span><span id="line-115"></span><span class="hs-comment">--    1 &amp; 0 \\</span><span>
-</span><span id="line-116"></span><span class="hs-comment">--    0 &amp; e^{i\pi/4}</span><span>
-</span><span id="line-117"></span><span class="hs-comment">-- \end{bmatrix} \]</span><span>
-</span><span id="line-118"></span><span class="hs-comment">--</span><span>
-</span><span id="line-119"></span><span class="hs-comment">-- ![pi8](images/t.PNG)</span><span>
-</span><span id="line-120"></span><span class="annot"><a href="Gates.html#phasePi8"><span class="hs-identifier hs-type">phasePi8</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
-</span><span id="line-121"></span><span id="phasePi8"><span class="annot"><span class="annottext">phasePi8 :: QBit -&gt; QM QBit
+</span><span id="line-112"></span><span>
+</span><span id="line-113"></span><span class="hs-comment">-- | Pi/8 gate (T gate)</span><span>
+</span><span id="line-114"></span><span class="hs-comment">--</span><span>
+</span><span id="line-115"></span><span class="hs-comment">-- \[ \text{T} = \begin{bmatrix}</span><span>
+</span><span id="line-116"></span><span class="hs-comment">--    1 &amp; 0 \\</span><span>
+</span><span id="line-117"></span><span class="hs-comment">--    0 &amp; e^{i\pi/4}</span><span>
+</span><span id="line-118"></span><span class="hs-comment">-- \end{bmatrix} \]</span><span>
+</span><span id="line-119"></span><span class="hs-comment">--</span><span>
+</span><span id="line-120"></span><span class="hs-comment">-- ![pi8](images/t.PNG)</span><span>
+</span><span id="line-121"></span><span class="annot"><a href="Gates.html#phasePi8"><span class="hs-identifier hs-type">phasePi8</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
+</span><span id="line-122"></span><span id="phasePi8"><span class="annot"><span class="annottext">phasePi8 :: QBit -&gt; QM QBit
 </span><a href="Gates.html#phasePi8"><span class="hs-identifier hs-var hs-var">phasePi8</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix C -&gt; QBit -&gt; QM QBit
 </span><a href="Internal.Gates.html#runGate"><span class="hs-identifier hs-var">runGate</span></a></span><span> </span><span class="annot"><span class="annottext">(Matrix C -&gt; QBit -&gt; QM QBit) -&gt; Matrix C -&gt; QBit -&gt; QM QBit
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-number">2</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; [C] -&gt; Matrix C
 forall a. Storable a =&gt; Int -&gt; Int -&gt; [a] -&gt; Matrix a
 </span><span class="hs-operator hs-var">&gt;&lt;</span></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">)</span><span>
-</span><span id="line-122"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
-</span><span id="line-123"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">C
-</span><a href="#local-6989586621679091752"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="hs-special">]</span><span>
-</span><span id="line-124"></span><span>  </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679091752"><span class="annot"><span class="annottext">p :: C
-</span><a href="#local-6989586621679091752"><span class="hs-identifier hs-var hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">C -&gt; C
+</span><span id="line-123"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
+</span><span id="line-124"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">C
+</span><a href="#local-6989586621679091777"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="hs-special">]</span><span>
+</span><span id="line-125"></span><span>  </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679091777"><span class="annot"><span class="annottext">p :: C
+</span><a href="#local-6989586621679091777"><span class="hs-identifier hs-var hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">C -&gt; C
 forall a. Floating a =&gt; a -&gt; a
 </span><span class="hs-identifier hs-var">exp</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">C
 </span><a href="Internal.Gates.html#i"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">C -&gt; C -&gt; C
@@ -198,22 +199,50 @@ forall a. Floating a =&gt; a
 </span><span class="hs-identifier hs-var">pi</span></span><span> </span><span class="annot"><span class="annottext">C -&gt; C -&gt; C
 forall a. Fractional a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">/</span></span><span> </span><span class="annot"><span class="hs-number">8</span></span><span class="hs-special">)</span><span>
-</span><span id="line-125"></span><span>
-</span><span id="line-126"></span><span class="hs-comment">-- | Identity gate</span><span>
-</span><span id="line-127"></span><span class="hs-comment">--</span><span>
-</span><span id="line-128"></span><span class="hs-comment">-- \[ \text{I} = \begin{bmatrix}</span><span>
-</span><span id="line-129"></span><span class="hs-comment">--    1 &amp; 0 \\</span><span>
-</span><span id="line-130"></span><span class="hs-comment">--    0 &amp; 1</span><span>
-</span><span id="line-131"></span><span class="hs-comment">-- \end{bmatrix} \]</span><span>
-</span><span id="line-132"></span><span class="hs-comment">--</span><span>
-</span><span id="line-133"></span><span class="annot"><a href="Gates.html#identity"><span class="hs-identifier hs-type">identity</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
-</span><span id="line-134"></span><span id="identity"><span class="annot"><span class="annottext">identity :: QBit -&gt; QM QBit
+</span><span id="line-126"></span><span>
+</span><span id="line-127"></span><span class="hs-comment">-- | Identity gate</span><span>
+</span><span id="line-128"></span><span class="hs-comment">--</span><span>
+</span><span id="line-129"></span><span class="hs-comment">-- \[ \text{I} = \begin{bmatrix}</span><span>
+</span><span id="line-130"></span><span class="hs-comment">--    1 &amp; 0 \\</span><span>
+</span><span id="line-131"></span><span class="hs-comment">--    0 &amp; 1</span><span>
+</span><span id="line-132"></span><span class="hs-comment">-- \end{bmatrix} \]</span><span>
+</span><span id="line-133"></span><span class="hs-comment">--</span><span>
+</span><span id="line-134"></span><span class="annot"><a href="Gates.html#identity"><span class="hs-identifier hs-type">identity</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
+</span><span id="line-135"></span><span id="identity"><span class="annot"><span class="annottext">identity :: QBit -&gt; QM QBit
 </span><a href="Gates.html#identity"><span class="hs-identifier hs-var hs-var">identity</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix C -&gt; QBit -&gt; QM QBit
 </span><a href="Internal.Gates.html#runGate"><span class="hs-identifier hs-var">runGate</span></a></span><span> </span><span class="annot"><span class="annottext">(Matrix C -&gt; QBit -&gt; QM QBit) -&gt; Matrix C -&gt; QBit -&gt; QM QBit
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-number">2</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; [C] -&gt; Matrix C
 forall a. Storable a =&gt; Int -&gt; Int -&gt; [a] -&gt; Matrix a
 </span><span class="hs-operator hs-var">&gt;&lt;</span></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">)</span><span>
-</span><span id="line-135"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
-</span><span id="line-136"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">]</span><span>
-</span><span id="line-137"></span></pre></body></html>
+</span><span id="line-136"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
+</span><span id="line-137"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-special">]</span><span>
+</span><span id="line-138"></span><span>
+</span><span id="line-139"></span><span class="hs-comment">-- | SWAP gate</span><span>
+</span><span id="line-140"></span><span class="hs-comment">-- </span><span>
+</span><span id="line-141"></span><span class="hs-comment">-- \[ \text{SWAP} = \begin{bmatrix} </span><span>
+</span><span id="line-142"></span><span class="hs-comment">--    1 &amp; 0 &amp; 0 &amp; 0 \\</span><span>
+</span><span id="line-143"></span><span class="hs-comment">--    0 &amp; 0 &amp; 1 &amp; 0 \\</span><span>
+</span><span id="line-144"></span><span class="hs-comment">--    0 &amp; 1 &amp; 0 &amp; 0 \\ </span><span>
+</span><span id="line-145"></span><span class="hs-comment">--    0 &amp; 0 &amp; 0 &amp; 1 </span><span>
+</span><span id="line-146"></span><span class="hs-comment">--  \end{bmatrix}</span><span>
+</span><span id="line-147"></span><span class="hs-comment">-- \]</span><span>
+</span><span id="line-148"></span><span class="hs-comment">-- </span><span>
+</span><span id="line-149"></span><span class="hs-comment">-- ![swap](images/swap.PNG)</span><span>
+</span><span id="line-150"></span><span class="annot"><a href="Gates.html#swap"><span class="hs-identifier hs-type">swap</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-151"></span><span id="swap"><span class="annot"><span class="annottext">swap :: (QBit, QBit) -&gt; QM (QBit, QBit)
+</span><a href="Gates.html#swap"><span class="hs-identifier hs-var hs-var">swap</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679091772"><span class="annot"><span class="annottext">p :: QBit
+</span><a href="#local-6989586621679091772"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679091771"><span class="annot"><span class="annottext">q :: QBit
+</span><a href="#local-6989586621679091771"><span class="hs-identifier hs-var">q</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-152"></span><span>  </span><span class="annot"><span class="annottext">(QBit, QBit) -&gt; QM (QBit, QBit)
+</span><a href="Gates.html#cnot"><span class="hs-identifier hs-var">cnot</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679091772"><span class="hs-identifier hs-var">p</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679091771"><span class="hs-identifier hs-var">q</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-153"></span><span>  </span><span class="annot"><span class="annottext">(QBit, QBit) -&gt; QM (QBit, QBit)
+</span><a href="Gates.html#cnot"><span class="hs-identifier hs-var">cnot</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679091771"><span class="hs-identifier hs-var">q</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679091772"><span class="hs-identifier hs-var">p</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-154"></span><span>  </span><span class="annot"><span class="annottext">(QBit, QBit) -&gt; QM (QBit, QBit)
+</span><a href="Gates.html#cnot"><span class="hs-identifier hs-var">cnot</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679091772"><span class="hs-identifier hs-var">p</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679091771"><span class="hs-identifier hs-var">q</span></a></span><span class="hs-special">)</span></pre></body></html>
