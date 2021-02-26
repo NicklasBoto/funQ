@@ -1,9 +1,7 @@
 module CoinFlip where
 
-import QM
-import Funqy
-import Gates
 
+import FunQ
 
 -- | Given two values, will return either of them with a 50% probability.
 

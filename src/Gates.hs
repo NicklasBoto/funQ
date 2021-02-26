@@ -17,66 +17,14 @@ module Gates (
     , phasePi8
     , cnot
     , identity
+    , swap
 ) where
 
+import Internal.Gates ( i, applyGate, runGate, controlMatrix )
 import QM ( QM, QState(QState), QBit(..), getState, put, get)
 import Numeric.LinearAlgebra
     ( Complex(..), (#>), (><), ident, kronecker, Matrix, Linear(scale), C, ident )
 
-
--- | The imaginary unit
-i :: Complex Double
-i = 0 :+ 1
-
-applyParallell :: Matrix C -> Matrix C -> Matrix C
-applyParallell = kronecker
-
--- | Apply gate to the current quantum state
-applyGate :: Matrix C -> QM ()
-applyGate g = do
-    (QState v) <- get
-    put $ QState $ g #> v
-
--- | Insert an element at a specific index in a list.
-insertAt :: a -> Int -> [a] -> [a]
-insertAt x index [] = [x]
-insertAt x index xs = l ++ [x] ++ r
-    where (l, r) = splitAt index xs
-
--- | Apply a 2x2 gate, to a specific qubit.
---
--- It will update the qstate. 
-runGate :: Matrix C -> (QBit -> QM QBit)
-runGate g x = do
-    (state, size) <- getState
-    let ids = replicate (size - 1) (ident 2)
-    let list = insertAt g (link x) ids
-    let m = foldr1 applyParallell list
-    applyGate m
-    return x
-
--- | Projection of the zero basis vector
-proj0 :: Matrix C
-proj0 = (2 >< 2)
-  [ 1 , 0
-  , 0 , 0 ]
-
--- | Projection of the one basis vector
-proj1 :: Matrix C
-proj1 = (2 >< 2)
-  [ 0 , 0
-  , 0 , 1 ]
-
--- | Produce matrix running a gate controlled by another bit
-controlMatrix :: Int -> QBit -> QBit -> Matrix C -> Matrix C
-controlMatrix size (Ptr c) (Ptr t) g = fl + fr
-  where idsl = replicate (size - 1) (ident 2)
-        idsr = replicate (size - 2) (ident 2)
-        l = insertAt proj0 c idsl
-        rc = insertAt proj1 c idsr
-        r = insertAt g t rc
-        fl = foldr1 applyParallell l
-        fr = foldr1 applyParallell r
 
 -- | CNOT gate
 -- 
@@ -89,8 +37,8 @@ controlMatrix size (Ptr c) (Ptr t) g = fl + fr
 -- \]
 -- 
 -- ![cnot](images/cnot.PNG)
-cnot :: QBit -> QBit -> QM (QBit, QBit)
-cnot c t = do
+cnot :: (QBit, QBit) -> QM (QBit, QBit)
+cnot (c, t) = do
   (_, size) <- getState
   let matrixX = (2 >< 2) [ 0, 1, 1, 0 ]
   let g = controlMatrix size c t matrixX
@@ -187,3 +135,20 @@ identity :: QBit -> QM QBit
 identity = runGate $ (2 >< 2)
   [ 1 , 0
   , 0 , 1 ]
+
+-- | SWAP gate
+-- 
+-- \[ \text{SWAP} = \begin{bmatrix} 
+--    1 & 0 & 0 & 0 \\
+--    0 & 0 & 1 & 0 \\
+--    0 & 1 & 0 & 0 \\ 
+--    0 & 0 & 0 & 1 
+--  \end{bmatrix}
+-- \]
+-- 
+-- ![swap](images/swap.PNG)
+swap :: (QBit, QBit) -> QM (QBit, QBit)
+swap (p,q) = do
+  cnot (p,q)
+  cnot (q,p)
+  cnot (p,q)

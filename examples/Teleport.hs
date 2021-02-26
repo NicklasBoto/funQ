@@ -1,8 +1,7 @@
 -- | Quantum teleportation example
 module Teleport where
 
-import Funqy
-import Gates
+import FunQ
 
 -- Example usage:
 --
@@ -25,8 +24,8 @@ teleport psi = do
     a <- new 0
     b <- new 0
     hadamard a
-    cnot a b
-    cnot psi a
+    cnot (a,b)
+    cnot (psi,a)
     hadamard psi
     m_psi <- measure psi
     m_a <- measure a
@@ -38,8 +37,21 @@ teleport psi = do
 exampleTeleport :: QM Bit
 exampleTeleport = do
     q <- new 0
+    hadamard q
     -- perform manipulations here
     q' <- teleport q
     -- the resulting distribution should be the same as
     -- for @q@ before the teleportation
     measure q'
+
+correction :: QBit -> (Bit, Bit) -> QM QBit
+correction q (x,y) = do
+    pauliX q `controlbit` y
+    pauliZ q `controlbit` x
+    return q
+
+teleport' :: QBit -> QM QBit
+teleport' psi = do
+    (a,b) <- bell (0,0)
+    m <- bellMeasure (psi,a)
+    correction b m
