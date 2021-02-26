@@ -61,49 +61,49 @@ Exports the language and simulator
 </span><span id="line-61"></span><span class="hs-comment">-- | Prepares bell state</span><span>
 </span><span id="line-62"></span><span class="annot"><a href="FunQ.html#bell"><span class="hs-identifier hs-type">bell</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Bit</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bit</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-63"></span><span id="bell"><span class="annot"><span class="annottext">bell :: (Bit, Bit) -&gt; QM (QBit, QBit)
-</span><a href="FunQ.html#bell"><span class="hs-identifier hs-var hs-var">bell</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679091906"><span class="annot"><span class="annottext">a :: Bit
-</span><a href="#local-6989586621679091906"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679091905"><span class="annot"><span class="annottext">b :: Bit
-</span><a href="#local-6989586621679091905"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-64"></span><span>    </span><span id="local-6989586621679091904"><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679091904"><span class="hs-identifier hs-var">qa</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Bit -&gt; QM QBit
+</span><a href="FunQ.html#bell"><span class="hs-identifier hs-var hs-var">bell</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679092261"><span class="annot"><span class="annottext">a :: Bit
+</span><a href="#local-6989586621679092261"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679092260"><span class="annot"><span class="annottext">b :: Bit
+</span><a href="#local-6989586621679092260"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-64"></span><span>    </span><span id="local-6989586621679092259"><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679092259"><span class="hs-identifier hs-var">qa</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Bit -&gt; QM QBit
 </span><a href="Core.html#new"><span class="hs-identifier hs-var">new</span></a></span><span> </span><span class="annot"><span class="annottext">Bit
-</span><a href="#local-6989586621679091906"><span class="hs-identifier hs-var">a</span></a></span><span>
-</span><span id="line-65"></span><span>    </span><span id="local-6989586621679091903"><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679091903"><span class="hs-identifier hs-var">qb</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Bit -&gt; QM QBit
+</span><a href="#local-6989586621679092261"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-65"></span><span>    </span><span id="local-6989586621679092258"><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679092258"><span class="hs-identifier hs-var">qb</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Bit -&gt; QM QBit
 </span><a href="Core.html#new"><span class="hs-identifier hs-var">new</span></a></span><span> </span><span class="annot"><span class="annottext">Bit
-</span><a href="#local-6989586621679091905"><span class="hs-identifier hs-var">b</span></a></span><span>
+</span><a href="#local-6989586621679092260"><span class="hs-identifier hs-var">b</span></a></span><span>
 </span><span id="line-66"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
 </span><a href="Gates.html#hadamard"><span class="hs-identifier hs-var">hadamard</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679091904"><span class="hs-identifier hs-var">qa</span></a></span><span>
+</span><a href="#local-6989586621679092259"><span class="hs-identifier hs-var">qa</span></a></span><span>
 </span><span id="line-67"></span><span>    </span><span class="annot"><span class="annottext">(QBit, QBit) -&gt; QM (QBit, QBit)
 </span><a href="Gates.html#cnot"><span class="hs-identifier hs-var">cnot</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679091904"><span class="hs-identifier hs-var">qa</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679091903"><span class="hs-identifier hs-var">qb</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679092259"><span class="hs-identifier hs-var">qa</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679092258"><span class="hs-identifier hs-var">qb</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-68"></span><span>
 </span><span id="line-69"></span><span class="hs-comment">-- | Performs bell measurement</span><span>
 </span><span id="line-70"></span><span class="annot"><a href="FunQ.html#bellMeasure"><span class="hs-identifier hs-type">bellMeasure</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Bit</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bit</span></span><span class="hs-special">)</span><span>
 </span><span id="line-71"></span><span id="bellMeasure"><span class="annot"><span class="annottext">bellMeasure :: (QBit, QBit) -&gt; QM (Bit, Bit)
-</span><a href="FunQ.html#bellMeasure"><span class="hs-identifier hs-var hs-var">bellMeasure</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679091902"><span class="annot"><span class="annottext">x :: QBit
-</span><a href="#local-6989586621679091902"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679091901"><span class="annot"><span class="annottext">y :: QBit
-</span><a href="#local-6989586621679091901"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><a href="FunQ.html#bellMeasure"><span class="hs-identifier hs-var hs-var">bellMeasure</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679092257"><span class="annot"><span class="annottext">x :: QBit
+</span><a href="#local-6989586621679092257"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679092256"><span class="annot"><span class="annottext">y :: QBit
+</span><a href="#local-6989586621679092256"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-72"></span><span>    </span><span class="annot"><span class="annottext">(QBit, QBit) -&gt; QM (QBit, QBit)
 </span><a href="Gates.html#cnot"><span class="hs-identifier hs-var">cnot</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679091902"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679091901"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679092257"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679092256"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-73"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
 </span><a href="Gates.html#hadamard"><span class="hs-identifier hs-var">hadamard</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679091902"><span class="hs-identifier hs-var">x</span></a></span><span>
-</span><span id="line-74"></span><span>    </span><span id="local-6989586621679091900"><span class="annot"><span class="annottext">Bit
-</span><a href="#local-6989586621679091900"><span class="hs-identifier hs-var">m_x</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QBit -&gt; QM Bit
+</span><a href="#local-6989586621679092257"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-74"></span><span>    </span><span id="local-6989586621679092255"><span class="annot"><span class="annottext">Bit
+</span><a href="#local-6989586621679092255"><span class="hs-identifier hs-var">m_x</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QBit -&gt; QM Bit
 </span><a href="Core.html#measure"><span class="hs-identifier hs-var">measure</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679091902"><span class="hs-identifier hs-var">x</span></a></span><span>
-</span><span id="line-75"></span><span>    </span><span id="local-6989586621679091899"><span class="annot"><span class="annottext">Bit
-</span><a href="#local-6989586621679091899"><span class="hs-identifier hs-var">m_y</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QBit -&gt; QM Bit
+</span><a href="#local-6989586621679092257"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><span id="line-75"></span><span>    </span><span id="local-6989586621679092254"><span class="annot"><span class="annottext">Bit
+</span><a href="#local-6989586621679092254"><span class="hs-identifier hs-var">m_y</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QBit -&gt; QM Bit
 </span><a href="Core.html#measure"><span class="hs-identifier hs-var">measure</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679091901"><span class="hs-identifier hs-var">y</span></a></span><span>
+</span><a href="#local-6989586621679092256"><span class="hs-identifier hs-var">y</span></a></span><span>
 </span><span id="line-76"></span><span>    </span><span class="annot"><span class="annottext">(Bit, Bit) -&gt; QM (Bit, Bit)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bit
-</span><a href="#local-6989586621679091900"><span class="hs-identifier hs-var">m_x</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Bit
-</span><a href="#local-6989586621679091899"><span class="hs-identifier hs-var">m_y</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679092255"><span class="hs-identifier hs-var">m_x</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Bit
+</span><a href="#local-6989586621679092254"><span class="hs-identifier hs-var">m_y</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-77"></span></pre></body></html>
