@@ -51,10 +51,10 @@ remBadProbs bit ix qs@(QState s) = QState $ normalize newVector
         size = stateSize qs
 
         newVector :: Vector C
-        newVector = fromList $ zipWith (curry f) [0..] (toList s)
+        newVector = fromList $ zipWith f [0..] (toList s)
 
-        f :: (Ix, Complex Double) -> Complex Double
-        f (index, component)
+        f :: Ix -> Complex Double -> Complex Double
+        f index component
           | maskMatch ix index size = if bit == 0 then 0 else component
           | bit == 1 = 0
           | otherwise = component

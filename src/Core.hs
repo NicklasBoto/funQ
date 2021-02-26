@@ -32,7 +32,6 @@ import Data.Bit ( Bit )
 import Control.Monad ( replicateM )
 import qualified Control.Monad.Random as Rand ( fromList, evalRandIO )
 
-
 -- | Create new `QBit` from a bit.
 -- maps \(0 \mapsto |0>\) and \(1 \mapsto |1>\)
 new :: Bit -> QM QBit
@@ -40,7 +39,6 @@ new x = do
     (_,size) <- getState
     modify $ appendState (newVector x)
     return $ Ptr size
-
 
 -- | Performs a measurement operation, collapsing a `QBit` to a `Bit`.
 -- Here comes a long explanation of the algorithm correcting the state
