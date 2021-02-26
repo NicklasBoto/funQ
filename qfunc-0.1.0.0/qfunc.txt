@@ -7,9 +7,6 @@
 @package qfunc
 @version 0.1.0.0
 
-module Lib
-someFunc :: IO ()
-
 
 -- | Definition of the quantum monad (<a>QM</a>) and helper functions
 module QM
@@ -20,6 +17,10 @@ data QM a
 
 -- | Run quantum program, discarding it's final state
 run :: QM a -> IO a
+
+-- | Run quantum program, prints the final quantum state and returns the
+--   result
+runDebug :: QM a -> IO a
 
 -- | Run quantum program
 eval :: QM a -> IO (a, QState)
@@ -67,6 +68,52 @@ instance GHC.Base.Monad QM.QM
 instance GHC.Show.Show QM.QState
 
 
+-- | Internal matrix operations
+module Internal.Gates
+
+-- | The imaginary unit
+i :: Complex Double
+applyParallel :: Matrix C -> Matrix C -> Matrix C
+
+-- | Apply gate to the current quantum state
+applyGate :: Matrix C -> QM ()
+
+-- | Insert an element at a specific index in a list.
+insertAt :: a -> Int -> [a] -> [a]
+
+-- | Apply a 2x2 gate, to a specific qubit.
+--   
+--   It will update the qstate.
+runGate :: Matrix C -> QBit -> QM QBit
+parallel :: [Matrix C] -> QM ()
+
+-- | Projection of the zero basis vector
+proj0 :: Matrix C
+
+-- | Projection of the one basis vector
+proj1 :: Matrix C
+
+-- | Produce matrix running a gate controlled by another bit
+controlMatrix :: Int -> QBit -> QBit -> Matrix C -> Matrix C
+
+
+-- | Internal matrix and measurment operations
+module Internal.Core
+
+-- | Appends state with tensor
+appendState :: QState -> QState -> QState
+tensorVector :: Vector C -> Vector C -> Vector C
+
+-- | (probToBeZero, probToBeOne) ix is index of qubit to measure
+findProb :: Ix -> QState -> (Rational, Rational)
+remBadProbs :: Bit -> Ix -> QState -> QState
+maskMatch :: Ix -> Ix -> Int -> Bool
+
+-- | Vector state representations of qubits with 100% probaility to
+--   collapse to their bit counterparts
+newVector :: Bit -> QState
+
+
 -- | Module containing unitary gates and their matrix representations.
 module Gates
 
@@ -110,7 +157,7 @@ phasePi8 :: QBit -> QM QBit
 --   
 --   &lt;math&gt;
 --   
-cnot :: QBit -> QBit -> QM (QBit, QBit)
+cnot :: (QBit, QBit) -> QM (QBit, QBit)
 
 -- | Identity gate
 --   
@@ -119,7 +166,7 @@ identity :: QBit -> QM QBit
 
 
 -- | The core language operations.
-module Funqy
+module Core
 
 -- | Create new <a>QBit</a> from a bit. maps &lt;math&gt; and &lt;math&gt;
 new :: Bit -> QM QBit
@@ -143,3 +190,95 @@ dist :: QM Bit -> IO ()
 --   print the results
 ndist :: Int -> QM Bit -> IO ()
 data Bit
+
+
+-- | Exports the language and simulator
+module FunQ
+
+-- | Create new <a>QBit</a> from a bit. maps &lt;math&gt; and &lt;math&gt;
+new :: Bit -> QM QBit
+
+-- | Performs a measurement operation, collapsing a <a>QBit</a> to a
+--   <a>Bit</a>. Here comes a long explanation of the algorithm correcting
+--   the state
+measure :: QBit -> QM Bit
+
+-- | Run a quantum program producing a single bit <tt>reps</tt> times and
+--   print the results
+ndist :: Int -> QM Bit -> IO ()
+
+-- | Print results from a 100 runs of a program
+dist :: QM Bit -> IO ()
+
+-- | Sets a classical bit as the controlbit for a quantum gate. Making it
+--   run only when the classical bit is equal to one.
+controlbit :: QM a -> Bit -> QM ()
+
+-- | Pointer to a qubit in QState. Represents the linking function in
+--   QLambda
+data QBit
+data Bit
+
+-- | The Quantum Monad Keeps a state of the complex vector representation
+--   while allowing pseudo-random number generation
+data QM a
+
+-- | Pauli-X gate
+--   
+--   &lt;math&gt;
+--   
+pauliX :: QBit -> QM QBit
+
+-- | Pauli-Y gate
+--   
+--   &lt;math&gt;
+--   
+pauliY :: QBit -> QM QBit
+
+-- | Pauli-Z gate
+--   
+--   &lt;math&gt;
+--   
+pauliZ :: QBit -> QM QBit
+
+-- | Hadamard gate
+--   
+--   &lt;math&gt;
+--   
+hadamard :: QBit -> QM QBit
+
+-- | Phase gate
+--   
+--   &lt;math&gt;
+--   
+phase :: QBit -> QM QBit
+
+-- | Pi/8 gate (T gate)
+--   
+--   &lt;math&gt;
+--   
+phasePi8 :: QBit -> QM QBit
+
+-- | CNOT gate
+--   
+--   &lt;math&gt;
+--   
+cnot :: (QBit, QBit) -> QM (QBit, QBit)
+
+-- | Identity gate
+--   
+--   &lt;math&gt;
+identity :: QBit -> QM QBit
+
+-- | Run quantum program, discarding it's final state
+run :: QM a -> IO a
+
+-- | Run quantum program, prints the final quantum state and returns the
+--   result
+runDebug :: QM a -> IO a
+
+-- | Prepares bell state
+bell :: (Bit, Bit) -> QM (QBit, QBit)
+
+-- | Performs bell measurement
+bellMeasure :: (QBit, QBit) -> QM (Bit, Bit)
