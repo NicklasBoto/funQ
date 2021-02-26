@@ -10,8 +10,7 @@ module Internal.Gates where
 
 import QM ( QM, QState(QState), QBit(..), put, get, getState )
 import Numeric.LinearAlgebra
-    ( (#>), (><), ident, kronecker, Complex(..), Matrix, C )
-
+    ( (#>), (><), ident, kronecker, Complex(..), Matrix, C, toInt)
 
 -- | The imaginary unit
 i :: Complex Double
@@ -69,5 +68,18 @@ controlMatrix size (Ptr c) (Ptr t) g = fl + fr
         l = insertAt proj0 c idsl
         rc = insertAt proj1 c idsr
         r = insertAt g t rc
+        fl = foldr1 applyParallel l
+        fr = foldr1 applyParallel r
+
+-- | Produce a matrix running a gate controlled by two other bits
+ccontrolMatrix :: Int -> QBit -> QBit -> QBit -> Matrix C -> Matrix C
+ccontrolMatrix size (Ptr c1) (Ptr c2) (Ptr t) g = fl + fr
+  where idsl = replicate (size - 2) (ident 2)
+        idsr = replicate (size - 3) (ident 2)
+        lc = insertAt proj0 c1 idsl
+        l = insertAt proj0 c2 lc
+        rc1 = insertAt proj1 c1 idsr
+        rc2 = insertAt proj1 c2 rc1
+        r = insertAt g t rc2
         fl = foldr1 applyParallel l
         fr = foldr1 applyParallel r
