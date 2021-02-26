@@ -17,6 +17,7 @@ module Gates (
     , phasePi8
     , cnot
     , identity
+    , swap
 ) where
 
 import Internal.Gates ( i, applyGate, runGate, controlMatrix )
@@ -134,3 +135,20 @@ identity :: QBit -> QM QBit
 identity = runGate $ (2 >< 2)
   [ 1 , 0
   , 0 , 1 ]
+
+-- | SWAP gate
+-- 
+-- \[ \text{SWAP} = \begin{bmatrix} 
+--    1 & 0 & 0 & 0 \\
+--    0 & 0 & 1 & 0 \\
+--    0 & 1 & 0 & 0 \\ 
+--    0 & 0 & 0 & 1 
+--  \end{bmatrix}
+-- \]
+-- 
+-- ![swap](images/swap.PNG)
+swap :: (QBit, QBit) -> QM (QBit, QBit)
+swap (p,q) = do
+  cnot (p,q)
+  cnot (q,p)
+  cnot (p,q)
