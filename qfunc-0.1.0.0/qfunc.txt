@@ -78,8 +78,9 @@ applyParallel :: Matrix C -> Matrix C -> Matrix C
 -- | Apply gate to the current quantum state
 applyGate :: Matrix C -> QM ()
 
--- | Insert an element at a specific index in a list.
-insertAt :: a -> Int -> [a] -> [a]
+-- | Changes an element at an index in a list. index 0 will change the
+--   first element.
+changeAt :: a -> Int -> [a] -> [a]
 
 -- | Apply a 2x2 gate, to a specific qubit.
 --   
@@ -296,6 +297,18 @@ identity :: QBit -> QM QBit
 --   &lt;math&gt;
 --   
 swap :: (QBit, QBit) -> QM (QBit, QBit)
+
+-- | Hermetian adjoint of T gate (<a>phasePi8</a>)
+tdagger :: QBit -> QM QBit
+
+-- | Fredkin gate
+fredkin :: (QBit, QBit, QBit) -> QM (QBit, QBit, QBit)
+
+-- | Toffoli gate
+--   
+--   &lt;math&gt;
+--   
+toffoli :: (QBit, QBit, QBit) -> QM (QBit, QBit, QBit)
 
 -- | Run quantum program, discarding it's final state
 run :: QM a -> IO a
