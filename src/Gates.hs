@@ -23,7 +23,7 @@ module Gates (
     , toffoli
 ) where
 
-import Internal.Gates ( i, applyGate, runGate, controlMatrix )
+import Internal.Gates ( i, applyGate, runGate, controlMatrix, ccontrolMatrix )
 import QM ( QM, QState(QState), QBit(..), getState, put, get)
 import Numeric.LinearAlgebra
     ( Complex(..), (#>), (><), ident, kronecker, Matrix, Linear(scale), C, ident, tr )
@@ -71,20 +71,11 @@ cnot (c, t) = do
 --  ![toffoli](images/toffoli.PNG)
 toffoli :: (QBit, QBit, QBit) -> QM (QBit, QBit, QBit)
 toffoli (c1,c2,t) = do
-  hadamard t
-  cnot (c2, t)
-  tdagger t
-  cnot (c1, t)
-  phasePi8 t
-  cnot (c2, t)
-  tdagger t
-  cnot (c1, t)
-  phasePi8 c2
-  phasePi8 t
-  cnot (c1, c2)
-  tdagger c2
-  cnot (c1, c2)
-  return (c1, c2, t)
+  (_, size) <- getState 
+  let matrixX = (2 >< 2) [ 0, 1, 1, 0 ]
+  let g = ccontrolMatrix size c1 c2 t matrixX
+  applyGate g
+  return (c1,c2,t)
 
 -- | Pauli-X gate
 --
@@ -163,14 +154,14 @@ phasePi8 :: QBit -> QM QBit
 phasePi8 = runGate $ (2 >< 2)
   [ 1 , 0
   , 0 , p ]
-  where p = exp (i * pi / 8)
+  where p = exp (i * pi / 4)
 
 -- | Hermetian adjoint of T gate (`phasePi8`)
 tdagger :: QBit -> QM QBit
-tdagger = runGate $ tr $ (2 >< 2)
+tdagger = runGate $ (2 >< 2)
   [ 1 , 0
   , 0 , p ]
-  where p = exp (i * pi / 8)
+  where p = exp (-i * pi / 4)
 
 -- | Identity gate
 --
