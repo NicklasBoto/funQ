@@ -322,3 +322,60 @@ bell :: (Bit, Bit) -> QM (QBit, QBit)
 
 -- | Performs bell measurement
 bellMeasure :: (QBit, QBit) -> QM (Bit, Bit)
+
+
+-- | The Deustch Oracle algorithm
+module DeutschJosza
+type Oracle = ([QBit], QBit) -> QM ([QBit], QBit)
+
+-- | An oracle with a balanced function
+balanced :: Oracle
+
+-- | An oracle with a constant function
+constant :: Oracle
+
+-- | Will return a list of ones if balanced and list of zeros if constant.
+--   Size is the number of qubit inputs to the oracle.
+deutschJosza :: Int -> Oracle -> QM [Bit]
+
+
+-- | The Deustch Oracle algorithm
+module Deutsch
+type Oracle = (QBit, QBit) -> QM (QBit, QBit)
+
+-- | An oracle with a constant function
+constant :: Oracle
+
+-- | An oracle with a balanced function
+balanced :: Oracle
+
+-- | Will return a 1 if balanced and 0 if constant.
+deutsch :: Oracle -> QM Bit
+
+module CoinFlip
+
+-- | Given two values, will return either of them with a 50% probability.
+coinFlip :: a -> b -> QM (Either a b)
+
+
+-- | Quantum teleportation example
+module Teleport
+
+-- | 0&gt; : 46.0 (46.0 %) |1&gt; : 54.0 (54.0 %)
+--   
+--   <pre>
+--   &gt;&gt;&gt; dist exampleTeleport
+--   Runs : 100
+--   |0&gt;  : 100.0 (100.0 %)
+--   |1&gt;  : 0.0 (0.0 %)
+--   </pre>
+--   
+--   The quantum teleportation algorithm 1. create EPR pair (a,b) 2.
+--   perform bell measurment on (psi, a) 3. perform corrections on b
+--   according to the bell measurement
+teleport :: QBit -> QM QBit
+
+-- | Create a qubit, teleport it, and measure it
+exampleTeleport :: QM Bit
+correction :: QBit -> (Bit, Bit) -> QM QBit
+teleport' :: QBit -> QM QBit

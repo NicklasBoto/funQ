@@ -45,7 +45,7 @@ Definition of the quantum monad (`QM`) and helper functions
 </span><span id="line-45"></span><span class="hs-comment">-- Represents the linking function in QLambda</span><span>
 </span><span id="line-46"></span><span class="hs-keyword">newtype</span><span> </span><span id="QBit"><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-var">QBit</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Ptr"><span class="annot"><a href="QM.html#Ptr"><span class="hs-identifier hs-var">Ptr</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="link"><span class="annot"><span class="annottext">QBit -&gt; Ix
 </span><a href="QM.html#link"><span class="hs-identifier hs-var hs-var">link</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#Ix"><span class="hs-identifier hs-type">Ix</span></a></span><span> </span><span class="hs-special">}</span><span>
-</span><span id="line-47"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679091816"><span id="local-6989586621679091818"><span id="local-6989586621679091820"><span class="annot"><span class="annottext">Ix -&gt; QBit -&gt; ShowS
+</span><span id="line-47"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span id="local-6989586621679092462"><span id="local-6989586621679092464"><span id="local-6989586621679092466"><span class="annot"><span class="annottext">Ix -&gt; QBit -&gt; ShowS
 [QBit] -&gt; ShowS
 QBit -&gt; String
 (Ix -&gt; QBit -&gt; ShowS)
@@ -65,13 +65,13 @@ $cshowsPrec :: Ix -&gt; QBit -&gt; ShowS
 </span><span id="line-51"></span><span class="hs-keyword">newtype</span><span> </span><span id="QState"><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-var">QState</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="QState"><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-var">QState</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="state"><span class="annot"><span class="annottext">QState -&gt; Vector C
 </span><a href="QM.html#state"><span class="hs-identifier hs-var hs-var">state</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">C</span></span><span> </span><span class="hs-special">}</span><span>
 </span><span id="line-52"></span><span>
-</span><span id="line-53"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679091808"><span id="local-6989586621679091811"><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-54"></span><span>    </span><span id="local-6989586621679091807"><span class="annot"><span class="annottext">show :: QState -&gt; String
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var">show</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span id="local-6989586621679091805"><span class="annot"><span class="annottext">q :: Vector C
-</span><a href="#local-6989586621679091805"><span class="hs-identifier hs-var">q</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-string">&quot;== QState: &quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+</span><span id="line-53"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679092454"><span id="local-6989586621679092457"><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-54"></span><span>    </span><span id="local-6989586621679092453"><span class="annot"><span class="annottext">show :: QState -&gt; String
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">show</span></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span id="local-6989586621679092451"><span class="annot"><span class="annottext">q :: Vector C
+</span><a href="#local-6989586621679092451"><span class="hs-identifier hs-var">q</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-string">&quot;== QState: &quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
 forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679091804"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+</span><a href="#local-6989586621679092450"><span class="hs-identifier hs-var">s</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
 forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="hs-string">&quot; ==\n&quot;</span></span><span>
 </span><span id="line-55"></span><span>                   </span><span class="annot"><span class="annottext">String -&gt; ShowS
@@ -87,134 +87,134 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Vector C -&gt; [C]
 forall a. Storable a =&gt; Vector a -&gt; [a]
 </span><span class="hs-identifier hs-var">toList</span></span><span> </span><span class="annot"><span class="annottext">Vector C
-</span><a href="#local-6989586621679091805"><span class="hs-identifier hs-var">q</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
+</span><a href="#local-6989586621679092451"><span class="hs-identifier hs-var">q</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">String -&gt; ShowS
 forall a. [a] -&gt; [a] -&gt; [a]
 </span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="hs-string">&quot;\n&quot;</span></span><span>
-</span><span id="line-56"></span><span>        </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679091804"><span class="annot"><span class="annottext">s :: String
-</span><a href="#local-6989586621679091804"><span class="hs-identifier hs-var hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Ix -&gt; String
+</span><span id="line-56"></span><span>        </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679092450"><span class="annot"><span class="annottext">s :: String
+</span><a href="#local-6989586621679092450"><span class="hs-identifier hs-var hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Ix -&gt; String
 forall a. Show a =&gt; a -&gt; String
 </span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">(Ix -&gt; String) -&gt; Ix -&gt; String
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Vector C -&gt; IndexOf Vector
 forall (c :: * -&gt; *) t. Container c t =&gt; c t -&gt; IndexOf c
 </span><span class="hs-identifier hs-var">size</span></span><span> </span><span class="annot"><span class="annottext">Vector C
-</span><a href="#local-6989586621679091805"><span class="hs-identifier hs-var">q</span></a></span><span>
+</span><a href="#local-6989586621679092451"><span class="hs-identifier hs-var">q</span></a></span><span>
 </span><span id="line-57"></span><span>
 </span><span id="line-58"></span><span class="hs-comment">-- | The Quantum Monad</span><span>
 </span><span id="line-59"></span><span class="hs-comment">-- Keeps a state of the complex vector representation while allowing</span><span>
 </span><span id="line-60"></span><span class="hs-comment">-- pseudo-random number generation</span><span>
-</span><span id="line-61"></span><span class="hs-keyword">newtype</span><span> </span><span id="QM"><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-var">QM</span></a></span></span><span> </span><span id="local-6989586621679091867"><span class="annot"><a href="#local-6989586621679091867"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="QM"><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-var">QM</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="runQM"><span class="annot"><span class="annottext">QM a -&gt; QState -&gt; IO (a, QState)
-</span><a href="QM.html#runQM"><span class="hs-identifier hs-var hs-var">runQM</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679091867"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-61"></span><span class="hs-keyword">newtype</span><span> </span><span id="QM"><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-var">QM</span></a></span></span><span> </span><span id="local-6989586621679092513"><span class="annot"><a href="#local-6989586621679092513"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="QM"><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-var">QM</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="runQM"><span class="annot"><span class="annottext">QM a -&gt; QState -&gt; IO (a, QState)
+</span><a href="QM.html#runQM"><span class="hs-identifier hs-var hs-var">runQM</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679092513"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">}</span><span>
 </span><span id="line-62"></span><span>
-</span><span id="line-63"></span><span id="local-6989586621679091801"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679091796"><span id="local-6989586621679091799"><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679091801"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-64"></span><span>    </span><span id="local-6989586621679091795"><span class="annot"><span class="annottext">show :: QM a -&gt; String
-</span><a href="#local-6989586621679091795"><span class="hs-identifier hs-var hs-var hs-var hs-var">show</span></a></span></span><span> </span><span id="local-6989586621679091794"><span class="annot"><span class="annottext">_q :: QM a
-</span><a href="#local-6989586621679091794"><span class="hs-identifier hs-var">_q</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-string">&quot;Please use the function 'run' to perform the simulation&quot;</span></span></span><span>
+</span><span id="line-63"></span><span id="local-6989586621679092447"><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679092442"><span id="local-6989586621679092445"><span class="annot"><span class="hs-identifier hs-type">Show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679092447"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-64"></span><span>    </span><span id="local-6989586621679092441"><span class="annot"><span class="annottext">show :: QM a -&gt; String
+</span><a href="#local-6989586621679092441"><span class="hs-identifier hs-var hs-var hs-var hs-var">show</span></a></span></span><span> </span><span id="local-6989586621679092440"><span class="annot"><span class="annottext">_q :: QM a
+</span><a href="#local-6989586621679092440"><span class="hs-identifier hs-var">_q</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-string">&quot;Please use the function 'run' to perform the simulation&quot;</span></span></span><span>
 </span><span id="line-65"></span><span>
-</span><span id="line-66"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679091791"><span class="annot"><span class="hs-identifier hs-type">Functor</span></span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-67"></span><span>    </span><span id="local-6989586621679091789"><span class="annot"><span class="annottext">fmap :: (a -&gt; b) -&gt; QM a -&gt; QM b
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var">fmap</span></span></span><span> </span><span id="local-6989586621679091788"><span class="annot"><span class="annottext">f :: a -&gt; b
-</span><a href="#local-6989586621679091788"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679091787"><span class="annot"><span class="annottext">m :: QM a
-</span><a href="#local-6989586621679091787"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">QM a
-</span><a href="#local-6989586621679091787"><span class="hs-identifier hs-var">m</span></a></span><span> </span><span class="annot"><span class="annottext">QM a -&gt; (a -&gt; QM b) -&gt; QM b
+</span><span id="line-66"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679092437"><span class="annot"><span class="hs-identifier hs-type">Functor</span></span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-67"></span><span>    </span><span id="local-6989586621679092435"><span class="annot"><span class="annottext">fmap :: (a -&gt; b) -&gt; QM a -&gt; QM b
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">fmap</span></span></span><span> </span><span id="local-6989586621679092434"><span class="annot"><span class="annottext">f :: a -&gt; b
+</span><a href="#local-6989586621679092434"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679092433"><span class="annot"><span class="annottext">m :: QM a
+</span><a href="#local-6989586621679092433"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">QM a
+</span><a href="#local-6989586621679092433"><span class="hs-identifier hs-var">m</span></a></span><span> </span><span class="annot"><span class="annottext">QM a -&gt; (a -&gt; QM b) -&gt; QM b
 forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
 </span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="annot"><span class="annottext">b -&gt; QM b
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(b -&gt; QM b) -&gt; (a -&gt; b) -&gt; a -&gt; QM b
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; b
-</span><a href="#local-6989586621679091788"><span class="hs-identifier hs-var">f</span></a></span><span>
+</span><a href="#local-6989586621679092434"><span class="hs-identifier hs-var">f</span></a></span><span>
 </span><span id="line-68"></span><span>
-</span><span id="line-69"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679091777"><span id="local-6989586621679091779"><span id="local-6989586621679091781"><span class="annot"><span class="hs-identifier hs-type">Applicative</span></span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-70"></span><span>    </span><span id="local-6989586621679091775"><span class="annot"><span class="annottext">pure :: a -&gt; QM a
-</span><span class="hs-identifier hs-var hs-var hs-var hs-var">pure</span></span></span><span> </span><span id="local-6989586621679091774"><span class="annot"><span class="annottext">a :: a
-</span><a href="#local-6989586621679091774"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(QState -&gt; IO (a, QState)) -&gt; QM a
+</span><span id="line-69"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679092423"><span id="local-6989586621679092425"><span id="local-6989586621679092427"><span class="annot"><span class="hs-identifier hs-type">Applicative</span></span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-70"></span><span>    </span><span id="local-6989586621679092421"><span class="annot"><span class="annottext">pure :: a -&gt; QM a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var">pure</span></span></span><span> </span><span id="local-6989586621679092420"><span class="annot"><span class="annottext">a :: a
+</span><a href="#local-6989586621679092420"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(QState -&gt; IO (a, QState)) -&gt; QM a
 forall a. (QState -&gt; IO (a, QState)) -&gt; QM a
-</span><a href="QM.html#QM"><span class="hs-identifier hs-var">QM</span></a></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679091773"><span class="annot"><span class="annottext">s :: QState
-</span><a href="#local-6989586621679091773"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(a, QState) -&gt; IO (a, QState)
+</span><a href="QM.html#QM"><span class="hs-identifier hs-var">QM</span></a></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679092419"><span class="annot"><span class="annottext">s :: QState
+</span><a href="#local-6989586621679092419"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(a, QState) -&gt; IO (a, QState)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679091774"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679091773"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679092420"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">QState
+</span><a href="#local-6989586621679092419"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-71"></span><span>    </span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><span class="hs-pragma hs-type">pure</span></span><span> </span><span class="hs-pragma">#-}</span><span>
-</span><span id="line-72"></span><span>    </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span id="local-6989586621679091772"><span class="annot"><span class="annottext">af :: QState -&gt; IO (a -&gt; b, QState)
-</span><a href="#local-6989586621679091772"><span class="hs-identifier hs-var">af</span></a></span></span><span> </span><span id="local-6989586621679091771"><span class="annot"><span class="annottext">&lt;*&gt; :: QM (a -&gt; b) -&gt; QM a -&gt; QM b
-</span><span class="hs-operator hs-var hs-var hs-var hs-var">&lt;*&gt;</span></span></span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span id="local-6989586621679091770"><span class="annot"><span class="annottext">ax :: QState -&gt; IO (a, QState)
-</span><a href="#local-6989586621679091770"><span class="hs-identifier hs-var">ax</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(QState -&gt; IO (b, QState)) -&gt; QM b
+</span><span id="line-72"></span><span>    </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span id="local-6989586621679092418"><span class="annot"><span class="annottext">af :: QState -&gt; IO (a -&gt; b, QState)
+</span><a href="#local-6989586621679092418"><span class="hs-identifier hs-var">af</span></a></span></span><span> </span><span id="local-6989586621679092417"><span class="annot"><span class="annottext">&lt;*&gt; :: QM (a -&gt; b) -&gt; QM a -&gt; QM b
+</span><span class="hs-operator hs-var hs-var hs-var hs-var">&lt;*&gt;</span></span></span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span id="local-6989586621679092416"><span class="annot"><span class="annottext">ax :: QState -&gt; IO (a, QState)
+</span><a href="#local-6989586621679092416"><span class="hs-identifier hs-var">ax</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(QState -&gt; IO (b, QState)) -&gt; QM b
 forall a. (QState -&gt; IO (a, QState)) -&gt; QM a
-</span><a href="QM.html#QM"><span class="hs-identifier hs-var">QM</span></a></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679091769"><span class="annot"><span class="annottext">s :: QState
-</span><a href="#local-6989586621679091769"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-73"></span><span>        </span><span class="hs-special">(</span><span id="local-6989586621679091768"><span class="annot"><span class="annottext">f :: a -&gt; b
-</span><a href="#local-6989586621679091768"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679091767"><span class="annot"><span class="annottext">s' :: QState
-</span><a href="#local-6989586621679091767"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QState -&gt; IO (a -&gt; b, QState)
-</span><a href="#local-6989586621679091772"><span class="hs-identifier hs-var">af</span></a></span><span> </span><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679091769"><span class="hs-identifier hs-var">s</span></a></span><span>
-</span><span id="line-74"></span><span>        </span><span class="hs-special">(</span><span id="local-6989586621679091766"><span class="annot"><span class="annottext">x :: a
-</span><a href="#local-6989586621679091766"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679091765"><span class="annot"><span class="annottext">s'' :: QState
-</span><a href="#local-6989586621679091765"><span class="hs-identifier hs-var">s''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QState -&gt; IO (a, QState)
-</span><a href="#local-6989586621679091770"><span class="hs-identifier hs-var">ax</span></a></span><span> </span><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679091767"><span class="hs-identifier hs-var">s'</span></a></span><span>
+</span><a href="QM.html#QM"><span class="hs-identifier hs-var">QM</span></a></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679092415"><span class="annot"><span class="annottext">s :: QState
+</span><a href="#local-6989586621679092415"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-73"></span><span>        </span><span class="hs-special">(</span><span id="local-6989586621679092414"><span class="annot"><span class="annottext">f :: a -&gt; b
+</span><a href="#local-6989586621679092414"><span class="hs-identifier hs-var">f</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679092413"><span class="annot"><span class="annottext">s' :: QState
+</span><a href="#local-6989586621679092413"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QState -&gt; IO (a -&gt; b, QState)
+</span><a href="#local-6989586621679092418"><span class="hs-identifier hs-var">af</span></a></span><span> </span><span class="annot"><span class="annottext">QState
+</span><a href="#local-6989586621679092415"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><span id="line-74"></span><span>        </span><span class="hs-special">(</span><span id="local-6989586621679092412"><span class="annot"><span class="annottext">x :: a
+</span><a href="#local-6989586621679092412"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679092411"><span class="annot"><span class="annottext">s'' :: QState
+</span><a href="#local-6989586621679092411"><span class="hs-identifier hs-var">s''</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QState -&gt; IO (a, QState)
+</span><a href="#local-6989586621679092416"><span class="hs-identifier hs-var">ax</span></a></span><span> </span><span class="annot"><span class="annottext">QState
+</span><a href="#local-6989586621679092413"><span class="hs-identifier hs-var">s'</span></a></span><span>
 </span><span id="line-75"></span><span>        </span><span class="annot"><span class="annottext">(b, QState) -&gt; IO (b, QState)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; b
-</span><a href="#local-6989586621679091768"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679091766"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679091765"><span class="hs-identifier hs-var">s''</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679092414"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679092412"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">QState
+</span><a href="#local-6989586621679092411"><span class="hs-identifier hs-var">s''</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-76"></span><span>
-</span><span id="line-77"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679091761"><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-78"></span><span>    </span><span id="local-6989586621679091758"><span class="annot"><span class="annottext">return :: a -&gt; QM a
+</span><span id="line-77"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679092407"><span class="annot"><span class="hs-identifier hs-type">Monad</span></span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-78"></span><span>    </span><span id="local-6989586621679092404"><span class="annot"><span class="annottext">return :: a -&gt; QM a
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var">return</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; QM a
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
 </span><span class="hs-identifier hs-var">pure</span></span><span>
-</span><span id="line-79"></span><span>    </span><span id="local-6989586621679091757"><span class="annot"><span class="annottext">m :: QM a
-</span><a href="#local-6989586621679091757"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span id="local-6989586621679091756"><span class="annot"><span class="annottext">&gt;&gt;= :: QM a -&gt; (a -&gt; QM b) -&gt; QM b
-</span><span class="hs-operator hs-var hs-var hs-var hs-var">&gt;&gt;=</span></span></span><span> </span><span id="local-6989586621679091755"><span class="annot"><span class="annottext">k :: a -&gt; QM b
-</span><a href="#local-6989586621679091755"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(QState -&gt; IO (b, QState)) -&gt; QM b
+</span><span id="line-79"></span><span>    </span><span id="local-6989586621679092403"><span class="annot"><span class="annottext">m :: QM a
+</span><a href="#local-6989586621679092403"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span id="local-6989586621679092402"><span class="annot"><span class="annottext">&gt;&gt;= :: QM a -&gt; (a -&gt; QM b) -&gt; QM b
+</span><span class="hs-operator hs-var hs-var hs-var hs-var">&gt;&gt;=</span></span></span><span> </span><span id="local-6989586621679092401"><span class="annot"><span class="annottext">k :: a -&gt; QM b
+</span><a href="#local-6989586621679092401"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(QState -&gt; IO (b, QState)) -&gt; QM b
 forall a. (QState -&gt; IO (a, QState)) -&gt; QM a
-</span><a href="QM.html#QM"><span class="hs-identifier hs-var">QM</span></a></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679091754"><span class="annot"><span class="annottext">s :: QState
-</span><a href="#local-6989586621679091754"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-80"></span><span>        </span><span class="hs-special">(</span><span id="local-6989586621679091753"><span class="annot"><span class="annottext">a :: a
-</span><a href="#local-6989586621679091753"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679091752"><span class="annot"><span class="annottext">s' :: QState
-</span><a href="#local-6989586621679091752"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QM a -&gt; QState -&gt; IO (a, QState)
+</span><a href="QM.html#QM"><span class="hs-identifier hs-var">QM</span></a></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679092400"><span class="annot"><span class="annottext">s :: QState
+</span><a href="#local-6989586621679092400"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-80"></span><span>        </span><span class="hs-special">(</span><span id="local-6989586621679092399"><span class="annot"><span class="annottext">a :: a
+</span><a href="#local-6989586621679092399"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679092398"><span class="annot"><span class="annottext">s' :: QState
+</span><a href="#local-6989586621679092398"><span class="hs-identifier hs-var">s'</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QM a -&gt; QState -&gt; IO (a, QState)
 forall a. QM a -&gt; QState -&gt; IO (a, QState)
 </span><a href="QM.html#runQM"><span class="hs-identifier hs-var hs-var">runQM</span></a></span><span> </span><span class="annot"><span class="annottext">QM a
-</span><a href="#local-6989586621679091757"><span class="hs-identifier hs-var">m</span></a></span><span> </span><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679091754"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><a href="#local-6989586621679092403"><span class="hs-identifier hs-var">m</span></a></span><span> </span><span class="annot"><span class="annottext">QState
+</span><a href="#local-6989586621679092400"><span class="hs-identifier hs-var">s</span></a></span><span>
 </span><span id="line-81"></span><span>        </span><span class="annot"><span class="annottext">QM b -&gt; QState -&gt; IO (b, QState)
 forall a. QM a -&gt; QState -&gt; IO (a, QState)
 </span><a href="QM.html#runQM"><span class="hs-identifier hs-var hs-var">runQM</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; QM b
-</span><a href="#local-6989586621679091755"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679091753"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679091752"><span class="hs-identifier hs-var">s'</span></a></span><span>
+</span><a href="#local-6989586621679092401"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679092399"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">QState
+</span><a href="#local-6989586621679092398"><span class="hs-identifier hs-var">s'</span></a></span><span>
 </span><span id="line-82"></span><span>
 </span><span id="line-83"></span><span class="hs-comment">-- | Perform IO action inside the quantum monad</span><span>
-</span><span id="line-84"></span><span id="local-6989586621679091839"><span class="annot"><a href="QM.html#io"><span class="hs-identifier hs-type">io</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679091839"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679091839"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-84"></span><span id="local-6989586621679092485"><span class="annot"><a href="QM.html#io"><span class="hs-identifier hs-type">io</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679092485"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679092485"><span class="hs-identifier hs-type">a</span></a></span></span><span>
 </span><span id="line-85"></span><span id="io"><span class="annot"><span class="annottext">io :: IO a -&gt; QM a
-</span><a href="QM.html#io"><span class="hs-identifier hs-var hs-var">io</span></a></span></span><span> </span><span id="local-6989586621679091751"><span class="annot"><span class="annottext">m :: IO a
-</span><a href="#local-6989586621679091751"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(QState -&gt; IO (a, QState)) -&gt; QM a
+</span><a href="QM.html#io"><span class="hs-identifier hs-var hs-var">io</span></a></span></span><span> </span><span id="local-6989586621679092397"><span class="annot"><span class="annottext">m :: IO a
+</span><a href="#local-6989586621679092397"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(QState -&gt; IO (a, QState)) -&gt; QM a
 forall a. (QState -&gt; IO (a, QState)) -&gt; QM a
-</span><a href="QM.html#QM"><span class="hs-identifier hs-var">QM</span></a></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679091750"><span class="annot"><span class="annottext">s :: QState
-</span><a href="#local-6989586621679091750"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-86"></span><span>    </span><span id="local-6989586621679091749"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679091749"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO a
-</span><a href="#local-6989586621679091751"><span class="hs-identifier hs-var">m</span></a></span><span>
+</span><a href="QM.html#QM"><span class="hs-identifier hs-var">QM</span></a></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679092396"><span class="annot"><span class="annottext">s :: QState
+</span><a href="#local-6989586621679092396"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-86"></span><span>    </span><span id="local-6989586621679092395"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679092395"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO a
+</span><a href="#local-6989586621679092397"><span class="hs-identifier hs-var">m</span></a></span><span>
 </span><span id="line-87"></span><span>    </span><span class="annot"><span class="annottext">(a, QState) -&gt; IO (a, QState)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679091749"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679091750"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679092395"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">QState
+</span><a href="#local-6989586621679092396"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-88"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="QM.html#io"><span class="hs-pragma hs-type">io</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
 </span><span id="line-89"></span><span>
 </span><span id="line-90"></span><span class="hs-comment">-- | Replace the quantum state</span><span>
 </span><span id="line-91"></span><span class="annot"><a href="QM.html#put"><span class="hs-identifier hs-type">put</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-92"></span><span id="put"><span class="annot"><span class="annottext">put :: QState -&gt; QM ()
-</span><a href="QM.html#put"><span class="hs-identifier hs-var hs-var">put</span></a></span></span><span> </span><span id="local-6989586621679091748"><span class="annot"><span class="annottext">s :: QState
-</span><a href="#local-6989586621679091748"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(QState -&gt; IO ((), QState)) -&gt; QM ()
+</span><a href="QM.html#put"><span class="hs-identifier hs-var hs-var">put</span></a></span></span><span> </span><span id="local-6989586621679092394"><span class="annot"><span class="annottext">s :: QState
+</span><a href="#local-6989586621679092394"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(QState -&gt; IO ((), QState)) -&gt; QM ()
 forall a. (QState -&gt; IO (a, QState)) -&gt; QM a
 </span><a href="QM.html#QM"><span class="hs-identifier hs-var">QM</span></a></span><span> </span><span class="hs-glyph">\</span><span class="hs-identifier">_</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">((), QState) -&gt; IO ((), QState)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679091748"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679092394"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-93"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="QM.html#put"><span class="hs-pragma hs-type">put</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
 </span><span id="line-94"></span><span>
 </span><span id="line-95"></span><span class="hs-comment">-- | Fetch the quantum state</span><span>
@@ -222,92 +222,92 @@ forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span id="line-97"></span><span id="get"><span class="annot"><span class="annottext">get :: QM QState
 </span><a href="QM.html#get"><span class="hs-identifier hs-var hs-var">get</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(QState -&gt; IO (QState, QState)) -&gt; QM QState
 forall a. (QState -&gt; IO (a, QState)) -&gt; QM a
-</span><a href="QM.html#QM"><span class="hs-identifier hs-var">QM</span></a></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679091747"><span class="annot"><span class="annottext">s :: QState
-</span><a href="#local-6989586621679091747"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(QState, QState) -&gt; IO (QState, QState)
+</span><a href="QM.html#QM"><span class="hs-identifier hs-var">QM</span></a></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679092393"><span class="annot"><span class="annottext">s :: QState
+</span><a href="#local-6989586621679092393"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(QState, QState) -&gt; IO (QState, QState)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679091747"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679091747"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679092393"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">QState
+</span><a href="#local-6989586621679092393"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-98"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="QM.html#get"><span class="hs-pragma hs-type">get</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
 </span><span id="line-99"></span><span>
 </span><span id="line-100"></span><span class="hs-comment">-- | Apply a function to the quantum state</span><span>
 </span><span id="line-101"></span><span class="annot"><a href="QM.html#modify"><span class="hs-identifier hs-type">modify</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-102"></span><span id="modify"><span class="annot"><span class="annottext">modify :: (QState -&gt; QState) -&gt; QM ()
-</span><a href="QM.html#modify"><span class="hs-identifier hs-var hs-var">modify</span></a></span></span><span> </span><span id="local-6989586621679091746"><span class="annot"><span class="annottext">f :: QState -&gt; QState
-</span><a href="#local-6989586621679091746"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(QState -&gt; IO ((), QState)) -&gt; QM ()
+</span><a href="QM.html#modify"><span class="hs-identifier hs-var hs-var">modify</span></a></span></span><span> </span><span id="local-6989586621679092392"><span class="annot"><span class="annottext">f :: QState -&gt; QState
+</span><a href="#local-6989586621679092392"><span class="hs-identifier hs-var">f</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(QState -&gt; IO ((), QState)) -&gt; QM ()
 forall a. (QState -&gt; IO (a, QState)) -&gt; QM a
-</span><a href="QM.html#QM"><span class="hs-identifier hs-var">QM</span></a></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679091745"><span class="annot"><span class="annottext">s :: QState
-</span><a href="#local-6989586621679091745"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">((), QState) -&gt; IO ((), QState)
+</span><a href="QM.html#QM"><span class="hs-identifier hs-var">QM</span></a></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621679092391"><span class="annot"><span class="annottext">s :: QState
+</span><a href="#local-6989586621679092391"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">((), QState) -&gt; IO ((), QState)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">QState -&gt; QState
-</span><a href="#local-6989586621679091746"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679091745"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679092392"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="annot"><span class="annottext">QState
+</span><a href="#local-6989586621679092391"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-103"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="QM.html#modify"><span class="hs-pragma hs-type">modify</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
 </span><span id="line-104"></span><span>
 </span><span id="line-105"></span><span class="hs-comment">-- | Run quantum program</span><span>
-</span><span id="line-106"></span><span id="local-6989586621679091849"><span class="annot"><a href="QM.html#eval"><span class="hs-identifier hs-type">eval</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679091849"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679091849"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-106"></span><span id="local-6989586621679092495"><span class="annot"><a href="QM.html#eval"><span class="hs-identifier hs-type">eval</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679092495"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621679092495"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span class="hs-special">)</span></span><span>
 </span><span id="line-107"></span><span id="eval"><span class="annot"><span class="annottext">eval :: QM a -&gt; IO (a, QState)
-</span><a href="QM.html#eval"><span class="hs-identifier hs-var hs-var">eval</span></a></span></span><span> </span><span id="local-6989586621679091744"><span class="annot"><span class="annottext">qm :: QM a
-</span><a href="#local-6989586621679091744"><span class="hs-identifier hs-var">qm</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">QM a -&gt; QState -&gt; IO (a, QState)
+</span><a href="QM.html#eval"><span class="hs-identifier hs-var hs-var">eval</span></a></span></span><span> </span><span id="local-6989586621679092390"><span class="annot"><span class="annottext">qm :: QM a
+</span><a href="#local-6989586621679092390"><span class="hs-identifier hs-var">qm</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">QM a -&gt; QState -&gt; IO (a, QState)
 forall a. QM a -&gt; QState -&gt; IO (a, QState)
 </span><a href="QM.html#runQM"><span class="hs-identifier hs-var hs-var">runQM</span></a></span><span> </span><span class="annot"><span class="annottext">QM a
-</span><a href="#local-6989586621679091744"><span class="hs-identifier hs-var">qm</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector C -&gt; QState
+</span><a href="#local-6989586621679092390"><span class="hs-identifier hs-var">qm</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector C -&gt; QState
 </span><a href="QM.html#QState"><span class="hs-identifier hs-var">QState</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span>
 </span><span id="line-108"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="QM.html#eval"><span class="hs-pragma hs-type">eval</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
 </span><span id="line-109"></span><span>
 </span><span id="line-110"></span><span class="hs-comment">-- | Run quantum program, discarding it's final state</span><span>
-</span><span id="line-111"></span><span id="local-6989586621679091743"><span class="annot"><a href="QM.html#run"><span class="hs-identifier hs-type">run</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679091743"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679091743"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-111"></span><span id="local-6989586621679092389"><span class="annot"><a href="QM.html#run"><span class="hs-identifier hs-type">run</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679092389"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679092389"><span class="hs-identifier hs-type">a</span></a></span></span><span>
 </span><span id="line-112"></span><span id="run"><span class="annot"><span class="annottext">run :: QM a -&gt; IO a
-</span><a href="QM.html#run"><span class="hs-identifier hs-var hs-var">run</span></a></span></span><span> </span><span id="local-6989586621679091742"><span class="annot"><span class="annottext">qm :: QM a
-</span><a href="#local-6989586621679091742"><span class="hs-identifier hs-var">qm</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(a, QState) -&gt; a
+</span><a href="QM.html#run"><span class="hs-identifier hs-var hs-var">run</span></a></span></span><span> </span><span id="local-6989586621679092388"><span class="annot"><span class="annottext">qm :: QM a
+</span><a href="#local-6989586621679092388"><span class="hs-identifier hs-var">qm</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(a, QState) -&gt; a
 forall a b. (a, b) -&gt; a
 </span><span class="hs-identifier hs-var">fst</span></span><span> </span><span class="annot"><span class="annottext">((a, QState) -&gt; a) -&gt; IO (a, QState) -&gt; IO a
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">QM a -&gt; IO (a, QState)
 forall a. QM a -&gt; IO (a, QState)
 </span><a href="QM.html#eval"><span class="hs-identifier hs-var">eval</span></a></span><span> </span><span class="annot"><span class="annottext">QM a
-</span><a href="#local-6989586621679091742"><span class="hs-identifier hs-var">qm</span></a></span><span>
+</span><a href="#local-6989586621679092388"><span class="hs-identifier hs-var">qm</span></a></span><span>
 </span><span id="line-113"></span><span class="hs-pragma">{-# INLINE</span><span> </span><span class="annot"><a href="QM.html#run"><span class="hs-pragma hs-type">run</span></a></span><span> </span><span class="hs-pragma">#-}</span><span>
 </span><span id="line-114"></span><span>
 </span><span id="line-115"></span><span class="hs-comment">-- | Run quantum program, prints the final quantum state and returns the result</span><span>
-</span><span id="line-116"></span><span id="local-6989586621679091740"><span class="annot"><a href="QM.html#runDebug"><span class="hs-identifier hs-type">runDebug</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679091740"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679091740"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-116"></span><span id="local-6989586621679092386"><span class="annot"><a href="QM.html#runDebug"><span class="hs-identifier hs-type">runDebug</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679092386"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621679092386"><span class="hs-identifier hs-type">a</span></a></span></span><span>
 </span><span id="line-117"></span><span id="runDebug"><span class="annot"><span class="annottext">runDebug :: QM a -&gt; IO a
-</span><a href="QM.html#runDebug"><span class="hs-identifier hs-var hs-var">runDebug</span></a></span></span><span> </span><span id="local-6989586621679091739"><span class="annot"><span class="annottext">qm :: QM a
-</span><a href="#local-6989586621679091739"><span class="hs-identifier hs-var">qm</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-118"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679091738"><span class="annot"><span class="annottext">a :: a
-</span><a href="#local-6989586621679091738"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679091737"><span class="annot"><span class="annottext">s :: QState
-</span><a href="#local-6989586621679091737"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QM a -&gt; IO (a, QState)
+</span><a href="QM.html#runDebug"><span class="hs-identifier hs-var hs-var">runDebug</span></a></span></span><span> </span><span id="local-6989586621679092385"><span class="annot"><span class="annottext">qm :: QM a
+</span><a href="#local-6989586621679092385"><span class="hs-identifier hs-var">qm</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-118"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679092384"><span class="annot"><span class="annottext">a :: a
+</span><a href="#local-6989586621679092384"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679092383"><span class="annot"><span class="annottext">s :: QState
+</span><a href="#local-6989586621679092383"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QM a -&gt; IO (a, QState)
 forall a. QM a -&gt; IO (a, QState)
 </span><a href="QM.html#eval"><span class="hs-identifier hs-var">eval</span></a></span><span> </span><span class="annot"><span class="annottext">QM a
-</span><a href="#local-6989586621679091739"><span class="hs-identifier hs-var">qm</span></a></span><span>
+</span><a href="#local-6989586621679092385"><span class="hs-identifier hs-var">qm</span></a></span><span>
 </span><span id="line-119"></span><span>    </span><span class="annot"><span class="annottext">QState -&gt; IO ()
 forall a. Show a =&gt; a -&gt; IO ()
 </span><span class="hs-identifier hs-var">print</span></span><span> </span><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679091737"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><a href="#local-6989586621679092383"><span class="hs-identifier hs-var">s</span></a></span><span>
 </span><span id="line-120"></span><span>    </span><span class="annot"><span class="annottext">a -&gt; IO a
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679091738"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><a href="#local-6989586621679092384"><span class="hs-identifier hs-var">a</span></a></span><span>
 </span><span id="line-121"></span><span>
 </span><span id="line-122"></span><span class="hs-comment">-- | Given a QState, returns how many qbits it consists of.</span><span>
 </span><span id="line-123"></span><span class="annot"><a href="QM.html#stateSize"><span class="hs-identifier hs-type">stateSize</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#Ix"><span class="hs-identifier hs-type">Ix</span></a></span><span>
 </span><span id="line-124"></span><span id="stateSize"><span class="annot"><span class="annottext">stateSize :: QState -&gt; Ix
-</span><a href="QM.html#stateSize"><span class="hs-identifier hs-var hs-var">stateSize</span></a></span></span><span> </span><span id="local-6989586621679091736"><span class="annot"><span class="annottext">q :: QState
-</span><a href="#local-6989586621679091736"><span class="hs-identifier hs-var">q</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Vector C -&gt; IndexOf Vector
+</span><a href="QM.html#stateSize"><span class="hs-identifier hs-var hs-var">stateSize</span></a></span></span><span> </span><span id="local-6989586621679092382"><span class="annot"><span class="annottext">q :: QState
+</span><a href="#local-6989586621679092382"><span class="hs-identifier hs-var">q</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Vector C -&gt; IndexOf Vector
 forall (c :: * -&gt; *) t. Container c t =&gt; c t -&gt; IndexOf c
 </span><span class="hs-identifier hs-var">size</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QState -&gt; Vector C
 </span><a href="QM.html#state"><span class="hs-identifier hs-var hs-var">state</span></a></span><span> </span><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679091736"><span class="hs-identifier hs-var">q</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
+</span><a href="#local-6989586621679092382"><span class="hs-identifier hs-var">q</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
 </span><span id="line-125"></span><span>                </span><span class="hs-number">0</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
-</span><span id="line-126"></span><span>                </span><span id="local-6989586621679091735"><span class="annot"><span class="annottext">x :: IndexOf Vector
-</span><a href="#local-6989586621679091735"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix
+</span><span id="line-126"></span><span>                </span><span id="local-6989586621679092381"><span class="annot"><span class="annottext">x :: IndexOf Vector
+</span><a href="#local-6989586621679092381"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix
 forall a. Integral a =&gt; a -&gt; Ix
 </span><a href="QM.html#log2"><span class="hs-identifier hs-var">log2</span></a></span><span> </span><span class="annot"><span class="annottext">Ix
 IndexOf Vector
-</span><a href="#local-6989586621679091735"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><a href="#local-6989586621679092381"><span class="hs-identifier hs-var">x</span></a></span><span>
 </span><span id="line-127"></span><span>
 </span><span id="line-128"></span><span class="hs-comment">-- | Normal integer log with base 2.</span><span>
-</span><span id="line-129"></span><span id="local-6989586621679091846"><span class="annot"><a href="QM.html#log2"><span class="hs-identifier hs-type">log2</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integral</span></span><span> </span><span class="annot"><a href="#local-6989586621679091846"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679091846"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#Ix"><span class="hs-identifier hs-type">Ix</span></a></span></span><span>
+</span><span id="line-129"></span><span id="local-6989586621679092492"><span class="annot"><a href="QM.html#log2"><span class="hs-identifier hs-type">log2</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integral</span></span><span> </span><span class="annot"><a href="#local-6989586621679092492"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679092492"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#Ix"><span class="hs-identifier hs-type">Ix</span></a></span></span><span>
 </span><span id="line-130"></span><span id="log2"><span class="annot"><span class="annottext">log2 :: a -&gt; Ix
 </span><a href="QM.html#log2"><span class="hs-identifier hs-var hs-var">log2</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Ix
 forall a b. (RealFrac a, Integral b) =&gt; a -&gt; b
@@ -325,25 +325,25 @@ forall a b. (Integral a, Num b) =&gt; a -&gt; b
 </span><span id="line-133"></span><span class="annot"><a href="QM.html#getState"><span class="hs-identifier hs-type">getState</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">)</span><span>
 </span><span id="line-134"></span><span id="getState"><span class="annot"><span class="annottext">getState :: QM (QState, Ix)
 </span><a href="QM.html#getState"><span class="hs-identifier hs-var hs-var">getState</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-135"></span><span>    </span><span id="local-6989586621679091731"><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679091731"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QM QState
+</span><span id="line-135"></span><span>    </span><span id="local-6989586621679092377"><span class="annot"><span class="annottext">QState
+</span><a href="#local-6989586621679092377"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QM QState
 </span><a href="QM.html#get"><span class="hs-identifier hs-var">get</span></a></span><span>
-</span><span id="line-136"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679091730"><span class="annot"><span class="annottext">size :: Ix
-</span><a href="#local-6989586621679091730"><span class="hs-identifier hs-var hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">QState -&gt; Ix
+</span><span id="line-136"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679092376"><span class="annot"><span class="annottext">size :: Ix
+</span><a href="#local-6989586621679092376"><span class="hs-identifier hs-var hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">QState -&gt; Ix
 </span><a href="QM.html#stateSize"><span class="hs-identifier hs-var">stateSize</span></a></span><span> </span><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679091731"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><a href="#local-6989586621679092377"><span class="hs-identifier hs-var">s</span></a></span><span>
 </span><span id="line-137"></span><span>    </span><span class="annot"><span class="annottext">(QState, Ix) -&gt; QM (QState, Ix)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679091731"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Ix
-</span><a href="#local-6989586621679091730"><span class="hs-identifier hs-var">size</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679092377"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Ix
+</span><a href="#local-6989586621679092376"><span class="hs-identifier hs-var">size</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-138"></span><span>
 </span><span id="line-139"></span><span class="hs-comment">-- | Print the quantum state during operation</span><span>
 </span><span id="line-140"></span><span class="annot"><a href="QM.html#checkState"><span class="hs-identifier hs-type">checkState</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-141"></span><span id="checkState"><span class="annot"><span class="annottext">checkState :: QM ()
 </span><a href="QM.html#checkState"><span class="hs-identifier hs-var hs-var">checkState</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-142"></span><span>    </span><span id="local-6989586621679091729"><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679091729"><span class="hs-identifier hs-var">state</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QM QState
+</span><span id="line-142"></span><span>    </span><span id="local-6989586621679092375"><span class="annot"><span class="annottext">QState
+</span><a href="#local-6989586621679092375"><span class="hs-identifier hs-var">state</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QM QState
 </span><a href="QM.html#get"><span class="hs-identifier hs-var">get</span></a></span><span>
 </span><span id="line-143"></span><span>    </span><span class="annot"><span class="annottext">IO () -&gt; QM ()
 forall a. IO a -&gt; QM a
@@ -352,5 +352,5 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">QState -&gt; IO ()
 forall a. Show a =&gt; a -&gt; IO ()
 </span><span class="hs-identifier hs-var">print</span></span><span> </span><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679091729"><span class="hs-identifier hs-var">state</span></a></span><span>
+</span><a href="#local-6989586621679092375"><span class="hs-identifier hs-var">state</span></a></span><span>
 </span><span id="line-144"></span></pre></body></html>
