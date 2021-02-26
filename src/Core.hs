@@ -3,7 +3,7 @@
 {-# OPTIONS_HADDOCK not-home        #-}
 
 {-|
-Module      : Funqy
+Module      : Core
 Description : Core language
 Stability   : experimental
 

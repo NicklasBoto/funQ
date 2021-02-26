@@ -1,5 +1,5 @@
 {-|
-Module      : Lib
+Module      : FunQ
 Description : Main library
 Stability   : experimental
 
@@ -27,6 +27,7 @@ module FunQ
     , phasePi8
     , cnot
     , identity
+    , swap
 
     -- * Simulators
     , run
@@ -54,7 +55,8 @@ import Gates
       pauliY,
       pauliZ,
       phase,
-      phasePi8 )
+      phasePi8,
+      swap )
 
 -- | Prepares bell state
 bell :: (Bit, Bit) -> QM (QBit, QBit)
