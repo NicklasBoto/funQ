@@ -1,8 +1,8 @@
--- | The Deustch Oracle algorithm
-module DeutschJosza where
+-- | The Deustch-Jozsa Oracle algorithm
+module DeutschJozsa where
 
 import FunQ
-import Control.Monad ( replicateM, zipWithM )
+import Control.Monad ( replicateM )
 
 type Oracle = ([QBit], QBit) -> QM ([QBit], QBit)
 
@@ -25,8 +25,8 @@ constant (xs,y) = do
 
 -- | Will return a list of ones if balanced and list of zeros if constant.
 -- Size is the number of qubit inputs to the oracle.
-deutschJosza :: Int -> Oracle -> QM [Bit]
-deutschJosza size oracle = do
+deutschJozsa :: Int -> Oracle -> QM [Bit]
+deutschJozsa size oracle = do
     xs <- replicateM size (new 0)
     y <- new 1
     mapM_ hadamard xs
