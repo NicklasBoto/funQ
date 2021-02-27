@@ -324,8 +324,8 @@ bell :: (Bit, Bit) -> QM (QBit, QBit)
 bellMeasure :: (QBit, QBit) -> QM (Bit, Bit)
 
 
--- | The Deustch Oracle algorithm
-module DeutschJosza
+-- | The Deustch-Jozsa Oracle algorithm
+module DeutschJozsa
 type Oracle = ([QBit], QBit) -> QM ([QBit], QBit)
 
 -- | An oracle with a balanced function
@@ -336,7 +336,7 @@ constant :: Oracle
 
 -- | Will return a list of ones if balanced and list of zeros if constant.
 --   Size is the number of qubit inputs to the oracle.
-deutschJosza :: Int -> Oracle -> QM [Bit]
+deutschJozsa :: Int -> Oracle -> QM [Bit]
 
 
 -- | The Deustch Oracle algorithm
