@@ -15,81 +15,69 @@ main :: IO ()
 main = do
     return ()
 
--- TODO:
--- eq qubits
--- arbitrary qubit
--- prop_paulixGate :: QBit n -> Bool
--- prop_paulixGate q = undefined -- q == pauliX pauliX q
+-- helper function to run QM computations within the property monad for quickcheck
+run' = TM.run . run 
 
--- prop_qubitEq1 :: Bool
--- prop_qubitEq1 = new 0 /= new 1
--- 
--- prop_qubitEq2 :: Bool
--- prop_qubitEq2 = new 1 /= new 0
--- 
--- prop_qubitEq3 :: Bool
--- prop_qubitEq3 = new 1 == new 1
--- 
--- prop_qubitEq4 :: Bool
--- prop_qubitEq4 = new 0 == new 0
+-- | Checks that H (H q) = q 
+prop_hadamard_reverse :: (QBit -> QM QBit) -> QState -> Property
+prop_hadamard_reverse h q  = TM.monadicIO $ do
+    (s,p) <- run' $ applyGate h q  
+    let su = sum $ map (^2) (toList $ state s)
+    TM.assert (realPart su + imagPart su < 1.00001 && realPart su + imagPart su > 0.9999) --due to rounding errors, cannot test == 1
 
-hadamardTest :: QM (Vector C)
-hadamardTest = do
-    q <- new 0
-    p <- new 0
-    hadamard q
-    (QState v) <- get
-    return v
+-- | Can be run with QuickCheck to test 
+prop_sum_hadamard :: QState -> Property
+prop_sum_hadamard = prop_gate_sum hadamard
 
---cnotTest :: QM (Vector C)
---cnotTest =  do
---    cnot (q, p)  
---    (QState v) <- get 
---    return v
+prop_sum_cnot :: QState -> Property
+prop_sum_cnot = prop_gate_sum cnot' 
 
+prop_sum_pauliX :: QState -> Property
+prop_sum_pauliX = prop_gate_sum cnot' 
+
+-- Currently failing
+prop_sum_pauliY :: QState -> Property 
+prop_sum_pauliY = prop_gate_sum pauliY
 
 
 -- | Checks that the sum of the squared elements in the vector sums to 1 
--- >>>  quickcheck $ prop_gate_sum gate h 
-prop_gate_sum :: (QState -> QM (Vector C)) -> QState -> Property
-prop_gate_sum f q = TM.monadicIO $ do
-    v <- TM.run $ run $ f q
-    let s = sum $ map (^2) (toList v)
-    TM.assert (realPart s + imagPart s < 1.00001 && realPart s + imagPart s > 0.9999) --due to rounding errors, cannot test == 1
+prop_gate_sum :: (QBit -> QM QBit) -> QState -> Property
+prop_gate_sum g q = TM.monadicIO $ do
+    (s,p) <- run' $ applyGate g q
+    let su = sum $ map (^2) (toList $ state s)
+    TM.assert (realPart su + imagPart su < 1.00001 && realPart su + imagPart su > 0.9999) --due to rounding errors, cannot test == 1
 
---  Takes an arbitrary QState, apply Hadamard gate on random qubit in state
-h :: QState -> QM (Vector C)
-h q = do
+--  | Helper function, apply the given gate on a random qubit in state, return the state vector
+applyGate :: (QBit -> QM QBit) -> QState -> QM (QState, QBit)
+applyGate g q = do
     put q
     (_,s) <- getState
-    q' <- io $ evalRandIO $ getRandQbit s
-    hadamard (Ptr q')
-    (QState s) <- get
-    return s
-
--- Takes an arbitrary QState, apply cnot gate on random qubit in state
-c :: QState ->  QM (Vector C)
-c q = do
-    put q
-    (_,s) <- getState
-    q' <- io $ evalRandIO $ getRandQbit s
-    let p = if q' /= 0 then q' + 1 else q' - 1
-    cnot (Ptr q', Ptr p)
-    (QState s) <- get
-    return s
+    q' <- getRandQbit s
+    g q'
+    state <- get 
+    return (state, q')
+    
+-- cnot to be used with applyGate for testing purpose
+cnot' :: (QBit -> QM QBit)
+cnot' q = do
+    let p = if link q /= 0 then Ptr $ link q + 1 else Ptr $ link q - 1
+    (q',p') <- cnot (q, p)
+    return p' -- returns pointer to the first qubit only, dummy implementation for matching of types 
 
 -- Returns index between zero and size of QState
-getRandQbit size = getRandomR (0,size)
+--getRandQbit :: Int -> QM QBit
+getRandQbit :: Int -> QM QBit 
+getRandQbit size = do 
+        i <- io $ evalRandIO $ getRandomR (0,size) 
+        return $ Ptr i
 
-getV :: QState -> Vector C 
-getV (QState q) = q 
 
 -- Arbitrary instance for QState, would probably not be used
 instance Arbitrary QState where
     arbitrary = do
         b <- elements [0,1]
-        n <- elements [getV $ newVector b, tensorVector (getV $ newVector b) (getV $ newVector b)]
-        m <- elements [getV $ newVector b, tensorVector (getV $ newVector b) (getV $ newVector b)]
+        n <- elements [state $ newVector b, tensorVector (state $ newVector b) (state $ newVector b)]
+        m <- elements [state $ newVector b, tensorVector (state $ newVector b) (state $ newVector b)]
         t <- elements [tensorVector m n] 
         return $ QState t
 
