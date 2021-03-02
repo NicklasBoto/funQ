@@ -7,7 +7,7 @@ import Internal.Core (newVector, tensorVector)
 import Core
 import QM
 import Gates
-import Numeric.LinearAlgebra ((><),toList,(#>), C, Vector, realPart, imagPart, Additive (add))
+import Numeric.LinearAlgebra ((><),toList,(#>), C, Vector, realPart, Additive (add),Normed(norm_2))
 import Control.Monad.Random ( fromList, evalRandIO, getRandomR, liftIO, Rand)
 
 
@@ -17,7 +17,7 @@ main = do
 
 --- Non-quickCheck tests
 
--- | Checks that a given gate applied twice on a single quBit is same as before (Still not exact due to rounding error)
+-- | Applies a given gate twice to a given qubit. Returns state before and after the operations
 applyTwice :: QBit -> (QBit -> QM QBit) -> QM (QState,QState)
 applyTwice qbt g = do
            (before,s) <- getState 
@@ -27,6 +27,7 @@ applyTwice qbt g = do
            
 
 -- Test reversibility of gates 
+-- Compares the vectors as list (no Eq instance for Vector)
 test_rev_had :: IO Bool
 test_rev_had = run $ do  
     qbt <- new 0 
@@ -42,16 +43,16 @@ test_rev_paulix = run $ do
     (b,a) <- applyTwice qbt pauliX
     let bf = map realPart (toList $ state b)
     let af = map realPart (toList $ state a)
-    let cmp =  zipWith (\ x y -> abs (x - y)) bf af
     return (bf == af)
-     
+
+--return ((state b =< state a) && (state b >= state a)) could not compare :/ 
 
 --- QuickCheck tests
 -- >>> quickCheck prop_sumOne
 
 -- Basic quickCheck test, that unmodified QState sums to 1
 prop_sumOne :: QState -> Bool
-prop_sumOne (QState v) = sum (toList v) == 1
+prop_sumOne (QState v) = norm_2 v == 1
 
 -- | Can be run with QuickCheck to test 
 prop_sum_hadamard :: QState -> Property
@@ -77,8 +78,8 @@ prop_gate_sum g q = TM.monadicIO $ do
     (_,size) <- run' getState
     qbt <- run' $ getRandQbit size
     s <- run' $ applyGate q g qbt
-    let su = sum $ map (^2) (toList $ state s)
-    TM.assert (realPart su + imagPart su < 1.00001 && realPart su + imagPart su > 0.9999) --due to rounding errors, cannot test == 1
+    let su = norm_2 $ state s
+    TM.assert (su < 1.00001 && su > 0.9999) --due to rounding errors, cannot test == 1
 
 
 --- Helpers
@@ -117,14 +118,16 @@ getRandQbit size = do
 
 --- Arbitrary instances
 
--- Arbitrary instance for QState, would probably not be used
+-- Arbitrary instance for QState, not very pretty :) 
 instance Arbitrary QState where
     arbitrary = do
         b <- elements [0,1]
         n <- elements [state $ newVector b, tensorVector (state $ newVector b) (state $ newVector b)]
         m <- elements [state $ newVector b, tensorVector (state $ newVector b) (state $ newVector b)]
-        t <- elements [tensorVector m n]
-        return $ QState t
+        let s = elements [tensorVector m n]
+        let t = elements [tensorVector (tensorVector m n) (tensorVector m n)]
+        e <- frequency [(7,s),(3,t)]
+        return $ QState e
 
 -- Not used for now
 instance Arbitrary (QM QBit) where
