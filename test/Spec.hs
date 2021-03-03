@@ -8,8 +8,7 @@ import Core
 import QM
 import Gates
 import Numeric.LinearAlgebra ((><),toList,(#>), C, Vector, realPart, imagPart, Additive (add))
-import Control.Monad.Random ( fromList, evalRandIO, getRandomR, liftIO, Rand)
-
+import Control.Monad.Random ( fromList, evalRandIO, getRandomR, liftIO, Rand, liftM)
 
 main :: IO ()
 main = do
@@ -27,24 +26,19 @@ applyTwice qbt g = do
            
 
 -- Test reversibility of gates 
-test_rev_had :: IO Bool
-test_rev_had = run $ do  
-    qbt <- new 0 
-    (b,a) <- applyTwice qbt hadamard
+-- | Given a gate that takes a single qbit, applies it and checks reversibility 
+test_rev :: (QBit -> QM QBit) -> IO Bool 
+test_rev g = run $ do  
+    qbt <- new 0
+    (b,a) <- applyTwice qbt g
     let bf = map realPart (toList $ state b)
     let af = map realPart (toList $ state a)
     let cmp =  zipWith (\ x y -> abs (x - y)) bf af
     return $ all (<0.0000001) cmp -- cannot be checked directly due to rounding errors
 
-test_rev_paulix :: IO Bool
-test_rev_paulix = run $ do 
-    qbt <- new 0 
-    (b,a) <- applyTwice qbt pauliX
-    let bf = map realPart (toList $ state b)
-    let af = map realPart (toList $ state a)
-    let cmp =  zipWith (\ x y -> abs (x - y)) bf af
-    return (bf == af)
-     
+test_rev_gates :: IO Bool 
+test_rev_gates = liftM and $ sequence (map test_rev gates)
+    where gates = [hadamard, pauliX, pauliY, pauliZ, phase, phasePi8, identity]
 
 --- QuickCheck tests
 -- >>> quickCheck prop_sumOne
