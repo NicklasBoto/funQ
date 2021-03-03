@@ -36,9 +36,11 @@ test_rev g = run $ do
     let cmp =  zipWith (\ x y -> abs (x - y)) bf af
     return $ all (<0.0000001) cmp -- cannot be checked directly due to rounding errors
 
+-- | Applies the reversibility tests to all gates that matches type signature of QBit -> QM QBit.
 test_rev_gates :: IO Bool 
 test_rev_gates = liftM and $ sequence (map test_rev gates)
     where gates = [hadamard, pauliX, pauliY, pauliZ, phase, phasePi8, identity]
+
 
 --- QuickCheck tests
 -- >>> quickCheck prop_sumOne
