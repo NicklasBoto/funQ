@@ -27,10 +27,9 @@ module Core (
 ) where
 
 import QM ( QM, QBit(Ptr), io, put, get, modify, run, getState )
-import Internal.Core ( findProb, remBadProbs, appendState, newVector )
+import Internal.Core ( findQbitProb, remImpossibleStates, Prob, appendState, newVector, rngQbit )
 import Data.Bit ( Bit )
 import Control.Monad ( replicateM )
-import qualified Control.Monad.Random as Rand ( fromList, evalRandIO )
 
 -- | Create new `QBit` from a bit.
 -- maps \(0 \mapsto |0>\) and \(1 \mapsto |1>\)
@@ -41,16 +40,19 @@ new x = do
     return $ Ptr size
 
 -- | Performs a measurement operation, collapsing a `QBit` to a `Bit`.
--- Here comes a long explanation of the algorithm correcting the state
+-- The qubit will still exist in the quantum state, but be collapsed.
+--
+-- Finds qubit probability to collapse to a zero and one.
+-- Uses random number generator to "measure it" to a zero or one.
+-- Updates quantum state to remove impossible states, and normalizes it so probabilites sum to one.
 measure :: QBit -> QM Bit
-measure (Ptr ix) = do
+measure qbit = do
     state <- get
-    let (p0, p1) = findProb ix state
-    let dist = Rand.fromList [(0,p0), (1,p1)]
-    res <- io $ Rand.evalRandIO dist
-    let newState = remBadProbs res ix state
+    let (p0, p1) = findQbitProb qbit state
+    bit <- io $ rngQbit p0 p1 -- Need to use io for randomness
+    let newState = remImpossibleStates state qbit bit
     put newState
-    return res
+    return bit
 
 -- | Sets a classical bit as the controlbit for a quantum gate.
 -- Making it run only when the classical bit is equal to one.
