@@ -28,6 +28,9 @@ module FunQ
     , cnot
     , identity
     , swap
+    , tdagger
+    , fredkin
+    , toffoli
 
     -- * Simulators
     , run
@@ -56,7 +59,10 @@ import Gates
       pauliZ,
       phase,
       phasePi8,
-      swap )
+      swap,
+      tdagger,
+      fredkin,
+      toffoli )
 
 -- | Prepares bell state
 bell :: (Bit, Bit) -> QM (QBit, QBit)

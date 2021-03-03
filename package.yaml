@@ -33,7 +33,9 @@ dependencies:
 - mtl
 
 library:
-  source-dirs: src
+  source-dirs: 
+    - src
+    - examples
 
 executables:
   qfunc-exe:
