@@ -1,18 +1,30 @@
 {-# LANGUAGE FlexibleInstances #-}
-module Spec where
+module Main where
 
 import Test.QuickCheck;
 import qualified Test.QuickCheck.Monadic as TM (assert, monadicIO, pick, pre, run, PropertyM)
 import Internal.Core (newVector, tensorVector)
-import Core
-import QM
+import Core ( new )
+import QM ( io, get, put, run, getState, QState(..), QM, QBit(..) )
 import Gates
-import Numeric.LinearAlgebra ((><),toList,(#>), C, Vector, realPart, Additive (add),Normed(norm_2))
-import Control.Monad.Random ( fromList, evalRandIO, getRandomR, liftIO, Rand)
-
+import Numeric.LinearAlgebra ((><),toList,(#>), C, Vector, realPart, imagPart, Additive (add), Normed(norm_2))
+import Control.Monad.Random ( fromList, evalRandIO, getRandomR, liftIO, Rand, liftM)
 
 main :: IO ()
 main = do
+    print "testing reversibility of gates on single qubits:"
+    a <-test_rev_gates
+    print a 
+    print "testing reversibility of cnot with two qubits"
+    c <-test_rev_cnot
+    print c
+    print "quickCheck tests testing sum of QState = 1"
+    quickCheck prop_sumOne
+    quickCheck prop_sum_hadamard 
+    quickCheck prop_sum_cnot 
+    quickCheck prop_sum_pauliX
+    quickCheck prop_sum_pauliY
+    quickCheck prop_sum_pauliZ
     return ()
 
 --- Non-quickCheck tests
@@ -20,32 +32,40 @@ main = do
 -- | Applies a given gate twice to a given qubit. Returns state before and after the operations
 applyTwice :: QBit -> (QBit -> QM QBit) -> QM (QState,QState)
 applyTwice qbt g = do
-           (before,s) <- getState 
+           before <- get
            once <- applyGate before g qbt
            twice <- applyGate once g qbt
            return (before,twice)
-           
+
 
 -- Test reversibility of gates 
--- Compares the vectors as list (no Eq instance for Vector)
-test_rev_had :: IO Bool
-test_rev_had = run $ do  
-    qbt <- new 0 
-    (b,a) <- applyTwice qbt hadamard
+-- | Given a gate that takes a single qbit, applies it and checks reversibility 
+test_rev :: (QBit -> QM QBit) -> IO Bool
+test_rev g = run $ do
+    qbt <- new 0
+    (b,a) <- applyTwice qbt g
     let bf = map realPart (toList $ state b)
     let af = map realPart (toList $ state a)
     let cmp =  zipWith (\ x y -> abs (x - y)) bf af
     return $ all (<0.0000001) cmp -- cannot be checked directly due to rounding errors
 
-test_rev_paulix :: IO Bool
-test_rev_paulix = run $ do 
-    qbt <- new 0 
-    (b,a) <- applyTwice qbt pauliX
-    let bf = map realPart (toList $ state b)
-    let af = map realPart (toList $ state a)
-    return (bf == af)
+-- All other gates than hadamard could be tested with (state a == state b)
 
---return ((state b =< state a) && (state b >= state a)) could not compare :/ 
+    
+-- | Applies the reversibility tests to all gates that matches type signature of QBit -> QM QBit.
+test_rev_gates :: IO Bool
+test_rev_gates = liftM and $ mapM test_rev gates
+    where gates = [hadamard, pauliX, pauliY, pauliZ, phase, phasePi8, identity]
+
+-- | Test reversibility of cnot 
+test_rev_cnot :: IO Bool 
+test_rev_cnot = run $ do
+    q1 <- new 1
+    q2 <- new 0
+    b <- get 
+    cnot (q1,q2) >>= cnot 
+    a <- get 
+    return (state a == state b) 
 
 --- QuickCheck tests
 -- >>> quickCheck prop_sumOne
@@ -65,7 +85,7 @@ prop_sum_pauliX :: QState -> Property
 prop_sum_pauliX = prop_gate_sum pauliX
 
 prop_sum_pauliZ :: QState -> Property
-prop_sum_pauliZ = prop_gate_sum pauliZ 
+prop_sum_pauliZ = prop_gate_sum pauliZ
 
 -- Currently failing
 prop_sum_pauliY :: QState -> Property
@@ -136,8 +156,8 @@ instance Arbitrary (QM QBit) where
 -- Not used for now
 instance Arbitrary (QM QState) where
         arbitrary = do
-        put <$> (arbitrary :: Gen QState)
-        return get
+            put <$> (arbitrary :: Gen QState)
+            return get
 
 -- Not used for now
 instance Arbitrary (QM ()) where
