@@ -50,23 +50,19 @@ testNorm n = monadicIO $
           assert $ norm_0 s == 1
 
 -- | Checks that the given matrix is unitary
--- TODO: unfinished
 isUnitary :: Matrix C -> Property
-isUnitary mx = foldl (.&&.) isSquare [ innerHolds mx , isConjugate, normal, eigenspacesO, diagonalizable ]
-  where isConjugate =  property $ eqAlmostMat (mx LA.<> conj mx) (ident (rows mx))
-        isSquare = property $ rows mx == cols mx
+isUnitary mx = foldl (.&&.) isSquare [ isConjugate, innerHolds mx , normal ]
+  where isSquare = property $ rows mx == cols mx
+        isConjugate =  property $ eqAlmostMat (mx LA.<> conj mx) (ident (rows mx))
         normal = property $ eqAlmostMat (conj mx LA.<> mx) (mx LA.<> conj mx)
         detIsOne = property $ eqAlmost (abs (det mx)) 1
-        eigenspacesO = property True
-        diagonalizable = property True
 
 -- | Checks that the inner product between matrix transformations holds
 innerHolds :: Matrix C -> Property
 innerHolds mx = forAll genNs test
-  where test bs = eqAlmost (magnitude ((<.>) ((#>) mx (randV 0 bs)) ((#>) mx (randV 1 bs)))) (magnitude ((<.>) (randV 0 bs) (randV 1 bs)))
+  where test bs = eqAlmost ((#>) mx (randV 0 bs) <.> (#>) mx (randV 1 bs)) (randV 0 bs <.> randV 1 bs)
         randV n bs = toColumns (ident (rows mx)) !! (bs !! n)
         genNs = vectorOf 2 (choose (0, rows mx - 1))
-        eqAlmost a b = b-0.000001 <= a && a <= b+0.000001
 
 -- | Compareas two complex numbers for equality to the 6th decimal
 eqAlmost :: C -> C -> Bool
