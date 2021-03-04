@@ -2,56 +2,71 @@
 {-# LANGUAGE FlexibleContexts #-}
 module Spec where
 
-import FunQ ( new, Bit )
+import FunQ ( new, Bit, QBit, hadamard )
 import Test.QuickCheck
-    ( forAll,
-      elements,
-      Testable(property),
-      Property,
-      choose,
-      vectorOf,
-      (.&&.),
-      quickCheck )
 import Test.QuickCheck.Monadic as TM
-    ( forAllM, run, assert, monadicIO, PropertyM )
-import QM ( run, QState(QState), get )
+import QM
 import Numeric.LinearAlgebra as LA
-    ( Normed(norm_0),
-      C,
-      magnitude,
-      det,
-      (#>),
-      (<.>),
-      (><),
-      cols,
-      rows,
-      toColumns,
-      toLists,
-      conj,
-      ident,
-      (<>),
-      Matrix,
-      Linear(scale) )
 import Internal.Gates (i)
+
+
+maxAllowedN :: Int
+maxAllowedN = 10
 
 -- | Sample tests
 main :: IO ()
 main = do
-  quickCheck $ testNorm 5
-  quickCheck $ isUnitary hmat
+  quickCheck $ prop_unitary hmat
+  quickCheck   prop_hadamard
+  quickCheck $ prop_norm 8 
 
--- | Generates QStates of lengths between 1 and n and checks that their norm is 1
-testNorm :: Int -> Property
-testNorm n = monadicIO $
-  TM.forAllM (choose (1,n) >>= flip vectorOf (elements [0,1])) assertive
-  where assertive :: [Bit] -> PropertyM IO ()
+
+
+-- | Checks that the QState of arbitrary size after a hadamard gate is applied keeps a good norm and
+-- that the QState vector only contains two amplitudes at 1/sqrt(2).
+
+-- Especially this function may kill your computer if it's let to run without max bounds.
+prop_hadamard :: Int -> Property
+prop_hadamard n
+  | n > maxAllowedN = errorWithoutStackTrace "your computer almost just died. either you forgot to input a value, or you want to raise the value for allowed inputs"
+  | otherwise = monadicIO $ do
+    m <- pick $ choose (1,n)
+    TM.forAllM (genBits n) $ assertive m
+      where
+            assertive :: Int -> [Bit] -> PropertyM IO ()
+            assertive m bs = do
+              qs@(QState s) <- qrun $ mapM new bs >>= \x -> hadamard (x !! div (length bs-1) m) >> get
+              assert $ goodNorm qs && length (filter (eqAlmost (1/sqrt 2)) (toList s)) == 2
+
+
+
+-- | Checks that the norm of generated QStates, of 1 < lengths < n , is one
+prop_norm :: Int -> Property
+prop_norm n
+  | n > maxAllowedN = errorWithoutStackTrace "your computer almost just died. either you forgot to input a value, or you want to raise the value for allowed inputs"
+  | otherwise = monadicIO $
+  TM.forAllM (genBits n) assertive
+  where
+        assertive :: [Bit] -> PropertyM IO ()
         assertive bs = do
-          (QState s) <- TM.run . QM.run $ mapM_ new bs >> get
-          assert $ norm_0 s == 1
+          qs <- qrun $ mapM_ new bs >> get
+          assert $ goodNorm qs
+
+-- | Checks that the norm of the given QState is 1
+goodNorm :: QState -> Bool
+goodNorm (QState s) = eqAlmost (norm_2 s :+ 0) 1
+
+-- | Generates a bit string of given length
+genBits :: Int -> Gen [Bit]
+genBits n = vectorOf n (elements [0,1])
+
+-- | Runs a QM program in PropertyM
+qrun :: QM a -> PropertyM IO a
+qrun = TM.run . QM.run
 
 -- | Checks that the given matrix is unitary
-isUnitary :: Matrix C -> Property
-isUnitary mx = foldl (.&&.) isSquare [ isConjugate, innerHolds mx , normal ]
+prop_unitary :: Matrix C -> Property
+prop_unitary mx = foldl (.&&.) isSquare [ isConjugate, innerHolds mx , normal ]
   where isSquare = property $ rows mx == cols mx
         isConjugate =  property $ eqAlmostMat (mx LA.<> conj mx) (ident (rows mx))
         normal = property $ eqAlmostMat (conj mx LA.<> mx) (mx LA.<> conj mx)
