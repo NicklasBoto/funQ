@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: af7342f5a2a2aad9f9ef93b50924fadf9c86ffbbf6d6eb0d8367b965c1cddd15
+-- hash: 882d23a73f044212c3f5b67da68d8d1bd192bc564a864b9d06969ee3ef8b4d54
 
 name:           qfunc
 version:        0.1.0.0
@@ -38,10 +38,16 @@ library
       Internal.Core
       Internal.Gates
       QM
+      CoinFlip
+      Deutsch
+      DeutschJosza
+      Logic
+      Teleport
   other-modules:
       Paths_qfunc
   hs-source-dirs:
       src
+      examples
   build-depends:
       MonadRandom
     , base >=4.7 && <5
