@@ -8,12 +8,26 @@ Stability   : experimental
 
 Internal matrix operations
 -}
+{-# LANGUAGE FlexibleInstances #-}
 module Internal.Gates where
 
-import QM ( QM, QState(QState), QBit(..), put, get, getState )
+import QM ( QM, QState(QState), QBit(..), put, get, getState ) 
 import Numeric.LinearAlgebra
-    ( (#>), (><), ident, kronecker, Complex(..), Matrix, C, toInt, asColumn, asRow, mTm, Linear (scale) )
-
+    ( (#>),
+      (><),
+      dispcf,
+      ident,
+      kronecker,
+      Complex(..),
+      Matrix,
+      Linear(scale),
+      C )
+   
+import Numeric.LinearAlgebra.Data
+    ( (><), dispcf, ident, Complex(..), Matrix, C )
+instance {-# OVERLAPS#-} Show (Matrix C) where
+  show mx = dispcf 3 mx
+  
 -- | The imaginary unit
 i :: Complex Double
 i = 0 :+ 1
