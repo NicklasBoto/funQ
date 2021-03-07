@@ -11,23 +11,11 @@ Internal matrix operations
 {-# LANGUAGE FlexibleInstances #-}
 module Internal.Gates where
 
-import QM ( QM, QState(QState), QBit(..), put, get, getState ) 
+import QM
 import Numeric.LinearAlgebra
-    ( (#>),
-      (><),
-      dispcf,
-      ident,
-      kronecker,
-      Complex(..),
-      Matrix,
-      Linear(scale),
-      C )
-   
-import Numeric.LinearAlgebra.Data
-    ( (><), dispcf, ident, Complex(..), Matrix, C )
 instance {-# OVERLAPS#-} Show (Matrix C) where
   show mx = dispcf 3 mx
-  
+
 -- | The imaginary unit
 i :: Complex Double
 i = 0 :+ 1
@@ -61,17 +49,12 @@ runGate g x = do
     return x
 
 -- run specified gates in parallel
--- TODO: unfinished
-parallel :: [(Matrix C, QBit)] -> QM [QBit]
-parallel as = do
-  (state, size) <- getState
-  let ids = replicate size $ ident 2
-  let list = foldr f1 ids as
-  let m = foldr1 applyParallel list
-  applyGate m
-  return $ map snd as
-  where f1 :: (Matrix C, QBit) -> [Matrix C] -> [Matrix C]
-        f1 (mx, Ptr q) nx = changeAt mx q nx
+-- TODO: should work, but not fully tested. does NOT work with controlled gates
+parallel :: Int -> [(Matrix C, QBit)] -> Matrix C
+parallel size as = foldr1 applyParallel list
+  where list = foldr apply (replicate size $ ident 2) as
+        apply :: (Matrix C, QBit) -> [Matrix C] -> [Matrix C]
+        apply (mx, Ptr q) nx = changeAt mx q nx
 
 -- | Produce matrix running a gate controlled by another bit
 controlMatrix :: Int -> QBit -> QBit -> Matrix C -> Matrix C
@@ -83,7 +66,6 @@ controlMatrix size (Ptr c) (Ptr t) g = fl + fr
         r = changeAt g t rc
         fl = foldr1 applyParallel l
         fr = foldr1 applyParallel r
-
 -- | Produce a matrix running a gate controlled by two other bits
 ccontrolMatrix :: Int -> QBit -> QBit -> QBit -> Matrix C -> Matrix C
 ccontrolMatrix size (Ptr c1) (Ptr c2) (Ptr t) g = f00 + f01 + f10 + f11
@@ -117,28 +99,28 @@ hmat = scale (sqrt 0.5) $ (2 >< 2)
 
 -- | CNOT matrix
 cmat :: Matrix C
-cmat = (4 >< 4) 
+cmat = (4 >< 4)
   [ 1, 0, 0, 0
   , 0, 1, 0, 0
   , 0, 0, 0, 1
-  , 0, 0, 1, 0]
+  , 0, 0, 1, 0 ]
 
 -- | Generic phase matrix, takes in phase change as radians
-phasemat :: Double -> Matrix C 
+phasemat :: Double -> Matrix C
 phasemat r = (2 >< 2)
-  [ 1, 0 
+  [ 1, 0
   , 0, p]
   where p = exp (i*(r :+ 0))
 
 -- | PauliX matrix
 pXmat :: Matrix C
-pXmat = (2 >< 2) 
+pXmat = (2 >< 2)
   [ 0, 1
   , 1, 0 ]
 
 -- | PauliY matrix
 pYmat :: Matrix C
-pYmat = (2 >< 2) 
+pYmat = (2 >< 2)
   [ 0, -i
   , i,  0 ]
 
@@ -149,7 +131,7 @@ pZmat = (2 >< 2)
   , 0 , -1 ]
 
 -- | Identity matrix
-idmat :: Matrix C 
+idmat :: Matrix C
 idmat = (2 >< 2)
   [ 1 , 0
   , 0 , 1 ]
