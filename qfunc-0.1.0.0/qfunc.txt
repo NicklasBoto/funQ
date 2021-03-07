@@ -66,6 +66,7 @@ instance GHC.Base.Functor QM.QM
 instance GHC.Base.Applicative QM.QM
 instance GHC.Base.Monad QM.QM
 instance GHC.Show.Show QM.QState
+instance GHC.Classes.Eq QM.QState
 
 
 -- | Internal matrix operations
