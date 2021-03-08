@@ -31,6 +31,7 @@ dependencies:
 - bitvec
 - MonadRandom
 - mtl
+- numbers
 
 library:
   source-dirs: 

@@ -10,9 +10,10 @@ Internal matrix operations
 -}
 module Internal.Gates where
 
-import QM ( QM, QState(QState), QBit(..), put, get, getState )
+import Data.Number.CReal
+import QM ( QM, QState(QState), QBit(..), put, get, getState, Ix )
 import Numeric.LinearAlgebra
-    ( (#>), (><), ident, kronecker, Complex(..), Matrix, C, toInt, asColumn, asRow, mTm )
+    ( (#>), (><), ident, kronecker, Complex(..), Matrix, C, toInt, asColumn, asRow, mTm, scale )
 
 -- | The imaginary unit
 i :: Complex Double
@@ -86,5 +87,14 @@ ccontrolMatrix size (Ptr c1) (Ptr c2) (Ptr t) g = f00 + f01 + f10 + f11
         f01  = foldr1 applyParallel m01c
         f10  = foldr1 applyParallel m10c
         f11  = foldr1 applyParallel m11c
-        
-        
+
+-- | Quantum fourier transform matrix
+qftMatrix :: Int -> Matrix C
+qftMatrix n = (1 / sqrt (fromIntegral n)) * (n >< n)
+  [ ω^(j*k) | j <- [0..n-1], k <- [0..n-1] ]
+  where ω = exp ((2*pi*i) / fromIntegral n)
+
+notAdjacent :: [Ix] -> Bool
+notAdjacent [a]      = False
+notAdjacent [a, b]   = b-a /= 1
+notAdjacent (a:b:as) = b-a /= 1 || notAdjacent (b:as)
