@@ -87,7 +87,13 @@ changeAt :: a -> Int -> [a] -> [a]
 --   
 --   It will update the qstate.
 runGate :: Matrix C -> QBit -> QM QBit
-parallel :: [Matrix C] -> QM ()
+parallel :: Int -> [(Matrix C, QBit)] -> Matrix C
+
+-- | Produce matrix running a gate controlled by another bit
+controlMatrix :: Int -> QBit -> QBit -> Matrix C -> Matrix C
+
+-- | Produce a matrix running a gate controlled by two other bits
+ccontrolMatrix :: Int -> QBit -> QBit -> QBit -> Matrix C -> Matrix C
 
 -- | Projection of the zero basis vector
 proj0 :: Matrix C
@@ -95,11 +101,27 @@ proj0 :: Matrix C
 -- | Projection of the one basis vector
 proj1 :: Matrix C
 
--- | Produce matrix running a gate controlled by another bit
-controlMatrix :: Int -> QBit -> QBit -> Matrix C -> Matrix C
+-- | Hadamard matrix
+hmat :: Matrix C
 
--- | Produce a matrix running a gate controlled by two other bits
-ccontrolMatrix :: Int -> QBit -> QBit -> QBit -> Matrix C -> Matrix C
+-- | CNOT matrix
+cmat :: Matrix C
+
+-- | Generic phase matrix, takes in phase change as radians
+phasemat :: Double -> Matrix C
+
+-- | PauliX matrix
+pXmat :: Matrix C
+
+-- | PauliY matrix
+pYmat :: Matrix C
+
+-- | PauliZ matrix
+pZmat :: Matrix C
+
+-- | Identity matrix
+idmat :: Matrix C
+instance GHC.Show.Show (Internal.Matrix.Matrix Internal.Vector.C)
 
 
 -- | Internal matrix and measurment operations
