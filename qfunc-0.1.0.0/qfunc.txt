@@ -95,6 +95,10 @@ controlMatrix :: Int -> QBit -> QBit -> Matrix C -> Matrix C
 -- | Produce a matrix running a gate controlled by two other bits
 ccontrolMatrix :: Int -> QBit -> QBit -> QBit -> Matrix C -> Matrix C
 
+-- | Quantum fourier transform matrix
+qftMatrix :: Int -> Matrix C
+notAdjacent :: [Ix] -> Bool
+
 -- | Projection of the zero basis vector
 proj0 :: Matrix C
 
@@ -208,6 +212,15 @@ fredkin :: (QBit, QBit, QBit) -> QM (QBit, QBit, QBit)
 --   &lt;math&gt;
 --   
 toffoli :: (QBit, QBit, QBit) -> QM (QBit, QBit, QBit)
+
+-- | UROT gate
+urot :: Int -> QBit -> QM QBit
+
+-- | Controlled UROT
+crot :: Int -> (QBit, QBit) -> QM (QBit, QBit)
+
+-- | Quantum fourier transform
+qft :: [QBit] -> QM [QBit]
 
 
 -- | The core language operations.
@@ -332,6 +345,15 @@ fredkin :: (QBit, QBit, QBit) -> QM (QBit, QBit, QBit)
 --   &lt;math&gt;
 --   
 toffoli :: (QBit, QBit, QBit) -> QM (QBit, QBit, QBit)
+
+-- | UROT gate
+urot :: Int -> QBit -> QM QBit
+
+-- | Controlled UROT
+crot :: Int -> (QBit, QBit) -> QM (QBit, QBit)
+
+-- | Quantum fourier transform
+qft :: [QBit] -> QM [QBit]
 
 -- | Run quantum program, discarding it's final state
 run :: QM a -> IO a

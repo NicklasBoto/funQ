@@ -27,60 +27,60 @@ Internal matrix and measurment operations
 </span><span id="line-27"></span><span class="hs-comment">-- | Appends state with tensor </span><span>
 </span><span id="line-28"></span><span class="annot"><a href="Internal.Core.html#appendState"><span class="hs-identifier hs-type">appendState</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span>
 </span><span id="line-29"></span><span id="appendState"><span class="annot"><span class="annottext">appendState :: QState -&gt; QState -&gt; QState
-</span><a href="Internal.Core.html#appendState"><span class="hs-identifier hs-var hs-var">appendState</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span id="local-6989586621679093132"><span class="annot"><span class="annottext">new :: Vector C
-</span><a href="#local-6989586621679093132"><span class="hs-identifier hs-var">new</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector C -&gt; QState
+</span><a href="Internal.Core.html#appendState"><span class="hs-identifier hs-var hs-var">appendState</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span id="local-6989586621679093727"><span class="annot"><span class="annottext">new :: Vector C
+</span><a href="#local-6989586621679093727"><span class="hs-identifier hs-var">new</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector C -&gt; QState
 </span><a href="QM.html#QState"><span class="hs-identifier hs-var">QState</span></a></span><span> </span><span class="annot"><span class="annottext">Vector C
-</span><a href="#local-6989586621679093132"><span class="hs-identifier hs-var">new</span></a></span><span>
-</span><span id="line-30"></span><span class="annot"><a href="Internal.Core.html#appendState"><span class="hs-identifier hs-var">appendState</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span id="local-6989586621679093131"><span class="annot"><span class="annottext">new :: Vector C
-</span><a href="#local-6989586621679093131"><span class="hs-identifier hs-var">new</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span id="local-6989586621679093130"><span class="annot"><span class="annottext">state :: Vector C
-</span><a href="#local-6989586621679093130"><span class="hs-identifier hs-var">state</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector C -&gt; QState
+</span><a href="#local-6989586621679093727"><span class="hs-identifier hs-var">new</span></a></span><span>
+</span><span id="line-30"></span><span class="annot"><a href="Internal.Core.html#appendState"><span class="hs-identifier hs-var">appendState</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span id="local-6989586621679093726"><span class="annot"><span class="annottext">new :: Vector C
+</span><a href="#local-6989586621679093726"><span class="hs-identifier hs-var">new</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span id="local-6989586621679093725"><span class="annot"><span class="annottext">state :: Vector C
+</span><a href="#local-6989586621679093725"><span class="hs-identifier hs-var">state</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector C -&gt; QState
 </span><a href="QM.html#QState"><span class="hs-identifier hs-var">QState</span></a></span><span> </span><span class="annot"><span class="annottext">(Vector C -&gt; QState) -&gt; Vector C -&gt; QState
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Vector C -&gt; Vector C -&gt; Vector C
 </span><a href="Internal.Core.html#tensorVector"><span class="hs-identifier hs-var">tensorVector</span></a></span><span> </span><span class="annot"><span class="annottext">Vector C
-</span><a href="#local-6989586621679093131"><span class="hs-identifier hs-var">new</span></a></span><span> </span><span class="annot"><span class="annottext">Vector C
-</span><a href="#local-6989586621679093130"><span class="hs-identifier hs-var">state</span></a></span><span>
+</span><a href="#local-6989586621679093726"><span class="hs-identifier hs-var">new</span></a></span><span> </span><span class="annot"><span class="annottext">Vector C
+</span><a href="#local-6989586621679093725"><span class="hs-identifier hs-var">state</span></a></span><span>
 </span><span id="line-31"></span><span>
 </span><span id="line-32"></span><span>
 </span><span id="line-33"></span><span class="hs-comment">--&#160;| Tensor product between two vectors</span><span>
 </span><span id="line-34"></span><span class="annot"><a href="Internal.Core.html#tensorVector"><span class="hs-identifier hs-type">tensorVector</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">C</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">C</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">C</span></span><span>
 </span><span id="line-35"></span><span id="tensorVector"><span class="annot"><span class="annottext">tensorVector :: Vector C -&gt; Vector C -&gt; Vector C
-</span><a href="Internal.Core.html#tensorVector"><span class="hs-identifier hs-var hs-var">tensorVector</span></a></span></span><span> </span><span id="local-6989586621679093128"><span class="annot"><span class="annottext">newVector :: Vector C
-</span><a href="#local-6989586621679093128"><span class="hs-identifier hs-var">newVector</span></a></span></span><span> </span><span id="local-6989586621679093127"><span class="annot"><span class="annottext">oldVector :: Vector C
-</span><a href="#local-6989586621679093127"><span class="hs-identifier hs-var">oldVector</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix C -&gt; Vector C
+</span><a href="Internal.Core.html#tensorVector"><span class="hs-identifier hs-var hs-var">tensorVector</span></a></span></span><span> </span><span id="local-6989586621679093723"><span class="annot"><span class="annottext">newVector :: Vector C
+</span><a href="#local-6989586621679093723"><span class="hs-identifier hs-var">newVector</span></a></span></span><span> </span><span id="local-6989586621679093722"><span class="annot"><span class="annottext">oldVector :: Vector C
+</span><a href="#local-6989586621679093722"><span class="hs-identifier hs-var">oldVector</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Matrix C -&gt; Vector C
 forall t. Element t =&gt; Matrix t -&gt; Vector t
 </span><span class="hs-identifier hs-var">flatten</span></span><span> </span><span class="annot"><span class="annottext">(Matrix C -&gt; Vector C) -&gt; Matrix C -&gt; Vector C
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Vector C -&gt; Vector C -&gt; Matrix C
 forall t. Product t =&gt; Vector t -&gt; Vector t -&gt; Matrix t
 </span><span class="hs-identifier hs-var">outer</span></span><span> </span><span class="annot"><span class="annottext">Vector C
-</span><a href="#local-6989586621679093127"><span class="hs-identifier hs-var">oldVector</span></a></span><span> </span><span class="annot"><span class="annottext">Vector C
-</span><a href="#local-6989586621679093128"><span class="hs-identifier hs-var">newVector</span></a></span><span>
+</span><a href="#local-6989586621679093722"><span class="hs-identifier hs-var">oldVector</span></a></span><span> </span><span class="annot"><span class="annottext">Vector C
+</span><a href="#local-6989586621679093723"><span class="hs-identifier hs-var">newVector</span></a></span><span>
 </span><span id="line-36"></span><span>
 </span><span id="line-37"></span><span class="hs-comment">-- | (probToBeZero, probToBeOne)</span><span>
 </span><span id="line-38"></span><span class="hs-comment">-- ix is index of qubit to measure</span><span>
 </span><span id="line-39"></span><span class="annot"><a href="Internal.Core.html#findProb"><span class="hs-identifier hs-type">findProb</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#Ix"><span class="hs-identifier hs-type">Ix</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Rational</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Rational</span></span><span class="hs-special">)</span><span>
 </span><span id="line-40"></span><span id="findProb"><span class="annot"><span class="annottext">findProb :: Ix -&gt; QState -&gt; (Rational, Rational)
-</span><a href="Internal.Core.html#findProb"><span class="hs-identifier hs-var hs-var">findProb</span></a></span></span><span> </span><span id="local-6989586621679093125"><span class="annot"><span class="annottext">ixMeas :: Ix
-</span><a href="#local-6989586621679093125"><span class="hs-identifier hs-var">ixMeas</span></a></span></span><span> </span><span id="local-6989586621679093124"><span class="annot"><span class="annottext">qs :: QState
-</span><a href="#local-6989586621679093124"><span class="hs-identifier hs-var">qs</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span id="local-6989586621679093123"><span class="annot"><span class="annottext">s :: Vector C
-</span><a href="#local-6989586621679093123"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Rational -&gt; Rational -&gt; Rational
+</span><a href="Internal.Core.html#findProb"><span class="hs-identifier hs-var hs-var">findProb</span></a></span></span><span> </span><span id="local-6989586621679093720"><span class="annot"><span class="annottext">ixMeas :: Ix
+</span><a href="#local-6989586621679093720"><span class="hs-identifier hs-var">ixMeas</span></a></span></span><span> </span><span id="local-6989586621679093719"><span class="annot"><span class="annottext">qs :: QState
+</span><a href="#local-6989586621679093719"><span class="hs-identifier hs-var">qs</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span id="local-6989586621679093718"><span class="annot"><span class="annottext">s :: Vector C
+</span><a href="#local-6989586621679093718"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Rational -&gt; Rational -&gt; Rational
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Rational
-</span><a href="#local-6989586621679093122"><span class="hs-identifier hs-var">prob</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Rational
-</span><a href="#local-6989586621679093122"><span class="hs-identifier hs-var">prob</span></a></span><span class="hs-special">)</span><span> </span><span>
-</span><span id="line-41"></span><span>    </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679093121"><span class="annot"><span class="annottext">match :: Ix -&gt; Complex a -&gt; Rational
-</span><a href="#local-6989586621679093121"><span class="hs-identifier hs-var hs-var">match</span></a></span></span><span> </span><span id="local-6989586621679093120"><span class="annot"><span class="annottext">x :: Ix
-</span><a href="#local-6989586621679093120"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span id="local-6989586621679093119"><span class="annot"><span class="annottext">y :: Complex a
-</span><a href="#local-6989586621679093119"><span class="hs-identifier hs-var">y</span></a></span></span><span> </span><span class="hs-comment">-- Matches indices with bitmask, if index matches then return the squared magnitude of the corresponding probability, else return 0</span><span>
+</span><a href="#local-6989586621679093717"><span class="hs-identifier hs-var">prob</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Rational
+</span><a href="#local-6989586621679093717"><span class="hs-identifier hs-var">prob</span></a></span><span class="hs-special">)</span><span> </span><span>
+</span><span id="line-41"></span><span>    </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679093716"><span class="annot"><span class="annottext">match :: Ix -&gt; Complex a -&gt; Rational
+</span><a href="#local-6989586621679093716"><span class="hs-identifier hs-var hs-var">match</span></a></span></span><span> </span><span id="local-6989586621679093715"><span class="annot"><span class="annottext">x :: Ix
+</span><a href="#local-6989586621679093715"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span id="local-6989586621679093714"><span class="annot"><span class="annottext">y :: Complex a
+</span><a href="#local-6989586621679093714"><span class="hs-identifier hs-var">y</span></a></span></span><span> </span><span class="hs-comment">-- Matches indices with bitmask, if index matches then return the squared magnitude of the corresponding probability, else return 0</span><span>
 </span><span id="line-42"></span><span>            </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Ix
-</span><a href="#local-6989586621679093120"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Ix
+</span><a href="#local-6989586621679093715"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Ix
 forall a. Bits a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">.&amp;.</span></span><span> </span><span class="annot"><span class="annottext">Ix
-</span><a href="#local-6989586621679093118"><span class="hs-identifier hs-var">mask</span></a></span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Bool
+</span><a href="#local-6989586621679093713"><span class="hs-identifier hs-var">mask</span></a></span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Ix
-</span><a href="#local-6989586621679093118"><span class="hs-identifier hs-var">mask</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Rational
+</span><a href="#local-6989586621679093713"><span class="hs-identifier hs-var">mask</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a -&gt; Rational
 forall a. Real a =&gt; a -&gt; Rational
 </span><span class="hs-identifier hs-var">toRational</span></span><span> </span><span class="annot"><span class="annottext">(a -&gt; Rational) -&gt; (Complex a -&gt; a) -&gt; Complex a -&gt; Rational
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
@@ -91,22 +91,22 @@ forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">Complex a -&gt; a
 forall a. RealFloat a =&gt; Complex a -&gt; a
 </span><span class="hs-identifier hs-var">magnitude</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Complex a
-</span><a href="#local-6989586621679093119"><span class="hs-identifier hs-var">y</span></a></span><span>
+</span><a href="#local-6989586621679093714"><span class="hs-identifier hs-var">y</span></a></span><span>
 </span><span id="line-43"></span><span>            </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-comment">-- This isn't so nice, we're creating useless data</span><span>
-</span><span id="line-44"></span><span>            </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679093118"><span class="annot"><span class="annottext">mask :: Ix
-</span><a href="#local-6989586621679093118"><span class="hs-identifier hs-var hs-var">mask</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Ix
+</span><span id="line-44"></span><span>            </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679093713"><span class="annot"><span class="annottext">mask :: Ix
+</span><a href="#local-6989586621679093713"><span class="hs-identifier hs-var hs-var">mask</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Ix
 forall a b. (Num a, Integral b) =&gt; a -&gt; b -&gt; a
 </span><span class="hs-operator hs-var">^</span></span><span class="hs-special">(</span><span class="annot"><span class="annottext">QState -&gt; Ix
 </span><a href="QM.html#stateSize"><span class="hs-identifier hs-var">stateSize</span></a></span><span> </span><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679093124"><span class="hs-identifier hs-var">qs</span></a></span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Ix
+</span><a href="#local-6989586621679093719"><span class="hs-identifier hs-var">qs</span></a></span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Ix
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Ix
-</span><a href="#local-6989586621679093125"><span class="hs-identifier hs-var">ixMeas</span></a></span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Ix
+</span><a href="#local-6989586621679093720"><span class="hs-identifier hs-var">ixMeas</span></a></span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Ix
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-comment">-- Create a mask to recognize correct indicies </span><span>
-</span><span id="line-45"></span><span>          </span><span id="local-6989586621679093122"><span class="annot"><span class="annottext">prob :: Rational
-</span><a href="#local-6989586621679093122"><span class="hs-identifier hs-var hs-var">prob</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Rational] -&gt; Rational
+</span><span id="line-45"></span><span>          </span><span id="local-6989586621679093717"><span class="annot"><span class="annottext">prob :: Rational
+</span><a href="#local-6989586621679093717"><span class="hs-identifier hs-var hs-var">prob</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Rational] -&gt; Rational
 forall (t :: * -&gt; *) a. (Foldable t, Num a) =&gt; t a -&gt; a
 </span><span class="hs-identifier hs-var">sum</span></span><span> </span><span class="annot"><span class="annottext">([Rational] -&gt; Rational) -&gt; [Rational] -&gt; Rational
 forall a b. (a -&gt; b) -&gt; a -&gt; b
@@ -114,19 +114,19 @@ forall a b. (a -&gt; b) -&gt; a -&gt; b
 forall a b c. (a -&gt; b -&gt; c) -&gt; [a] -&gt; [b] -&gt; [c]
 </span><span class="hs-identifier hs-var">zipWith</span></span><span> </span><span class="annot"><span class="annottext">Ix -&gt; C -&gt; Rational
 forall a. RealFloat a =&gt; Ix -&gt; Complex a -&gt; Rational
-</span><a href="#local-6989586621679093121"><span class="hs-identifier hs-var">match</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-number">0</span></span><span class="hs-glyph">..</span><span class="hs-special">]</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector C -&gt; [C]
+</span><a href="#local-6989586621679093716"><span class="hs-identifier hs-var">match</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-number">0</span></span><span class="hs-glyph">..</span><span class="hs-special">]</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector C -&gt; [C]
 forall a. Storable a =&gt; Vector a -&gt; [a]
 </span><span class="hs-identifier hs-var">toList</span></span><span> </span><span class="annot"><span class="annottext">Vector C
-</span><a href="#local-6989586621679093123"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-comment">-- Applies match to the list of indices and probabilities, then sums the probabilities</span><span>
+</span><a href="#local-6989586621679093718"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-comment">-- Applies match to the list of indices and probabilities, then sums the probabilities</span><span>
 </span><span id="line-46"></span><span>
 </span><span id="line-47"></span><span class="hs-comment">--eliminateImpossibleProbabilities </span><span>
 </span><span id="line-48"></span><span class="annot"><a href="Internal.Core.html#remBadProbs"><span class="hs-identifier hs-type">remBadProbs</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bit</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#Ix"><span class="hs-identifier hs-type">Ix</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span>
 </span><span id="line-49"></span><span id="remBadProbs"><span class="annot"><span class="annottext">remBadProbs :: Bit -&gt; Ix -&gt; QState -&gt; QState
-</span><a href="Internal.Core.html#remBadProbs"><span class="hs-identifier hs-var hs-var">remBadProbs</span></a></span></span><span> </span><span id="local-6989586621679093112"><span class="annot"><span class="annottext">bit :: Bit
-</span><a href="#local-6989586621679093112"><span class="hs-identifier hs-var">bit</span></a></span></span><span> </span><span id="local-6989586621679093111"><span class="annot"><span class="annottext">ix :: Ix
-</span><a href="#local-6989586621679093111"><span class="hs-identifier hs-var">ix</span></a></span></span><span> </span><span id="local-6989586621679093110"><span class="annot"><span class="annottext">qs :: QState
-</span><a href="#local-6989586621679093110"><span class="hs-identifier hs-var">qs</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span id="local-6989586621679093109"><span class="annot"><span class="annottext">s :: Vector C
-</span><a href="#local-6989586621679093109"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector C -&gt; QState
+</span><a href="Internal.Core.html#remBadProbs"><span class="hs-identifier hs-var hs-var">remBadProbs</span></a></span></span><span> </span><span id="local-6989586621679093707"><span class="annot"><span class="annottext">bit :: Bit
+</span><a href="#local-6989586621679093707"><span class="hs-identifier hs-var">bit</span></a></span></span><span> </span><span id="local-6989586621679093706"><span class="annot"><span class="annottext">ix :: Ix
+</span><a href="#local-6989586621679093706"><span class="hs-identifier hs-var">ix</span></a></span></span><span> </span><span id="local-6989586621679093705"><span class="annot"><span class="annottext">qs :: QState
+</span><a href="#local-6989586621679093705"><span class="hs-identifier hs-var">qs</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="QM.html#QState"><span class="hs-identifier hs-type">QState</span></a></span><span> </span><span id="local-6989586621679093704"><span class="annot"><span class="annottext">s :: Vector C
+</span><a href="#local-6989586621679093704"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Vector C -&gt; QState
 </span><a href="QM.html#QState"><span class="hs-identifier hs-var">QState</span></a></span><span> </span><span class="annot"><span class="annottext">(Vector C -&gt; QState) -&gt; Vector C -&gt; QState
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Vector C -&gt; Vector C
@@ -134,70 +134,70 @@ forall t.
 (Normed (Vector t), Num (Vector t), Field t) =&gt;
 Vector t -&gt; Vector t
 </span><span class="hs-identifier hs-var">normalize</span></span><span> </span><span class="annot"><span class="annottext">Vector C
-</span><a href="#local-6989586621679093108"><span class="hs-identifier hs-var">newVector</span></a></span><span>
+</span><a href="#local-6989586621679093703"><span class="hs-identifier hs-var">newVector</span></a></span><span>
 </span><span id="line-50"></span><span>    </span><span class="hs-keyword">where</span><span>
-</span><span id="line-51"></span><span>        </span><span id="local-6989586621679093107"><span class="annot"><span class="annottext">size :: Ix
-</span><a href="#local-6989586621679093107"><span class="hs-identifier hs-var hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">QState -&gt; Ix
+</span><span id="line-51"></span><span>        </span><span id="local-6989586621679093702"><span class="annot"><span class="annottext">size :: Ix
+</span><a href="#local-6989586621679093702"><span class="hs-identifier hs-var hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">QState -&gt; Ix
 </span><a href="QM.html#stateSize"><span class="hs-identifier hs-var">stateSize</span></a></span><span> </span><span class="annot"><span class="annottext">QState
-</span><a href="#local-6989586621679093110"><span class="hs-identifier hs-var">qs</span></a></span><span>
+</span><a href="#local-6989586621679093705"><span class="hs-identifier hs-var">qs</span></a></span><span>
 </span><span id="line-52"></span><span>
-</span><span id="line-53"></span><span>        </span><span class="annot"><a href="#local-6989586621679093108"><span class="hs-identifier hs-type">newVector</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">C</span></span><span>
-</span><span id="line-54"></span><span>        </span><span id="local-6989586621679093108"><span class="annot"><span class="annottext">newVector :: Vector C
-</span><a href="#local-6989586621679093108"><span class="hs-identifier hs-var hs-var">newVector</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[C] -&gt; Vector C
+</span><span id="line-53"></span><span>        </span><span class="annot"><a href="#local-6989586621679093703"><span class="hs-identifier hs-type">newVector</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Vector</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">C</span></span><span>
+</span><span id="line-54"></span><span>        </span><span id="local-6989586621679093703"><span class="annot"><span class="annottext">newVector :: Vector C
+</span><a href="#local-6989586621679093703"><span class="hs-identifier hs-var hs-var">newVector</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[C] -&gt; Vector C
 forall a. Storable a =&gt; [a] -&gt; Vector a
 </span><span class="hs-identifier hs-var">fromList</span></span><span> </span><span class="annot"><span class="annottext">([C] -&gt; Vector C) -&gt; [C] -&gt; Vector C
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(Ix -&gt; C -&gt; C) -&gt; [Ix] -&gt; [C] -&gt; [C]
 forall a b c. (a -&gt; b -&gt; c) -&gt; [a] -&gt; [b] -&gt; [c]
 </span><span class="hs-identifier hs-var">zipWith</span></span><span> </span><span class="annot"><span class="annottext">Ix -&gt; C -&gt; C
-</span><a href="#local-6989586621679093106"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-number">0</span></span><span class="hs-glyph">..</span><span class="hs-special">]</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector C -&gt; [C]
+</span><a href="#local-6989586621679093701"><span class="hs-identifier hs-var">f</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-number">0</span></span><span class="hs-glyph">..</span><span class="hs-special">]</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Vector C -&gt; [C]
 forall a. Storable a =&gt; Vector a -&gt; [a]
 </span><span class="hs-identifier hs-var">toList</span></span><span> </span><span class="annot"><span class="annottext">Vector C
-</span><a href="#local-6989586621679093109"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679093704"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-55"></span><span>
-</span><span id="line-56"></span><span>        </span><span class="annot"><a href="#local-6989586621679093106"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#Ix"><span class="hs-identifier hs-type">Ix</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Complex</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Complex</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
-</span><span id="line-57"></span><span>        </span><span id="local-6989586621679093106"><span class="annot"><span class="annottext">f :: Ix -&gt; C -&gt; C
-</span><a href="#local-6989586621679093106"><span class="hs-identifier hs-var hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679093105"><span class="annot"><span class="annottext">index :: Ix
-</span><a href="#local-6989586621679093105"><span class="hs-identifier hs-var">index</span></a></span></span><span> </span><span id="local-6989586621679093104"><span class="annot"><span class="annottext">component :: C
-</span><a href="#local-6989586621679093104"><span class="hs-identifier hs-var">component</span></a></span></span><span>
+</span><span id="line-56"></span><span>        </span><span class="annot"><a href="#local-6989586621679093701"><span class="hs-identifier hs-type">f</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#Ix"><span class="hs-identifier hs-type">Ix</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Complex</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Complex</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-57"></span><span>        </span><span id="local-6989586621679093701"><span class="annot"><span class="annottext">f :: Ix -&gt; C -&gt; C
+</span><a href="#local-6989586621679093701"><span class="hs-identifier hs-var hs-var">f</span></a></span></span><span> </span><span id="local-6989586621679093700"><span class="annot"><span class="annottext">index :: Ix
+</span><a href="#local-6989586621679093700"><span class="hs-identifier hs-var">index</span></a></span></span><span> </span><span id="local-6989586621679093699"><span class="annot"><span class="annottext">component :: C
+</span><a href="#local-6989586621679093699"><span class="hs-identifier hs-var">component</span></a></span></span><span>
 </span><span id="line-58"></span><span>          </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Ix -&gt; Bool
 </span><a href="Internal.Core.html#maskMatch"><span class="hs-identifier hs-var">maskMatch</span></a></span><span> </span><span class="annot"><span class="annottext">Ix
-</span><a href="#local-6989586621679093111"><span class="hs-identifier hs-var">ix</span></a></span><span> </span><span class="annot"><span class="annottext">Ix
-</span><a href="#local-6989586621679093105"><span class="hs-identifier hs-var">index</span></a></span><span> </span><span class="annot"><span class="annottext">Ix
-</span><a href="#local-6989586621679093107"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Bit
-</span><a href="#local-6989586621679093112"><span class="hs-identifier hs-var">bit</span></a></span><span> </span><span class="annot"><span class="annottext">Bit -&gt; Bit -&gt; Bool
+</span><a href="#local-6989586621679093706"><span class="hs-identifier hs-var">ix</span></a></span><span> </span><span class="annot"><span class="annottext">Ix
+</span><a href="#local-6989586621679093700"><span class="hs-identifier hs-var">index</span></a></span><span> </span><span class="annot"><span class="annottext">Ix
+</span><a href="#local-6989586621679093702"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Bit
+</span><a href="#local-6989586621679093707"><span class="hs-identifier hs-var">bit</span></a></span><span> </span><span class="annot"><span class="annottext">Bit -&gt; Bit -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">C
-</span><a href="#local-6989586621679093104"><span class="hs-identifier hs-var">component</span></a></span><span>
+</span><a href="#local-6989586621679093699"><span class="hs-identifier hs-var">component</span></a></span><span>
 </span><span id="line-59"></span><span>          </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bit
-</span><a href="#local-6989586621679093112"><span class="hs-identifier hs-var">bit</span></a></span><span> </span><span class="annot"><span class="annottext">Bit -&gt; Bit -&gt; Bool
+</span><a href="#local-6989586621679093707"><span class="hs-identifier hs-var">bit</span></a></span><span> </span><span class="annot"><span class="annottext">Bit -&gt; Bit -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
 </span><span id="line-60"></span><span>          </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
 </span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">C
-</span><a href="#local-6989586621679093104"><span class="hs-identifier hs-var">component</span></a></span><span>
+</span><a href="#local-6989586621679093699"><span class="hs-identifier hs-var">component</span></a></span><span>
 </span><span id="line-61"></span><span>
 </span><span id="line-62"></span><span class="annot"><a href="Internal.Core.html#maskMatch"><span class="hs-identifier hs-type">maskMatch</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#Ix"><span class="hs-identifier hs-type">Ix</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#Ix"><span class="hs-identifier hs-type">Ix</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
 </span><span id="line-63"></span><span id="maskMatch"><span class="annot"><span class="annottext">maskMatch :: Ix -&gt; Ix -&gt; Ix -&gt; Bool
-</span><a href="Internal.Core.html#maskMatch"><span class="hs-identifier hs-var hs-var">maskMatch</span></a></span></span><span> </span><span id="local-6989586621679093102"><span class="annot"><span class="annottext">ixMeas :: Ix
-</span><a href="#local-6989586621679093102"><span class="hs-identifier hs-var">ixMeas</span></a></span></span><span> </span><span id="local-6989586621679093101"><span class="annot"><span class="annottext">ixComp :: Ix
-</span><a href="#local-6989586621679093101"><span class="hs-identifier hs-var">ixComp</span></a></span></span><span> </span><span id="local-6989586621679093100"><span class="annot"><span class="annottext">size :: Ix
-</span><a href="#local-6989586621679093100"><span class="hs-identifier hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Ix
-</span><a href="#local-6989586621679093101"><span class="hs-identifier hs-var">ixComp</span></a></span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Ix
+</span><a href="Internal.Core.html#maskMatch"><span class="hs-identifier hs-var hs-var">maskMatch</span></a></span></span><span> </span><span id="local-6989586621679093697"><span class="annot"><span class="annottext">ixMeas :: Ix
+</span><a href="#local-6989586621679093697"><span class="hs-identifier hs-var">ixMeas</span></a></span></span><span> </span><span id="local-6989586621679093696"><span class="annot"><span class="annottext">ixComp :: Ix
+</span><a href="#local-6989586621679093696"><span class="hs-identifier hs-var">ixComp</span></a></span></span><span> </span><span id="local-6989586621679093695"><span class="annot"><span class="annottext">size :: Ix
+</span><a href="#local-6989586621679093695"><span class="hs-identifier hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Ix
+</span><a href="#local-6989586621679093696"><span class="hs-identifier hs-var">ixComp</span></a></span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Ix
 forall a. Bits a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">.&amp;.</span></span><span> </span><span class="annot"><span class="annottext">Ix
-</span><a href="#local-6989586621679093099"><span class="hs-identifier hs-var">mask</span></a></span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Bool
+</span><a href="#local-6989586621679093694"><span class="hs-identifier hs-var">mask</span></a></span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Ix
-</span><a href="#local-6989586621679093099"><span class="hs-identifier hs-var">mask</span></a></span><span>
-</span><span id="line-64"></span><span>    </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679093099"><span class="annot"><span class="annottext">mask :: Ix
-</span><a href="#local-6989586621679093099"><span class="hs-identifier hs-var hs-var">mask</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Ix
+</span><a href="#local-6989586621679093694"><span class="hs-identifier hs-var">mask</span></a></span><span>
+</span><span id="line-64"></span><span>    </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679093694"><span class="annot"><span class="annottext">mask :: Ix
+</span><a href="#local-6989586621679093694"><span class="hs-identifier hs-var hs-var">mask</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Ix
 forall a b. (Num a, Integral b) =&gt; a -&gt; b -&gt; a
 </span><span class="hs-operator hs-var">^</span></span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ix
-</span><a href="#local-6989586621679093100"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Ix
+</span><a href="#local-6989586621679093695"><span class="hs-identifier hs-var">size</span></a></span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Ix
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Ix
-</span><a href="#local-6989586621679093102"><span class="hs-identifier hs-var">ixMeas</span></a></span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Ix
+</span><a href="#local-6989586621679093697"><span class="hs-identifier hs-var">ixMeas</span></a></span><span> </span><span class="annot"><span class="annottext">Ix -&gt; Ix -&gt; Ix
 forall a. Num a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">)</span><span>
 </span><span id="line-65"></span><span>
