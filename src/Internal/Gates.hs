@@ -109,7 +109,7 @@ cmat = (4 >< 4)
 phasemat :: Double -> Matrix C
 phasemat r = (2 >< 2)
   [ 1, 0
-  , 0, p]
+  , 0, p ]
   where p = exp (i*(r :+ 0))
 
 -- | PauliX matrix
