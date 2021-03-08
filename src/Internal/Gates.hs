@@ -8,12 +8,23 @@ Stability   : experimental
 
 Internal matrix operations
 -}
+{-# LANGUAGE FlexibleInstances #-}
 module Internal.Gates where
 
-import Data.Number.CReal
-import QM ( QM, QState(QState), QBit(..), put, get, getState, Ix )
+import QM ( getState, get, put, QM, QState(QState), QBit(..), Ix)
 import Numeric.LinearAlgebra
-    ( (#>), (><), ident, kronecker, Complex(..), Matrix, C, toInt, asColumn, asRow, mTm, scale )
+    ( Complex(..),
+      C,
+      (#>),
+      (><),
+      dispcf,
+      ident,
+      kronecker,
+      Matrix,
+      Linear(scale) )
+
+instance {-# OVERLAPS#-} Show (Matrix C) where
+  show mx = dispcf 3 mx
 
 -- | The imaginary unit
 i :: Complex Double
@@ -48,21 +59,12 @@ runGate g x = do
     return x
 
 -- run specified gates in parallel
--- TODO
-parallel :: [Matrix C] -> QM ()
-parallel = undefined
-
--- | Projection of the zero basis vector
-proj0 :: Matrix C
-proj0 = (2 >< 2)
-  [ 1 , 0
-  , 0 , 0 ]
-
--- | Projection of the one basis vector
-proj1 :: Matrix C
-proj1 = (2 >< 2)
-  [ 0 , 0
-  , 0 , 1 ]
+-- TODO: should work, but not fully tested. does NOT work with controlled gates
+parallel :: Int -> [(Matrix C, QBit)] -> Matrix C
+parallel size as = foldr1 applyParallel list
+  where list = foldr apply (replicate size $ ident 2) as
+        apply :: (Matrix C, QBit) -> [Matrix C] -> [Matrix C]
+        apply (mx, Ptr q) nx = changeAt mx q nx
 
 -- | Produce matrix running a gate controlled by another bit
 controlMatrix :: Int -> QBit -> QBit -> Matrix C -> Matrix C
@@ -74,7 +76,6 @@ controlMatrix size (Ptr c) (Ptr t) g = fl + fr
         r = changeAt g t rc
         fl = foldr1 applyParallel l
         fr = foldr1 applyParallel r
-
 -- | Produce a matrix running a gate controlled by two other bits
 ccontrolMatrix :: Int -> QBit -> QBit -> QBit -> Matrix C -> Matrix C
 ccontrolMatrix size (Ptr c1) (Ptr c2) (Ptr t) g = f00 + f01 + f10 + f11
@@ -98,3 +99,60 @@ notAdjacent :: [Ix] -> Bool
 notAdjacent [a]      = False
 notAdjacent [a, b]   = b-a /= 1
 notAdjacent (a:b:as) = b-a /= 1 || notAdjacent (b:as)
+
+-- | Projection of the zero basis vector
+proj0 :: Matrix C
+proj0 = (2 >< 2)
+  [ 1 , 0
+  , 0 , 0 ]
+
+-- | Projection of the one basis vector
+proj1 :: Matrix C
+proj1 = (2 >< 2)
+  [ 0 , 0
+  , 0 , 1 ]
+
+-- | Hadamard matrix
+hmat :: Matrix C
+hmat = scale (sqrt 0.5) $ (2 >< 2)
+    [ 1 ,  1
+    , 1 , -1 ]
+
+-- | CNOT matrix
+cmat :: Matrix C
+cmat = (4 >< 4)
+  [ 1, 0, 0, 0
+  , 0, 1, 0, 0
+  , 0, 0, 0, 1
+  , 0, 0, 1, 0 ]
+
+-- | Generic phase matrix, takes in phase change as radians
+phasemat :: Double -> Matrix C
+phasemat r = (2 >< 2)
+  [ 1, 0
+  , 0, p ]
+  where p = exp (i*(r :+ 0))
+
+-- | PauliX matrix
+pXmat :: Matrix C
+pXmat = (2 >< 2)
+  [ 0, 1
+  , 1, 0 ]
+
+-- | PauliY matrix
+pYmat :: Matrix C
+pYmat = (2 >< 2)
+  [ 0, -i
+  , i,  0 ]
+
+-- | PauliZ matrix
+pZmat :: Matrix C
+pZmat = (2 >< 2)
+  [ 1 ,  0
+  , 0 , -1 ]
+
+-- | Identity matrix
+idmat :: Matrix C
+idmat = (2 >< 2)
+  [ 1 , 0
+  , 0 , 1 ]

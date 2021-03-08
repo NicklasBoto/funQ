@@ -34,7 +34,7 @@ module QM (
     ) where
 
 import Numeric.LinearAlgebra
-    ( size, toList, C, Vector )
+    ( size, toList, C, Vector, magnitude )
 import Data.List ( intercalate )
 import qualified Control.Monad.Random as Rand ( fromList, evalRandIO )
 
@@ -54,6 +54,16 @@ instance Show QState where
     show (QState q) = "== QState: " ++ s ++ " ==\n"
                    ++ intercalate "\n" (map show $ toList q) ++ "\n"
         where s = show $ size q
+
+instance Eq QState where
+    (==) (QState q1) (QState q2) = and $ zipWith (~=) (toList q1) (toList q2)
+
+-- | Compareas two complex numbers for equality to the 6th decimal
+(~=) :: C -> C -> Bool
+(~=) a b = bm - eqMargin <= am && am <= bm + eqMargin
+  where am = magnitude a
+        bm = magnitude b
+        eqMargin = 0.000001
 
 -- | The Quantum Monad
 -- Keeps a state of the complex vector representation while allowing

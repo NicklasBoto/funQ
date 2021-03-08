@@ -26,8 +26,22 @@ module Gates (
     , qft
 ) where
 
-import Internal.Gates 
-    ( i, applyGate, runGate, controlMatrix, ccontrolMatrix, qftMatrix, applyParallel, notAdjacent, changeAt )
+import Internal.Gates
+    ( applyGate,
+      applyParallel,
+      ccontrolMatrix,
+      changeAt,
+      controlMatrix,
+      i,
+      notAdjacent,
+      qftMatrix,
+      runGate,
+      hmat,
+      phasemat,
+      pXmat,
+      pYmat,
+      pZmat,
+      idmat ) 
 import QM ( QM, QState(QState), QBit(..), getState, put, get )
 import Numeric.LinearAlgebra
     ( Complex(..), (#>), (><), ident, kronecker, Matrix, Linear(scale), C, ident, tr )
@@ -46,8 +60,7 @@ import Numeric.LinearAlgebra
 cnot :: (QBit, QBit) -> QM (QBit, QBit)
 cnot (c, t) = do
   (_, size) <- getState
-  let matrixX = (2 >< 2) [ 0, 1, 1, 0 ]
-  let g = controlMatrix size c t matrixX
+  let g = controlMatrix size c t pXmat 
   applyGate g
   return (c,t)
 
@@ -76,8 +89,7 @@ cnot (c, t) = do
 toffoli :: (QBit, QBit, QBit) -> QM (QBit, QBit, QBit)
 toffoli (c1,c2,t) = do
   (_, size) <- getState
-  let matrixX = (2 >< 2) [ 0, 1, 1, 0 ]
-  let g = ccontrolMatrix size c1 c2 t matrixX
+  let g = ccontrolMatrix size c1 c2 t pXmat 
   applyGate g
   return (c1,c2,t)
 
@@ -90,9 +102,7 @@ toffoli (c1,c2,t) = do
 --
 -- ![pauliX](images/x.PNG)
 pauliX :: QBit -> QM QBit
-pauliX = runGate $ (2 >< 2)
-  [ 0 , 1
-  , 1 , 0 ]
+pauliX = runGate pXmat
 
 -- | Pauli-Y gate
 --
@@ -103,9 +113,7 @@ pauliX = runGate $ (2 >< 2)
 --
 -- ![pauliY](images/y.PNG)
 pauliY :: QBit -> QM QBit
-pauliY = runGate $ (2 >< 2)
-  [ 0 , -i
-  , i ,  0 ]
+pauliY = runGate pYmat 
 
 -- | Pauli-Z gate
 --
@@ -116,9 +124,7 @@ pauliY = runGate $ (2 >< 2)
 --
 -- ![pauliZ](images/z.PNG)
 pauliZ :: QBit -> QM QBit
-pauliZ = runGate $ (2 >< 2)
-  [ 1 ,  0
-  , 0 , -1 ]
+pauliZ = runGate pZmat 
 
 -- | Hadamard gate
 -- 
@@ -129,9 +135,7 @@ pauliZ = runGate $ (2 >< 2)
 --
 -- ![hadamard](images/h.PNG)
 hadamard :: QBit -> QM QBit
-hadamard = runGate $ scale (sqrt 0.5) $ (2 >< 2)
-    [ 1 ,  1
-    , 1 , -1 ]
+hadamard = runGate hmat
 
 -- | Phase gate
 --
@@ -142,9 +146,7 @@ hadamard = runGate $ scale (sqrt 0.5) $ (2 >< 2)
 --
 -- ![phase](images/s.PNG)
 phase :: QBit -> QM QBit
-phase = runGate $ (2 >< 2)
-  [ 1 , 0
-  , 0 , i ]
+phase = runGate $ phasemat pi/2
 
 -- | Pi/8 gate (T gate)
 --
@@ -155,17 +157,11 @@ phase = runGate $ (2 >< 2)
 --
 -- ![pi8](images/t.PNG)
 phasePi8 :: QBit -> QM QBit
-phasePi8 = runGate $ (2 >< 2)
-  [ 1 , 0
-  , 0 , p ]
-  where p = exp (i * pi / 4)
+phasePi8 = runGate $ phasemat pi/4
 
 -- | Hermetian adjoint of T gate (`phasePi8`)
 tdagger :: QBit -> QM QBit
-tdagger = runGate $ (2 >< 2)
-  [ 1 , 0
-  , 0 , p ]
-  where p = exp (-i * pi / 4)
+tdagger = runGate $ phasemat (-pi/4)
 
 -- | Identity gate
 --
@@ -175,9 +171,7 @@ tdagger = runGate $ (2 >< 2)
 -- \end{bmatrix} \]
 --
 identity :: QBit -> QM QBit
-identity = runGate $ (2 >< 2)
-  [ 1 , 0
-  , 0 , 1 ]
+identity = runGate idmat
 
 -- | SWAP gate
 -- 
