@@ -21,7 +21,6 @@ module Gates (
     , tdagger
     , fredkin
     , toffoli
-    , hmat
 ) where
 
 import Internal.Gates
