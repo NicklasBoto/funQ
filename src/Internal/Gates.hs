@@ -11,8 +11,17 @@ Internal matrix operations
 {-# LANGUAGE FlexibleInstances #-}
 module Internal.Gates where
 
-import QM
+import QM ( getState, get, put, QM, QState(QState), QBit(..) )
 import Numeric.LinearAlgebra
+    ( Complex(..),
+      C,
+      (#>),
+      (><),
+      dispcf,
+      ident,
+      kronecker,
+      Matrix,
+      Linear(scale) )
 instance {-# OVERLAPS#-} Show (Matrix C) where
   show mx = dispcf 3 mx
 
