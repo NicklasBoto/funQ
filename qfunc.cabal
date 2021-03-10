@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4bb7e9c48cf8e6c886b05c8cf166f53c6ebb9eebfc6471107e8df04b2d5afaa5
+-- hash: c638e0199e1062f25d384fee5fab668e3a9caea0654863fb7c589b4cd7bc665f
 
 name:           qfunc
 version:        0.1.0.0
@@ -75,6 +75,10 @@ test-suite qfunc-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Arbitraries
+      GateSumToOneTests
+      Helpers
+      ReversibilityTests
       Paths_qfunc
   hs-source-dirs:
       test
