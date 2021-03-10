@@ -15,6 +15,11 @@ main :: IO ()
 main = do
     ReversibilityTests.runTests
     GateSumToOneTests.runTests
+
+    quickCheck $ prop_unitary hmat
+    quickCheck $ prop_hadamard 8
+    quickCheck $ prop_norm 8
+
     return ()
 
 
@@ -29,14 +34,7 @@ eqMargin = 0.000001
 -- | The error message returned when maxAllowedN is exceeded
 maxExceededErrorMsg :: String
 maxExceededErrorMsg = "your computer almost just died. either you forgot to input a value, or you want to raise the value for allowed inputs"
-
--- | Sample tests
-main :: IO ()
-main = do
-  quickCheck $ prop_unitary hmat
-  quickCheck $ prop_hadamard 8
-  quickCheck $ prop_norm 8
-
+  
 -- | Checks that the QState of arbitrary size after a hadamard gate is applied keeps a good norm and
 -- that the QState vector only contains two amplitudes at 1/sqrt(2).
 -- This function in particular may kill your computer if it's let to run without max bounds.

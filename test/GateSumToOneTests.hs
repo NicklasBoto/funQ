@@ -18,7 +18,7 @@ runTests = do
     putStrLn "QuickCheck test unmodified QState sums to 1"
     quickCheck prop_sumOne
 
-    --putStrLn "QuickCheck tests sum of QState = 1 after applying gates"
+    putStrLn "QuickCheck tests sum of QState = 1 after applying gates"
     mapM_ quickCheck [prop_sum_hadamard, prop_sum_cnot, prop_sum_pauliX, prop_sum_pauliY, prop_sum_pauliZ]
 
     return ()
