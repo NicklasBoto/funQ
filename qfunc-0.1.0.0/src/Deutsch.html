@@ -8,76 +8,76 @@
 </span><span id="line-8"></span><span class="hs-comment">-- | An oracle with a constant function</span><span>
 </span><span id="line-9"></span><span class="annot"><a href="Deutsch.html#constant"><span class="hs-identifier hs-type">constant</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Deutsch.html#Oracle"><span class="hs-identifier hs-type">Oracle</span></a></span><span>
 </span><span id="line-10"></span><span id="constant"><span class="annot"><span class="annottext">constant :: Oracle
-</span><a href="Deutsch.html#constant"><span class="hs-identifier hs-var hs-var">constant</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679094083"><span class="annot"><span class="annottext">x :: QBit
-</span><a href="#local-6989586621679094083"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679094082"><span class="annot"><span class="annottext">y :: QBit
-</span><a href="#local-6989586621679094082"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-11"></span><span>    </span><span id="local-6989586621679094081"><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094081"><span class="hs-identifier hs-var">z</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Bit -&gt; QM QBit
+</span><a href="Deutsch.html#constant"><span class="hs-identifier hs-var hs-var">constant</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679093688"><span class="annot"><span class="annottext">x :: QBit
+</span><a href="#local-6989586621679093688"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679093687"><span class="annot"><span class="annottext">y :: QBit
+</span><a href="#local-6989586621679093687"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-11"></span><span>    </span><span id="local-6989586621679093686"><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679093686"><span class="hs-identifier hs-var">z</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Bit -&gt; QM QBit
 </span><a href="Core.html#new"><span class="hs-identifier hs-var">new</span></a></span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
 </span><span id="line-12"></span><span>    </span><span class="annot"><span class="annottext">Oracle
 </span><a href="Gates.html#swap"><span class="hs-identifier hs-var">swap</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094081"><span class="hs-identifier hs-var">z</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094083"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679093686"><span class="hs-identifier hs-var">z</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679093688"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-13"></span><span>    </span><span class="annot"><span class="annottext">Oracle
 </span><a href="Gates.html#cnot"><span class="hs-identifier hs-var">cnot</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094083"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094082"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679093688"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679093687"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-14"></span><span>    </span><span class="annot"><span class="annottext">Oracle
 </span><a href="Gates.html#swap"><span class="hs-identifier hs-var">swap</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094081"><span class="hs-identifier hs-var">z</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094083"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679093686"><span class="hs-identifier hs-var">z</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679093688"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-15"></span><span>    </span><span class="annot"><span class="annottext">Oracle
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094083"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094082"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span> </span><span>
+</span><a href="#local-6989586621679093688"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679093687"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span> </span><span>
 </span><span id="line-16"></span><span>
 </span><span id="line-17"></span><span class="hs-comment">-- | An oracle with a balanced function</span><span>
 </span><span id="line-18"></span><span class="annot"><a href="Deutsch.html#balanced"><span class="hs-identifier hs-type">balanced</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Deutsch.html#Oracle"><span class="hs-identifier hs-type">Oracle</span></a></span><span>
 </span><span id="line-19"></span><span id="balanced"><span class="annot"><span class="annottext">balanced :: Oracle
-</span><a href="Deutsch.html#balanced"><span class="hs-identifier hs-var hs-var">balanced</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679094076"><span class="annot"><span class="annottext">x :: QBit
-</span><a href="#local-6989586621679094076"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679094075"><span class="annot"><span class="annottext">y :: QBit
-</span><a href="#local-6989586621679094075"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><a href="Deutsch.html#balanced"><span class="hs-identifier hs-var hs-var">balanced</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679093681"><span class="annot"><span class="annottext">x :: QBit
+</span><a href="#local-6989586621679093681"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679093680"><span class="annot"><span class="annottext">y :: QBit
+</span><a href="#local-6989586621679093680"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-20"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
 </span><a href="Gates.html#pauliX"><span class="hs-identifier hs-var">pauliX</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094076"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><a href="#local-6989586621679093681"><span class="hs-identifier hs-var">x</span></a></span><span>
 </span><span id="line-21"></span><span>    </span><span class="annot"><span class="annottext">Oracle
 </span><a href="Gates.html#cnot"><span class="hs-identifier hs-var">cnot</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094076"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094075"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679093681"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679093680"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-22"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
 </span><a href="Gates.html#pauliX"><span class="hs-identifier hs-var">pauliX</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094076"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><a href="#local-6989586621679093681"><span class="hs-identifier hs-var">x</span></a></span><span>
 </span><span id="line-23"></span><span>    </span><span class="annot"><span class="annottext">Oracle
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094076"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094075"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679093681"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679093680"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-24"></span><span>
 </span><span id="line-25"></span><span class="hs-comment">-- | Will return a 1 if balanced and 0 if constant.</span><span>
 </span><span id="line-26"></span><span class="annot"><a href="Deutsch.html#deutsch"><span class="hs-identifier hs-type">deutsch</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Deutsch.html#Oracle"><span class="hs-identifier hs-type">Oracle</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bit</span></span><span>
 </span><span id="line-27"></span><span id="deutsch"><span class="annot"><span class="annottext">deutsch :: Oracle -&gt; QM Bit
-</span><a href="Deutsch.html#deutsch"><span class="hs-identifier hs-var hs-var">deutsch</span></a></span></span><span> </span><span id="local-6989586621679094072"><span class="annot"><span class="annottext">oracle :: Oracle
-</span><a href="#local-6989586621679094072"><span class="hs-identifier hs-var">oracle</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-28"></span><span>    </span><span id="local-6989586621679094071"><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094071"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Bit -&gt; QM QBit
+</span><a href="Deutsch.html#deutsch"><span class="hs-identifier hs-var hs-var">deutsch</span></a></span></span><span> </span><span id="local-6989586621679093677"><span class="annot"><span class="annottext">oracle :: Oracle
+</span><a href="#local-6989586621679093677"><span class="hs-identifier hs-var">oracle</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-28"></span><span>    </span><span id="local-6989586621679093676"><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679093676"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Bit -&gt; QM QBit
 </span><a href="Core.html#new"><span class="hs-identifier hs-var">new</span></a></span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
-</span><span id="line-29"></span><span>    </span><span id="local-6989586621679094070"><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094070"><span class="hs-identifier hs-var">y</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Bit -&gt; QM QBit
+</span><span id="line-29"></span><span>    </span><span id="local-6989586621679093675"><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679093675"><span class="hs-identifier hs-var">y</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Bit -&gt; QM QBit
 </span><a href="Core.html#new"><span class="hs-identifier hs-var">new</span></a></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span>
 </span><span id="line-30"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
 </span><a href="Gates.html#hadamard"><span class="hs-identifier hs-var">hadamard</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094071"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><a href="#local-6989586621679093676"><span class="hs-identifier hs-var">x</span></a></span><span>
 </span><span id="line-31"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
 </span><a href="Gates.html#hadamard"><span class="hs-identifier hs-var">hadamard</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094070"><span class="hs-identifier hs-var">y</span></a></span><span>
+</span><a href="#local-6989586621679093675"><span class="hs-identifier hs-var">y</span></a></span><span>
 </span><span id="line-32"></span><span>    </span><span class="annot"><span class="annottext">Oracle
-</span><a href="#local-6989586621679094072"><span class="hs-identifier hs-var">oracle</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094071"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094070"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679093677"><span class="hs-identifier hs-var">oracle</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679093676"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679093675"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-33"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
 </span><a href="Gates.html#hadamard"><span class="hs-identifier hs-var">hadamard</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094071"><span class="hs-identifier hs-var">x</span></a></span><span>
+</span><a href="#local-6989586621679093676"><span class="hs-identifier hs-var">x</span></a></span><span>
 </span><span id="line-34"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM Bit
 </span><a href="Core.html#measure"><span class="hs-identifier hs-var">measure</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679094071"><span class="hs-identifier hs-var">x</span></a></span></pre></body></html>
+</span><a href="#local-6989586621679093676"><span class="hs-identifier hs-var">x</span></a></span></pre></body></html>

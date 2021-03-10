@@ -135,14 +135,38 @@ module Internal.Core
 appendState :: QState -> QState -> QState
 tensorVector :: Vector C -> Vector C -> Vector C
 
--- | (probToBeZero, probToBeOne) ix is index of qubit to measure
-findProb :: Ix -> QState -> (Rational, Rational)
-remBadProbs :: Bit -> Ix -> QState -> QState
-maskMatch :: Ix -> Ix -> Int -> Bool
-
 -- | Vector state representations of qubits with 100% probaility to
 --   collapse to their bit counterparts
 newVector :: Bit -> QState
+type Prob = Rational
+
+-- | Finds the probability of the qubit measing to a 1. Find all the
+--   amplitudes where that qubit is one and converts it to probabilities.
+findQbitProb1 :: QBit -> QState -> Prob
+type Amplitude = Complex Double
+
+-- | Finds the amplitudes from all the positions where that qubit is one.
+findMarginAmps1 :: QBit -> QState -> [Amplitude]
+
+-- | If all the bits in b are in a it is a match.
+maskMatch :: Int -> Int -> Bool
+
+-- | Given a qbit, finds its mask in the qstate. E.g. an amplitude in a 3
+--   qbits state could be |100&gt;. A mask of 100=8 is wanted if the
+--   zero'th qbit is in interest, same mask would work for |101&gt;. If
+--   qbit is 1 we want it to be 010=4...
+qbitMask :: QBit -> QState -> Int
+
+-- | Given a complex amplitude, will return its probability.
+ampToProb :: Amplitude -> Prob
+
+-- | Removes the states that contradict the measurment from the qbit to
+--   bit, also normalizes the state to a length of one.
+remImpossibleStates :: QState -> QBit -> Bit -> QState
+
+-- | From a qstate, returns the amplitudes with its indexes.
+qstateAmps :: QState -> [(Ix, Amplitude)]
+rngQbit :: Prob -> IO Bit
 
 
 -- | Module containing unitary gates and their matrix representations.
@@ -230,8 +254,13 @@ module Core
 new :: Bit -> QM QBit
 
 -- | Performs a measurement operation, collapsing a <a>QBit</a> to a
---   <a>Bit</a>. Here comes a long explanation of the algorithm correcting
---   the state
+--   <a>Bit</a>. The qubit will still exist in the quantum state, but be
+--   collapsed.
+--   
+--   Finds qubit probability to collapse to a zero and one. Uses random
+--   number generator to "measure it" to a zero or one. Updates quantum
+--   state to remove impossible states, and normalizes it so probabilites
+--   sum to one.
 measure :: QBit -> QM Bit
 
 -- | Sets a classical bit as the controlbit for a quantum gate. Making it
@@ -257,8 +286,13 @@ module FunQ
 new :: Bit -> QM QBit
 
 -- | Performs a measurement operation, collapsing a <a>QBit</a> to a
---   <a>Bit</a>. Here comes a long explanation of the algorithm correcting
---   the state
+--   <a>Bit</a>. The qubit will still exist in the quantum state, but be
+--   collapsed.
+--   
+--   Finds qubit probability to collapse to a zero and one. Uses random
+--   number generator to "measure it" to a zero or one. Updates quantum
+--   state to remove impossible states, and normalizes it so probabilites
+--   sum to one.
 measure :: QBit -> QM Bit
 
 -- | Run a quantum program producing a single bit <tt>reps</tt> times and
