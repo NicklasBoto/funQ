@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a04fdcd01fc3a410f80d61977590e78c2724e582cc0a51ff0e8a24ff49f931dd
+-- hash: 4d88c4b0be89f283ce756896526c2ddb0a2de1cff75da229db9409565e6d7b5f
 
 name:           qfunc
 version:        0.1.0.0
@@ -41,6 +41,8 @@ library
       CoinFlip
       Deutsch
       DeutschJozsa
+      Logic
+      Shor
       Teleport
   other-modules:
       Paths_qfunc
@@ -53,6 +55,7 @@ library
     , bitvec
     , hmatrix
     , mtl
+    , numbers
   default-language: Haskell2010
 
 executable qfunc-exe
@@ -68,6 +71,7 @@ executable qfunc-exe
     , bitvec
     , hmatrix
     , mtl
+    , numbers
     , qfunc
   default-language: Haskell2010
 
@@ -90,5 +94,6 @@ test-suite qfunc-test
     , bitvec
     , hmatrix
     , mtl
+    , numbers
     , qfunc
   default-language: Haskell2010
