@@ -3,10 +3,12 @@ module GateSumToOneTests (
     runTests
 ) where
 
+
+import TestCore ( QState(..) )
 import Test.QuickCheck
-import Gates
+import Gates ( hadamard, pauliX, pauliY, pauliZ )
 import QM ( QM, QBit, getState )
-import Arbitraries ( QState(..) ) 
+import TestCore
 import qualified Test.QuickCheck.Monadic as TM (assert, monadicIO)
 import Helpers ( run', addState, applyGate, cnot', getRandQbit )
 import Numeric.LinearAlgebra ( Normed(norm_2) )

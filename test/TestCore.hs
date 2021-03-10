@@ -1,8 +1,16 @@
-module Arbitraries ( QState(..) ) where 
+module TestCore ( QState(..) ) where  
+    -- TODO: would like TestCore to import everything needed
+    -- for testing in all other files so just they have to import TestCore
+    -- and that's it
 
-import Test.QuickCheck
-import QM ( QState(..) )
+import Test.QuickCheck;
+import qualified Test.QuickCheck.Monadic as TM (assert, monadicIO, run)
 import Internal.Core (newVector, tensorVector)
+import Core ( new )
+import QM ( io, get, put, run, getState, QState(..), QM, QBit(..) )
+import Gates
+import Numeric.LinearAlgebra ( toList, realPart, Normed(norm_2) )
+import Control.Monad.Random ( evalRandIO, getRandomR, liftM )
 
 -- Arbitrary instance for QState, not very pretty :) 
 instance Arbitrary QState where
