@@ -31,6 +31,9 @@ module FunQ
     , tdagger
     , fredkin
     , toffoli
+    , urot
+    , crot
+    , qft
 
     -- * Simulators
     , run
@@ -42,6 +45,7 @@ module FunQ
 
     ) where
 
+import Control.Monad ( replicateM, mapM )
 import QM ( QM, QBit, run, runDebug )
 import Core
     ( Bit,
@@ -62,7 +66,10 @@ import Gates
       swap,
       tdagger,
       fredkin,
-      toffoli )
+      toffoli,
+      urot,
+      crot,
+      qft )
 
 -- | Prepares bell state
 bell :: (Bit, Bit) -> QM (QBit, QBit)
@@ -80,3 +87,4 @@ bellMeasure (x,y) = do
     m_x <- measure x
     m_y <- measure y
     return (m_x,m_y)
+
