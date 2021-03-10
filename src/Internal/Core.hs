@@ -45,16 +45,10 @@ newVector 1 = QState [0, 1]
 -- Model probability as a rational number.
 type Prob = Rational
 
--- | Given a qbit and the qstate, finds the probability of that qbit measuring to a 0 or 1.
--- returns: (probToBeZero, probToBeOne)
-findQbitProb :: QBit -> QState -> (Prob, Prob)
-findQbitProb qbit qstate = (1 - prob1, prob1)
-  where
-    prob1 = findMarginProb1 qbit qstate
-
--- | Finds the probability from all the amplitudes where that qubit is one.
-findMarginProb1 :: QBit -> QState -> Prob
-findMarginProb1 qbit qstate = sum $ map ampToProb (findMarginAmps1 qbit qstate)
+-- | Finds the probability of the qubit measing to a 1.
+--  Find all the amplitudes where that qubit is one and converts it to probabilities.
+findQbitProb1 :: QBit -> QState -> Prob
+findQbitProb1 qbit qstate = sum $ map ampToProb (findMarginAmps1 qbit qstate)
 
 type Amplitude = Complex Double
 
@@ -111,5 +105,5 @@ qstateAmps :: QState -> [(Ix, Amplitude)]
 qstateAmps (QState stateVector) = zip [0..] (toList stateVector)
 
 -- Uses random number generator to return a bit according to the probabilites given.
-rngQbit :: Prob -> Prob -> IO Bit
-rngQbit p0 p1 = Rand.evalRandIO $ Rand.fromList [(0, p0), (1, p1)]
+rngQbit :: Prob -> IO Bit
+rngQbit p1 = Rand.evalRandIO $ Rand.fromList [(0, 1-p1), (1, p1)]

@@ -27,7 +27,7 @@ module Core (
 ) where
 
 import QM ( QM, QBit(Ptr), io, put, get, modify, run, getState )
-import Internal.Core ( findQbitProb, remImpossibleStates, Prob, appendState, newVector, rngQbit )
+import Internal.Core ( findQbitProb1, remImpossibleStates, Prob, appendState, newVector, rngQbit )
 import Data.Bit ( Bit )
 import Control.Monad ( replicateM )
 
@@ -48,8 +48,8 @@ new x = do
 measure :: QBit -> QM Bit
 measure qbit = do
     state <- get
-    let (p0, p1) = findQbitProb qbit state
-    bit <- io $ rngQbit p0 p1 -- Need to use io for randomness
+    let p1 = findQbitProb1 qbit state
+    bit <- io $ rngQbit p1 -- Need to use io for randomness
     let newState = remImpossibleStates state qbit bit
     put newState
     return bit
