@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 882d23a73f044212c3f5b67da68d8d1bd192bc564a864b9d06969ee3ef8b4d54
+-- hash: 4bb7e9c48cf8e6c886b05c8cf166f53c6ebb9eebfc6471107e8df04b2d5afaa5
 
 name:           qfunc
 version:        0.1.0.0
@@ -40,8 +40,7 @@ library
       QM
       CoinFlip
       Deutsch
-      DeutschJosza
-      Logic
+      DeutschJozsa
       Teleport
   other-modules:
       Paths_qfunc

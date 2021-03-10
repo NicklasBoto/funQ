@@ -2,29 +2,28 @@
 module Main where
 
 import Test.QuickCheck;
-import qualified Test.QuickCheck.Monadic as TM (assert, monadicIO, pick, pre, run, PropertyM)
+import qualified Test.QuickCheck.Monadic as TM (assert, monadicIO, run)
 import Internal.Core (newVector, tensorVector)
 import Core ( new )
 import QM ( io, get, put, run, getState, QState(..), QM, QBit(..) )
 import Gates
-import Numeric.LinearAlgebra ((><),toList,(#>), C, Vector, realPart, imagPart, Additive (add), Normed(norm_2))
-import Control.Monad.Random ( fromList, evalRandIO, getRandomR, liftIO, Rand, liftM)
+import Numeric.LinearAlgebra ( toList, realPart, Normed(norm_2) )
+import Control.Monad.Random ( evalRandIO, getRandomR, liftM )
 
 main :: IO ()
 main = do
-    print "testing reversibility of gates on single qubits:"
-    a <-test_rev_gates
-    print a 
-    print "testing reversibility of cnot with two qubits"
-    c <-test_rev_cnot
-    print c
-    print "quickCheck tests testing sum of QState = 1"
+    a <- test_rev_gates
+    putStrLn $ "Testing reversibility of gates on single qubits: " ++ show a
+    
+    c <- test_rev_cnot
+    putStrLn $ "Testing reversibility of cnot with two qubits: " ++ show c
+    
+    putStrLn "QuickCheck test unmodified QState sums to 1"
     quickCheck prop_sumOne
-    quickCheck prop_sum_hadamard 
-    quickCheck prop_sum_cnot 
-    quickCheck prop_sum_pauliX
-    quickCheck prop_sum_pauliY
-    quickCheck prop_sum_pauliZ
+
+    putStrLn "QuickCheck tests sum of QState = 1 after applying gates"
+    mapM_ quickCheck [prop_sum_hadamard, prop_sum_cnot, prop_sum_pauliX, prop_sum_pauliY, prop_sum_pauliZ]
+
     return ()
 
 --- Non-quickCheck tests
@@ -36,7 +35,6 @@ applyTwice qbt g = do
            once <- applyGate before g qbt
            twice <- applyGate once g qbt
            return (before,twice)
-
 
 -- Test reversibility of gates 
 -- | Given a gate that takes a single qbit, applies it and checks reversibility 
@@ -50,7 +48,6 @@ test_rev g = run $ do
     return $ all (<0.0000001) cmp -- cannot be checked directly due to rounding errors
 
 -- All other gates than hadamard could be tested with (state a == state b)
-
     
 -- | Applies the reversibility tests to all gates that matches type signature of QBit -> QM QBit.
 test_rev_gates :: IO Bool
@@ -68,7 +65,6 @@ test_rev_cnot = run $ do
     return (state a == state b) 
 
 --- QuickCheck tests
--- >>> quickCheck prop_sumOne
 
 -- Basic quickCheck test, that unmodified QState sums to 1
 prop_sumOne :: QState -> Bool
@@ -106,7 +102,6 @@ prop_gate_sum g q = TM.monadicIO $ do
 
 -- helper function to run QM computations within the property monad for quickcheck
 run' = TM.run . run
-
 
 -- | Adds given QState
 addState :: QState -> QM QState
