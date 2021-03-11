@@ -90,6 +90,9 @@ instance Monad QM where
         (a, s') <- runQM m s
         runQM (k a) s'
 
+instance MonadFail QM where
+    fail = errorWithoutStackTrace
+
 -- | Perform IO action inside the quantum monad
 io :: IO a -> QM a
 io m = QM \s -> do

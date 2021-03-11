@@ -21,9 +21,13 @@ import Numeric.LinearAlgebra
       ident,
       kronecker,
       Matrix,
-      Linear(scale) )
+      Linear(scale),
+      tr,
+      size,
+      inv )
+import Debug.Trace
 
-instance {-# OVERLAPS#-} Show (Matrix C) where
+instance {-# OVERLAPS #-} Show (Matrix C) where
   show mx = dispcf 3 mx
 
 -- | The imaginary unit
@@ -60,34 +64,50 @@ runGate g x = do
 
 -- run specified gates in parallel
 -- TODO: should work, but not fully tested. does NOT work with controlled gates
-parallel :: Int -> [(Matrix C, QBit)] -> Matrix C
+parallel :: Int -> [(Gate, QBit)] -> Matrix C
 parallel size as = foldr1 applyParallel list
   where list = foldr apply (replicate size $ ident 2) as
-        apply :: (Matrix C, QBit) -> [Matrix C] -> [Matrix C]
-        apply (mx, Ptr q) nx = changeAt mx q nx
+        apply :: (Gate, QBit) -> [Matrix C] -> [Matrix C]
+        apply (mx, Ptr q) nx = changeAt (gateMatrix mx) q nx
 
--- | Produce matrix running a gate controlled by another bit
-controlMatrix :: Int -> QBit -> QBit -> Matrix C -> Matrix C
-controlMatrix size (Ptr c) (Ptr t) g = fl + fr
-  where idsl = replicate size (ident 2)
-        idsr = replicate size (ident 2)
-        l = changeAt proj0 c idsl
-        rc = changeAt proj1 c idsr
-        r = changeAt g t rc
-        fl = foldr1 applyParallel l
-        fr = foldr1 applyParallel r
--- | Produce a matrix running a gate controlled by two other bits
-ccontrolMatrix :: Int -> QBit -> QBit -> QBit -> Matrix C -> Matrix C
-ccontrolMatrix size (Ptr c1) (Ptr c2) (Ptr t) g = f00 + f01 + f10 + f11
+-- -- | Produce matrix running a gate controlled by another bit
+-- controlMatrix :: Int -> QBit -> QBit -> Matrix C -> Matrix C
+-- controlMatrix size (Ptr c) (Ptr t) g = fl + fr
+--   where idsl = replicate size (ident 2)
+--         idsr = replicate size (ident 2)
+--         l = changeAt proj0 c idsl
+--         rc = changeAt proj1 c idsr
+--         r = changeAt g t rc
+--         fl = foldr1 applyParallel l
+--         fr = foldr1 applyParallel r
+-- 
+-- -- | Produce a matrix running a gate controlled by two other bits
+-- ccontrolMatrix :: Int -> QBit -> QBit -> QBit -> Matrix C -> Matrix C
+-- ccontrolMatrix size (Ptr c1) (Ptr c2) (Ptr t) g = f00 + f01 + f10 + f11
+--   where ids = replicate size (ident 2)
+--         m00c = changeAt proj0 c2 $ changeAt proj0 c1 ids
+--         m01c = changeAt proj1 c2 $ changeAt proj0 c1 ids
+--         m10c = changeAt proj0 c2 $ changeAt proj1 c1 ids
+--         m11c = changeAt proj1 c2 $ changeAt proj1 c1 $ changeAt g t ids
+--         f00  = foldr1 applyParallel m00c
+--         f01  = foldr1 applyParallel m01c
+--         f10  = foldr1 applyParallel m10c
+--         f11  = foldr1 applyParallel m11c
+
+controlMatrix :: Int -> [QBit] -> Gate -> Matrix C
+controlMatrix size qs g = sum $ map (foldl1 applyParallel) (mc ++ [r'])
   where ids = replicate size (ident 2)
-        m00c = changeAt proj0 c2 $ changeAt proj0 c1 ids
-        m01c = changeAt proj1 c2 $ changeAt proj0 c1 ids
-        m10c = changeAt proj0 c2 $ changeAt proj1 c1 ids
-        m11c = changeAt proj1 c2 $ changeAt proj1 c1 $ changeAt g t ids
-        f00  = foldr1 applyParallel m00c
-        f01  = foldr1 applyParallel m01c
-        f10  = foldr1 applyParallel m10c
-        f11  = foldr1 applyParallel m11c
+        n   = length qs
+        ls  = [ zip (projs (n-1) x) (map link qs) | x <- [0..(2^(n-1)-2)] ]
+        f   = flip $ uncurry changeAt
+        r   = foldl f ids $ zip (repeat proj1) (map link $ init qs)  
+        r'  = changeAt (gateMatrix g) (link $ last qs) r
+        mc  = map (foldl f ids) ls
+
+projs :: Int -> Int -> [Matrix C]
+projs 0    x = []
+projs size x = projs (size-1) (div x 2) ++ [m x]
+  where m x = if even x then proj0 else proj1
 
 -- | Quantum fourier transform matrix
 qftMatrix :: Int -> Matrix C
@@ -156,3 +176,31 @@ idmat :: Matrix C
 idmat = (2 >< 2)
   [ 1 , 0
   , 0 , 1 ]
+
+-- | Datatype for manipulating unitary gates
+data Gate = H | X | Y | Z | I | S | T
+          | CNOT | SWAP | TOFFOLI | FREDKIN
+          | SQRTX | SQRTSWAP
+          | QFT
+          | INV Gate
+          | RPHI Double | C Gate
+          | Custom String
+
+gateMatrix :: Gate -> Matrix C
+gateMatrix H = hmat
+gateMatrix X = pXmat
+gateMatrix Y = pYmat
+gateMatrix Z = pZmat
+gateMatrix I = idmat
+gateMatrix S = phasemat (pi/2)
+gateMatrix T = phasemat (pi/4)
+gateMatrix (INV g) = inv $ gateMatrix g
+gateMatrix CNOT = cmat
+gateMatrix (RPHI d) = phasemat d
+gateMatrix (Custom name) = errorWithoutStackTrace "not implemented"
+
+withSize :: Int -> Gate -> Matrix C
+withSize s gate
+  | size (gateMatrix gate) == (s,s) = gateMatrix gate
+  | otherwise = errorWithoutStackTrace
+    "Internal.Gates: incorrect number of input qubits"

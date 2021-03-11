@@ -35,6 +35,12 @@ module FunQ
     , crot
     , qft
 
+    -- * Primitive gates
+    , Gate(..)
+    , gate
+    , inverse
+    , controlled
+
     -- * Simulators
     , run
     , runDebug
@@ -69,7 +75,11 @@ import Gates
       toffoli,
       urot,
       crot,
-      qft )
+      qft,
+      Gate(..),
+      gate,
+      inverse,
+      controlled )
 
 -- | Prepares bell state
 bell :: (Bit, Bit) -> QM (QBit, QBit)
@@ -87,4 +97,3 @@ bellMeasure (x,y) = do
     m_x <- measure x
     m_y <- measure y
     return (m_x,m_y)
-
