@@ -1,7 +1,7 @@
 
 {-# LANGUAGE OverloadedLists #-}
 
-{-| 
+{-|
 Module      : Internal.Gates
 Description : Gate library internals
 Stability   : experimental
@@ -52,7 +52,7 @@ changeAt x index (y:ys) = y : changeAt x (index - 1)  ys
 
 -- | Apply a 2x2 gate, to a specific qubit.
 --
--- It will update the qstate. 
+-- It will update the qstate.
 runGate :: Matrix C -> (QBit -> QM QBit)
 runGate g x = do
     (state, size) <- getState
@@ -80,7 +80,7 @@ parallel size as = foldr1 applyParallel list
 --         r = changeAt g t rc
 --         fl = foldr1 applyParallel l
 --         fr = foldr1 applyParallel r
--- 
+--
 -- -- | Produce a matrix running a gate controlled by two other bits
 -- ccontrolMatrix :: Int -> QBit -> QBit -> QBit -> Matrix C -> Matrix C
 -- ccontrolMatrix size (Ptr c1) (Ptr c2) (Ptr t) g = f00 + f01 + f10 + f11
@@ -100,7 +100,7 @@ controlMatrix size qs g = sum $ map (foldl1 applyParallel) (mc ++ [r'])
         n   = length qs
         ls  = [ zip (projs (n-1) x) (map link qs) | x <- [0..(2^(n-1)-2)] ]
         f   = flip $ uncurry changeAt
-        r   = foldl f ids $ zip (repeat proj1) (map link $ init qs)  
+        r   = foldl f ids $ zip (repeat proj1) (map link $ init qs)
         r'  = changeAt (gateMatrix g) (link $ last qs) r
         mc  = map (foldl f ids) ls
 
