@@ -9,7 +9,7 @@
 
 
 -- | Definition of the quantum monad (<a>QM</a>) and helper functions
-module QM
+module Lib.QM
 
 -- | The Quantum Monad Keeps a state of the complex vector representation
 --   while allowing pseudo-random number generation
@@ -60,17 +60,17 @@ getState :: QM (QState, Int)
 
 -- | Given a QState, returns how many qbits it consists of.
 stateSize :: QState -> Ix
-instance GHC.Show.Show QM.QBit
-instance GHC.Show.Show (QM.QM a)
-instance GHC.Base.Functor QM.QM
-instance GHC.Base.Applicative QM.QM
-instance GHC.Base.Monad QM.QM
-instance GHC.Show.Show QM.QState
-instance GHC.Classes.Eq QM.QState
+instance GHC.Show.Show Lib.QM.QBit
+instance GHC.Show.Show (Lib.QM.QM a)
+instance GHC.Base.Functor Lib.QM.QM
+instance GHC.Base.Applicative Lib.QM.QM
+instance GHC.Base.Monad Lib.QM.QM
+instance GHC.Show.Show Lib.QM.QState
+instance GHC.Classes.Eq Lib.QM.QState
 
 
 -- | Internal matrix operations
-module Internal.Gates
+module Lib.Internal.Gates
 
 -- | The imaginary unit
 i :: Complex Double
@@ -129,7 +129,7 @@ instance GHC.Show.Show (Internal.Matrix.Matrix Internal.Vector.C)
 
 
 -- | Internal matrix and measurment operations
-module Internal.Core
+module Lib.Internal.Core
 
 -- | Appends state with tensor
 appendState :: QState -> QState -> QState
@@ -170,7 +170,7 @@ rngQbit :: Prob -> IO Bit
 
 
 -- | Module containing unitary gates and their matrix representations.
-module Gates
+module Lib.Gates
 
 -- | Pauli-X gate
 --   
@@ -248,7 +248,7 @@ qft :: [QBit] -> QM [QBit]
 
 
 -- | The core language operations.
-module Core
+module Lib.Core
 
 -- | Create new <a>QBit</a> from a bit. maps &lt;math&gt; and &lt;math&gt;
 new :: Bit -> QM QBit

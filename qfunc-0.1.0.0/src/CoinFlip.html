@@ -9,34 +9,34 @@
 </span><span id="line-9"></span><span class="hs-comment">--   :l examples/CoinFlip.hs -- Load the haskell file</span><span>
 </span><span id="line-10"></span><span class="hs-comment">--   run $ coinFlip &quot;hard brackets&quot; &quot;parenthesis&quot;</span><span>
 </span><span id="line-11"></span><span>
-</span><span id="line-12"></span><span id="local-6989586621679093705"><span id="local-6989586621679093706"><span class="annot"><a href="CoinFlip.html#coinFlip"><span class="hs-identifier hs-type">coinFlip</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679093706"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679093705"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="#local-6989586621679093706"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679093705"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span></span></span><span>
+</span><span id="line-12"></span><span id="local-6989586621679093673"><span id="local-6989586621679093674"><span class="annot"><a href="CoinFlip.html#coinFlip"><span class="hs-identifier hs-type">coinFlip</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621679093674"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679093673"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lib.QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="#local-6989586621679093674"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679093673"><span class="hs-identifier hs-type">b</span></a></span><span class="hs-special">)</span></span></span><span>
 </span><span id="line-13"></span><span id="coinFlip"><span class="annot"><span class="annottext">coinFlip :: a -&gt; b -&gt; QM (Either a b)
-</span><a href="CoinFlip.html#coinFlip"><span class="hs-identifier hs-var hs-var">coinFlip</span></a></span></span><span> </span><span id="local-6989586621679093703"><span class="annot"><span class="annottext">left :: a
-</span><a href="#local-6989586621679093703"><span class="hs-identifier hs-var">left</span></a></span></span><span> </span><span id="local-6989586621679093702"><span class="annot"><span class="annottext">right :: b
-</span><a href="#local-6989586621679093702"><span class="hs-identifier hs-var">right</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-14"></span><span>    </span><span id="local-6989586621679093701"><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679093701"><span class="hs-identifier hs-var">q</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Bit -&gt; QM QBit
-</span><a href="Core.html#new"><span class="hs-identifier hs-var">new</span></a></span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
-</span><span id="line-15"></span><span>    </span><span id="local-6989586621679093699"><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679093699"><span class="hs-identifier hs-var">q</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
-</span><a href="Gates.html#hadamard"><span class="hs-identifier hs-var">hadamard</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679093701"><span class="hs-identifier hs-var">q</span></a></span><span>
-</span><span id="line-16"></span><span>    </span><span id="local-6989586621679093697"><span class="annot"><span class="annottext">Bit
-</span><a href="#local-6989586621679093697"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QBit -&gt; QM Bit
-</span><a href="Core.html#measure"><span class="hs-identifier hs-var">measure</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
-</span><a href="#local-6989586621679093699"><span class="hs-identifier hs-var">q</span></a></span><span>
+</span><a href="CoinFlip.html#coinFlip"><span class="hs-identifier hs-var hs-var">coinFlip</span></a></span></span><span> </span><span id="local-6989586621679093671"><span class="annot"><span class="annottext">left :: a
+</span><a href="#local-6989586621679093671"><span class="hs-identifier hs-var">left</span></a></span></span><span> </span><span id="local-6989586621679093670"><span class="annot"><span class="annottext">right :: b
+</span><a href="#local-6989586621679093670"><span class="hs-identifier hs-var">right</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-14"></span><span>    </span><span id="local-6989586621679093669"><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679093669"><span class="hs-identifier hs-var">q</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Bit -&gt; QM QBit
+</span><a href="Lib.Core.html#new"><span class="hs-identifier hs-var">new</span></a></span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
+</span><span id="line-15"></span><span>    </span><span id="local-6989586621679093667"><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679093667"><span class="hs-identifier hs-var">q</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
+</span><a href="Lib.Gates.html#hadamard"><span class="hs-identifier hs-var">hadamard</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679093669"><span class="hs-identifier hs-var">q</span></a></span><span>
+</span><span id="line-16"></span><span>    </span><span id="local-6989586621679093665"><span class="annot"><span class="annottext">Bit
+</span><a href="#local-6989586621679093665"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QBit -&gt; QM Bit
+</span><a href="Lib.Core.html#measure"><span class="hs-identifier hs-var">measure</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="#local-6989586621679093667"><span class="hs-identifier hs-var">q</span></a></span><span>
 </span><span id="line-17"></span><span>    </span><span class="annot"><span class="annottext">Either a b -&gt; QM (Either a b)
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Either a b -&gt; QM (Either a b)) -&gt; Either a b -&gt; QM (Either a b)
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Bit
-</span><a href="#local-6989586621679093697"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">Bit -&gt; Bit -&gt; Bool
+</span><a href="#local-6989586621679093665"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">Bit -&gt; Bit -&gt; Bool
 forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">a -&gt; Either a b
 forall a b. a -&gt; Either a b
 </span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679093703"><span class="hs-identifier hs-var">left</span></a></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">b -&gt; Either a b
+</span><a href="#local-6989586621679093671"><span class="hs-identifier hs-var">left</span></a></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">b -&gt; Either a b
 forall a b. b -&gt; Either a b
 </span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">b
-</span><a href="#local-6989586621679093702"><span class="hs-identifier hs-var">right</span></a></span><span>
+</span><a href="#local-6989586621679093670"><span class="hs-identifier hs-var">right</span></a></span><span>
 </span><span id="line-18"></span></pre></body></html>

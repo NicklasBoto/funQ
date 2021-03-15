@@ -19,49 +19,49 @@
 </span><span id="line-19"></span><span class="hs-comment">-- 1. create EPR pair (a,b)</span><span>
 </span><span id="line-20"></span><span class="hs-comment">-- 2. perform bell measurment on (psi, a)</span><span>
 </span><span id="line-21"></span><span class="hs-comment">-- 3. perform corrections on b according to the bell measurement</span><span>
-</span><span id="line-22"></span><span class="annot"><a href="Teleport.html#teleport"><span class="hs-identifier hs-type">teleport</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
+</span><span id="line-22"></span><span class="annot"><a href="Teleport.html#teleport"><span class="hs-identifier hs-type">teleport</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lib.QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lib.QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="Lib.QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
 </span><span id="line-23"></span><span id="teleport"><span class="annot"><span class="annottext">teleport :: QBit -&gt; QM QBit
 </span><a href="Teleport.html#teleport"><span class="hs-identifier hs-var hs-var">teleport</span></a></span></span><span> </span><span id="local-6989586621679093745"><span class="annot"><span class="annottext">psi :: QBit
 </span><a href="#local-6989586621679093745"><span class="hs-identifier hs-var">psi</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-24"></span><span>    </span><span id="local-6989586621679093744"><span class="annot"><span class="annottext">QBit
 </span><a href="#local-6989586621679093744"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Bit -&gt; QM QBit
-</span><a href="Core.html#new"><span class="hs-identifier hs-var">new</span></a></span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
+</span><a href="Lib.Core.html#new"><span class="hs-identifier hs-var">new</span></a></span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
 </span><span id="line-25"></span><span>    </span><span id="local-6989586621679093742"><span class="annot"><span class="annottext">QBit
 </span><a href="#local-6989586621679093742"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Bit -&gt; QM QBit
-</span><a href="Core.html#new"><span class="hs-identifier hs-var">new</span></a></span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
+</span><a href="Lib.Core.html#new"><span class="hs-identifier hs-var">new</span></a></span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
 </span><span id="line-26"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
-</span><a href="Gates.html#hadamard"><span class="hs-identifier hs-var">hadamard</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="Lib.Gates.html#hadamard"><span class="hs-identifier hs-var">hadamard</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
 </span><a href="#local-6989586621679093744"><span class="hs-identifier hs-var">a</span></a></span><span>
 </span><span id="line-27"></span><span>    </span><span class="annot"><span class="annottext">(QBit, QBit) -&gt; QM (QBit, QBit)
-</span><a href="Gates.html#cnot"><span class="hs-identifier hs-var">cnot</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit
+</span><a href="Lib.Gates.html#cnot"><span class="hs-identifier hs-var">cnot</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit
 </span><a href="#local-6989586621679093744"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">QBit
 </span><a href="#local-6989586621679093742"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-28"></span><span>    </span><span class="annot"><span class="annottext">(QBit, QBit) -&gt; QM (QBit, QBit)
-</span><a href="Gates.html#cnot"><span class="hs-identifier hs-var">cnot</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit
+</span><a href="Lib.Gates.html#cnot"><span class="hs-identifier hs-var">cnot</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">QBit
 </span><a href="#local-6989586621679093745"><span class="hs-identifier hs-var">psi</span></a></span><span class="hs-special">,</span><span class="annot"><span class="annottext">QBit
 </span><a href="#local-6989586621679093744"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-29"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
-</span><a href="Gates.html#hadamard"><span class="hs-identifier hs-var">hadamard</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="Lib.Gates.html#hadamard"><span class="hs-identifier hs-var">hadamard</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
 </span><a href="#local-6989586621679093745"><span class="hs-identifier hs-var">psi</span></a></span><span>
 </span><span id="line-30"></span><span>    </span><span id="local-6989586621679093739"><span class="annot"><span class="annottext">Bit
 </span><a href="#local-6989586621679093739"><span class="hs-identifier hs-var">m_psi</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QBit -&gt; QM Bit
-</span><a href="Core.html#measure"><span class="hs-identifier hs-var">measure</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="Lib.Core.html#measure"><span class="hs-identifier hs-var">measure</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
 </span><a href="#local-6989586621679093745"><span class="hs-identifier hs-var">psi</span></a></span><span>
 </span><span id="line-31"></span><span>    </span><span id="local-6989586621679093737"><span class="annot"><span class="annottext">Bit
 </span><a href="#local-6989586621679093737"><span class="hs-identifier hs-var">m_a</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">QBit -&gt; QM Bit
-</span><a href="Core.html#measure"><span class="hs-identifier hs-var">measure</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="Lib.Core.html#measure"><span class="hs-identifier hs-var">measure</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
 </span><a href="#local-6989586621679093744"><span class="hs-identifier hs-var">a</span></a></span><span>
 </span><span id="line-32"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
-</span><a href="Gates.html#pauliX"><span class="hs-identifier hs-var">pauliX</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="Lib.Gates.html#pauliX"><span class="hs-identifier hs-var">pauliX</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
 </span><a href="#local-6989586621679093742"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">QM QBit -&gt; Bit -&gt; QM ()
 forall a. QM a -&gt; Bit -&gt; QM ()
-</span><a href="Core.html#controlbit"><span class="hs-operator hs-var">`controlbit`</span></a></span><span> </span><span class="annot"><span class="annottext">Bit
+</span><a href="Lib.Core.html#controlbit"><span class="hs-operator hs-var">`controlbit`</span></a></span><span> </span><span class="annot"><span class="annottext">Bit
 </span><a href="#local-6989586621679093737"><span class="hs-identifier hs-var">m_a</span></a></span><span>
 </span><span id="line-33"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
-</span><a href="Gates.html#pauliZ"><span class="hs-identifier hs-var">pauliZ</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="Lib.Gates.html#pauliZ"><span class="hs-identifier hs-var">pauliZ</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
 </span><a href="#local-6989586621679093742"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">QM QBit -&gt; Bit -&gt; QM ()
 forall a. QM a -&gt; Bit -&gt; QM ()
-</span><a href="Core.html#controlbit"><span class="hs-operator hs-var">`controlbit`</span></a></span><span> </span><span class="annot"><span class="annottext">Bit
+</span><a href="Lib.Core.html#controlbit"><span class="hs-operator hs-var">`controlbit`</span></a></span><span> </span><span class="annot"><span class="annottext">Bit
 </span><a href="#local-6989586621679093739"><span class="hs-identifier hs-var">m_psi</span></a></span><span>
 </span><span id="line-34"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
@@ -69,14 +69,14 @@ forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><a href="#local-6989586621679093742"><span class="hs-identifier hs-var">b</span></a></span><span>
 </span><span id="line-35"></span><span>
 </span><span id="line-36"></span><span class="hs-comment">-- | Create a qubit, teleport it, and measure it</span><span>
-</span><span id="line-37"></span><span class="annot"><a href="Teleport.html#exampleTeleport"><span class="hs-identifier hs-type">exampleTeleport</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bit</span></span><span>
+</span><span id="line-37"></span><span class="annot"><a href="Teleport.html#exampleTeleport"><span class="hs-identifier hs-type">exampleTeleport</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lib.QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bit</span></span><span>
 </span><span id="line-38"></span><span id="exampleTeleport"><span class="annot"><span class="annottext">exampleTeleport :: QM Bit
 </span><a href="Teleport.html#exampleTeleport"><span class="hs-identifier hs-var hs-var">exampleTeleport</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-39"></span><span>    </span><span id="local-6989586621679093732"><span class="annot"><span class="annottext">QBit
 </span><a href="#local-6989586621679093732"><span class="hs-identifier hs-var">q</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Bit -&gt; QM QBit
-</span><a href="Core.html#new"><span class="hs-identifier hs-var">new</span></a></span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
+</span><a href="Lib.Core.html#new"><span class="hs-identifier hs-var">new</span></a></span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
 </span><span id="line-40"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
-</span><a href="Gates.html#hadamard"><span class="hs-identifier hs-var">hadamard</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="Lib.Gates.html#hadamard"><span class="hs-identifier hs-var">hadamard</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
 </span><a href="#local-6989586621679093732"><span class="hs-identifier hs-var">q</span></a></span><span>
 </span><span id="line-41"></span><span>    </span><span class="hs-comment">-- perform manipulations here</span><span>
 </span><span id="line-42"></span><span>    </span><span id="local-6989586621679093731"><span class="annot"><span class="annottext">QBit
@@ -86,33 +86,33 @@ forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span id="line-43"></span><span>    </span><span class="hs-comment">-- the resulting distribution should be the same as</span><span>
 </span><span id="line-44"></span><span>    </span><span class="hs-comment">-- for @q@ before the teleportation</span><span>
 </span><span id="line-45"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM Bit
-</span><a href="Core.html#measure"><span class="hs-identifier hs-var">measure</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="Lib.Core.html#measure"><span class="hs-identifier hs-var">measure</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
 </span><a href="#local-6989586621679093731"><span class="hs-identifier hs-var">q'</span></a></span><span>
 </span><span id="line-46"></span><span>
-</span><span id="line-47"></span><span class="annot"><a href="Teleport.html#correction"><span class="hs-identifier hs-type">correction</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Bit</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bit</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
+</span><span id="line-47"></span><span class="annot"><a href="Teleport.html#correction"><span class="hs-identifier hs-type">correction</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lib.QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Bit</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bit</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lib.QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="Lib.QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
 </span><span id="line-48"></span><span id="correction"><span class="annot"><span class="annottext">correction :: QBit -&gt; (Bit, Bit) -&gt; QM QBit
 </span><a href="Teleport.html#correction"><span class="hs-identifier hs-var hs-var">correction</span></a></span></span><span> </span><span id="local-6989586621679093729"><span class="annot"><span class="annottext">q :: QBit
 </span><a href="#local-6989586621679093729"><span class="hs-identifier hs-var">q</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679093728"><span class="annot"><span class="annottext">x :: Bit
 </span><a href="#local-6989586621679093728"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621679093727"><span class="annot"><span class="annottext">y :: Bit
 </span><a href="#local-6989586621679093727"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
 </span><span id="line-49"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
-</span><a href="Gates.html#pauliX"><span class="hs-identifier hs-var">pauliX</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="Lib.Gates.html#pauliX"><span class="hs-identifier hs-var">pauliX</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
 </span><a href="#local-6989586621679093729"><span class="hs-identifier hs-var">q</span></a></span><span> </span><span class="annot"><span class="annottext">QM QBit -&gt; Bit -&gt; QM ()
 forall a. QM a -&gt; Bit -&gt; QM ()
-</span><a href="Core.html#controlbit"><span class="hs-operator hs-var">`controlbit`</span></a></span><span> </span><span class="annot"><span class="annottext">Bit
+</span><a href="Lib.Core.html#controlbit"><span class="hs-operator hs-var">`controlbit`</span></a></span><span> </span><span class="annot"><span class="annottext">Bit
 </span><a href="#local-6989586621679093727"><span class="hs-identifier hs-var">y</span></a></span><span>
 </span><span id="line-50"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
-</span><a href="Gates.html#pauliZ"><span class="hs-identifier hs-var">pauliZ</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
+</span><a href="Lib.Gates.html#pauliZ"><span class="hs-identifier hs-var">pauliZ</span></a></span><span> </span><span class="annot"><span class="annottext">QBit
 </span><a href="#local-6989586621679093729"><span class="hs-identifier hs-var">q</span></a></span><span> </span><span class="annot"><span class="annottext">QM QBit -&gt; Bit -&gt; QM ()
 forall a. QM a -&gt; Bit -&gt; QM ()
-</span><a href="Core.html#controlbit"><span class="hs-operator hs-var">`controlbit`</span></a></span><span> </span><span class="annot"><span class="annottext">Bit
+</span><a href="Lib.Core.html#controlbit"><span class="hs-operator hs-var">`controlbit`</span></a></span><span> </span><span class="annot"><span class="annottext">Bit
 </span><a href="#local-6989586621679093728"><span class="hs-identifier hs-var">x</span></a></span><span>
 </span><span id="line-51"></span><span>    </span><span class="annot"><span class="annottext">QBit -&gt; QM QBit
 forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
 </span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">QBit
 </span><a href="#local-6989586621679093729"><span class="hs-identifier hs-var">q</span></a></span><span>
 </span><span id="line-52"></span><span>
-</span><span id="line-53"></span><span class="annot"><a href="Teleport.html#teleport%27"><span class="hs-identifier hs-type">teleport'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
+</span><span id="line-53"></span><span class="annot"><a href="Teleport.html#teleport%27"><span class="hs-identifier hs-type">teleport'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Lib.QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Lib.QM.html#QM"><span class="hs-identifier hs-type">QM</span></a></span><span> </span><span class="annot"><a href="Lib.QM.html#QBit"><span class="hs-identifier hs-type">QBit</span></a></span><span>
 </span><span id="line-54"></span><span id="teleport%27"><span class="annot"><span class="annottext">teleport' :: QBit -&gt; QM QBit
 </span><a href="Teleport.html#teleport%27"><span class="hs-identifier hs-var hs-var">teleport'</span></a></span></span><span> </span><span id="local-6989586621679093725"><span class="annot"><span class="annottext">psi :: QBit
 </span><a href="#local-6989586621679093725"><span class="hs-identifier hs-var">psi</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
