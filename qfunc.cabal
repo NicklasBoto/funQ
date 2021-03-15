@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 762258db74f339707eebc4f778158ab9853bc8c3f266ed60924e15dc63159136
+-- hash: 350097b21482fabacee8b45ea5fcd14ea2ddd58c0e51bfad3aec759268b0161c
 
 name:           qfunc
 version:        0.1.0.0
@@ -33,6 +33,7 @@ source-repository head
 library
   exposed-modules:
       FunQ
+      Lang
       Lib.Core
       Lib.Gates
       Lib.Internal.Core
