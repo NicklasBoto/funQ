@@ -7,7 +7,7 @@ Stability   : experimental
 
 Module containing unitary gates and their matrix representations.
 -}
-module Gates (
+module Lib.Gates (
     -- * Unitary gates
       pauliX
     , pauliY
@@ -26,7 +26,7 @@ module Gates (
     , qft
 ) where
 
-import Internal.Gates
+import Lib.Internal.Gates
     ( applyGate,
       applyParallel,
       ccontrolMatrix,
@@ -42,7 +42,7 @@ import Internal.Gates
       pYmat,
       pZmat,
       idmat ) 
-import QM ( QM, QState(QState), QBit(..), getState, put, get )
+import Lib.QM ( QM, QState(QState), QBit(..), getState, put, get )
 import Numeric.LinearAlgebra
     ( Complex(..), (#>), (><), ident, kronecker, Matrix, Linear(scale), C, ident, tr )
 

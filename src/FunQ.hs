@@ -46,15 +46,15 @@ module FunQ
     ) where
 
 import Control.Monad ( replicateM, mapM )
-import QM ( QM, QBit, run, runDebug )
-import Core
+import Lib.QM ( QM, QBit, run, runDebug )
+import Lib.Core
     ( Bit,
       new,
       measure,
       controlbit,
       ndist,
       dist )
-import Gates
+import Lib.Gates
     ( cnot,
       hadamard,
       identity,

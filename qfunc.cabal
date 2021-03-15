@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4d88c4b0be89f283ce756896526c2ddb0a2de1cff75da229db9409565e6d7b5f
+-- hash: 762258db74f339707eebc4f778158ab9853bc8c3f266ed60924e15dc63159136
 
 name:           qfunc
 version:        0.1.0.0
@@ -32,17 +32,15 @@ source-repository head
 
 library
   exposed-modules:
-      Core
       FunQ
-      Gates
-      Internal.Core
-      Internal.Gates
-      QM
+      Lib.Core
+      Lib.Gates
+      Lib.Internal.Core
+      Lib.Internal.Gates
+      Lib.QM
       CoinFlip
       Deutsch
       DeutschJozsa
-      Logic
-      Shor
       Teleport
   other-modules:
       Paths_qfunc

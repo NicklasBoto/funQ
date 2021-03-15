@@ -1,4 +1,4 @@
-
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedLists #-}
 
 {-| 
@@ -8,10 +8,9 @@ Stability   : experimental
 
 Internal matrix operations
 -}
-{-# LANGUAGE FlexibleInstances #-}
-module Internal.Gates where
+module Lib.Internal.Gates where
 
-import QM ( getState, get, put, QM, QState(QState), QBit(..), Ix)
+import Lib.QM ( getState, get, put, QM, QState(QState), QBit(..), Ix)
 import Numeric.LinearAlgebra
     ( Complex(..),
       C,
