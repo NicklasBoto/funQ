@@ -4,13 +4,13 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 762258db74f339707eebc4f778158ab9853bc8c3f266ed60924e15dc63159136
+-- hash: 82967c0500175efdef77461e474ce7249306324eea3b4f445eedbc9d00d332bd
 
 name:           qfunc
 version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/NicklasBoto/qfunc#readme>
-homepage:       https://github.com/NicklasBoto/qfunc#readme
-bug-reports:    https://github.com/NicklasBoto/qfunc/issues
+homepage:       https://github.com/NicklasBoto/funQ#readme
+bug-reports:    https://github.com/NicklasBoto/funQ/issues
 author:         Nicklas Botö,
                 Fabian Forslund,
                 Matilda Blomqvist,
@@ -28,7 +28,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/NicklasBoto/qfunc
+  location: https://github.com/NicklasBoto/funQ
 
 library
   exposed-modules:
@@ -38,6 +38,12 @@ library
       Lib.Internal.Core
       Lib.Internal.Gates
       Lib.QM
+      Parser.Abs
+      Parser.ErrM
+      Parser.Lex
+      Parser.Par
+      Parser.Print
+      Parser.Skel
       CoinFlip
       Deutsch
       DeutschJozsa
@@ -49,6 +55,7 @@ library
       examples
   build-depends:
       MonadRandom
+    , array
     , base >=4.7 && <5
     , bitvec
     , hmatrix
@@ -65,6 +72,7 @@ executable qfunc-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       MonadRandom
+    , array
     , base >=4.7 && <5
     , bitvec
     , hmatrix
@@ -84,6 +92,7 @@ test-suite qfunc-test
   build-depends:
       MonadRandom
     , QuickCheck
+    , array
     , base >=4.7 && <5
     , bitvec
     , hmatrix
