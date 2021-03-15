@@ -1,86 +1,67 @@
-PDef.  Program ::= [FunDec] ; --? 
+PDef.  Program ::= [FunDec] ;
 
 --- Terms ---
--- TBit.  Term4  ::= Bit;
--- TStar. Term4  ::= "*";
--- TApp.  Term3  ::= Term3 Term2 ; 
--- TMeas. Term2  ::= "measure" Term1 ;
--- TLamb. Term2  ::= Lambda Ident "->" Term ; 
--- TIfEl. Term2  ::= "if" Term "then" Term "else" Term ; 
--- TGate. Term2  ::= Gate Term1;
--- TTup.  Term2  ::= "(" Term "," Term ")"; 
--- TLet.  Term2  ::= "let" "(" Term "," Term ")" "=" Term "in" Term ;
--- TNew.  Term1  ::= "new" Term2; 
---
--- coercions Term 3 ; 
+TVar  . Term3 ::= Variable                            ;
+TBit  . Term3 ::= Bit                                 ;
+TGate . Term3 ::= Gate                                ;
+TTup  . Term3 ::= Tup                                 ; 
+TStar . Term3 ::= "*"                                 ;
+TApp  . Term2 ::= Term2 Term3                         ; 
+TIfEl . Term1 ::= "if" Term2 "then" Term2 "else" Term ; 
+TLet  . Term1 ::= "let" Tup "=" Term2 "in" Term       ;
+TLamb . Term1 ::= Lambda Variable "." Term            ; 
+coercions Term 3;
 
-TBit.  Term2  ::= Bit;
-TVar.  Term2  ::= Variable ;
-TTup.  Term2  ::= "(" Term1 "," Term1 ")"; 
-TStar. Term1  ::= "*";
-TMeas. Term1  ::= "measure" Term1;
-TNew.  Term1  ::= "new" Term1;
-TApp.  Term1  ::= Term1 Term2 ; 
-TLamb. Term1  ::= Lambda Variable "->" Term ; 
-TIfEl. Term1  ::= "if" Term "then" Term "else" Term ; 
-TGate. Term1  ::= Gate ;
-TLet.  Term1  ::= "let" "(" Term "," Term ")" "=" Term "in" Term ;
---TNew.  Term1  ::= "new"; 
-coercions Term 2;
+Tupt. Tup ::= "(" Term "," Term ")";
 
 --- Bits ---
 BZero. Bit ::= "0";
 BOne.  Bit ::= "1";
 
---- Function declaration  --- kolla på newline?
-FDecl. FunDec ::= Variable ":" [Type] Function;
-separator FunDec "\n";
+--- Function declaration  --- 
+FDecl. FunDec ::= FunVar Type Function;
+terminator FunDec "";
 
-FDef.  Function ::= Variable [Arg] "=" Term ;
+FDef.  Function ::= Variable [Arg] "=" Term;
 
 FArg. Arg ::= Variable ;
 separator Arg " ";
 
 comment "--" ; 
+
+token FunVar (lower (letter | digit | '_' | '\'')* (' ')* ':') ;
  
- --- Variable ---
- token Variable ((lower letter)(letter | digit | '_' | '\'')*) ;
+--- Variable ---
+token Variable (lower (letter | digit | '_' | '\'')*) ;
 
- --- GateIdent ---
- token GateIdent ((upper letter)+) ;
+--- GateIdent ---
+token GateIdent ((upper)+) ;
 
- --- Type ---
- TypeBit. Type  ::= "Bit";
- TQbit.   Type  ::= "QBit";
- TVoid.   Type  ::= "T";
- TTens.   Type  ::= Type "><" Type;
- separator Type "-o";
+--- Lambda token ---
+-- token Lambda char (0xBB) ;
+token Lambda '\\' ;
 
+--- Type ---
 
- --- Backslash for lambda function ---
- token Lambda ('\\') ; 
+TypeVar  . Type2  ::= Variable         ;
+TypeBit  . Type2  ::= "Bit"            ;
+TypeQbit . Type2  ::= "QBit"           ;
+TypeVoid . Type2  ::= "T"              ;
+TypeDup  . Type2  ::= "!" Type2        ;
+TypeTens . Type1  ::= Type2 "><" Type1 ;
+TypeFunc . Type1  ::= Type2 "-o" Type1 ;
+coercions Type 2;
 
- --- Gates ---
- GH. Gate ::= "H";
- GX. Gate ::= "X";
- GY. Gate ::= "Y";
- GZ. Gate ::= "Z";
- GI. Gate ::= "I";
- GS. Gate ::= "S";
- GT. Gate ::= "T";
- GCNOT. Gate ::= "CNOT";
- GTOF. Gate ::= "TOFFOLI";
- GSWP. Gate ::= "SWAP";
- GFRDK. Gate ::= "FREDKIN";
- GGate. Gate ::= GateIdent ; 
-
-
- -- coercions Gate 1 ;
-
- -- data Gate = H | X | Y | Z | I | S | T
- --           | CNOT | SWAP | TOFFOLI | FREDKIN
- --           | SQRTX | SQRTSWAP
- --           | QFT
- --           | INV Gate
- --           | RPHI Double | C Gate
- --           | Custom String
+--- Gates ---
+GH    . Gate ::= "H"       ;
+GX    . Gate ::= "X"       ;
+GY    . Gate ::= "Y"       ;
+GZ    . Gate ::= "Z"       ;
+GI    . Gate ::= "I"       ;
+GS    . Gate ::= "S"       ;
+GT    . Gate ::= "T"       ;
+GCNOT . Gate ::= "CNOT"    ;
+GTOF  . Gate ::= "TOFFOLI" ;
+GSWP  . Gate ::= "SWAP"    ;
+GFRDK . Gate ::= "FREDKIN" ;
+GGate . Gate ::= GateIdent ; 
