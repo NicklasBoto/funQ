@@ -12,7 +12,7 @@ TLet  . Term1 ::= "let" Tup "=" Term2 "in" Term       ;
 TLamb . Term1 ::= Lambda Variable "." Term            ; 
 coercions Term 3;
 
-Tupt. Tup ::= "(" Term "," Term ")";
+Tuple. Tup ::= "(" Term "," Term ")" ;
 
 --- Bits ---
 BZero. Bit ::= "0";

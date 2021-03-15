@@ -4,13 +4,13 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9cb2a03056cc7a3556d1ac0676e157baf170d978e695d29919716956a0cdbfa4
+-- hash: 82967c0500175efdef77461e474ce7249306324eea3b4f445eedbc9d00d332bd
 
 name:           qfunc
 version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/NicklasBoto/qfunc#readme>
-homepage:       https://github.com/NicklasBoto/qfunc#readme
-bug-reports:    https://github.com/NicklasBoto/qfunc/issues
+homepage:       https://github.com/NicklasBoto/funQ#readme
+bug-reports:    https://github.com/NicklasBoto/funQ/issues
 author:         Nicklas Botö,
                 Fabian Forslund,
                 Matilda Blomqvist,
@@ -28,7 +28,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/NicklasBoto/qfunc
+  location: https://github.com/NicklasBoto/funQ
 
 library
   exposed-modules:
@@ -41,12 +41,9 @@ library
       Parser.Abs
       Parser.ErrM
       Parser.Lex
-      Parser.Lex
-      Parser.Par
       Parser.Par
       Parser.Print
       Parser.Skel
-      Parser.Test
       CoinFlip
       Deutsch
       DeutschJozsa

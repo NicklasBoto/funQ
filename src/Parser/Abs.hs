@@ -9,6 +9,9 @@ import Prelude (Char, Double, Integer, String)
 import qualified Prelude as C (Eq, Ord, Show, Read)
 import qualified Data.String
 
+newtype FunVar = FunVar String
+  deriving (C.Eq, C.Ord, C.Show, C.Read, Data.String.IsString)
+
 newtype Variable = Variable String
   deriving (C.Eq, C.Ord, C.Show, C.Read, Data.String.IsString)
 
@@ -22,23 +25,24 @@ data Program = PDef [FunDec]
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data Term
-    = TBit Bit
-    | TVar Variable
-    | TTup Term Term
-    | TStar
-    | TMeas Term
-    | TNew Term
-    | TApp Term Term
-    | TLamb Lambda Variable Term
-    | TIfEl Term Term Term
+    = TVar Variable
+    | TBit Bit
     | TGate Gate
-    | TLet Term Term Term Term
+    | TTup Tup
+    | TStar
+    | TApp Term Term
+    | TIfEl Term Term Term
+    | TLet Tup Term Term
+    | TLamb Lambda Variable Term
+  deriving (C.Eq, C.Ord, C.Show, C.Read)
+
+data Tup = Tuple Term Term
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data Bit = BZero | BOne
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
-data FunDec = FDecl Variable [Type] Function
+data FunDec = FDecl FunVar Type Function
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data Function = FDef Variable [Arg] Term
@@ -47,7 +51,14 @@ data Function = FDef Variable [Arg] Term
 data Arg = FArg Variable
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
-data Type = TypeBit | TQbit | TVoid | TTens Type Type
+data Type
+    = TypeVar Variable
+    | TypeBit
+    | TypeQbit
+    | TypeVoid
+    | TypeDup Type
+    | TypeTens Type Type
+    | TypeFunc Type Type
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data Gate

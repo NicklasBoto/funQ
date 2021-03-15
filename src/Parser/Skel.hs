@@ -10,6 +10,9 @@ type Result = Err String
 failure :: Show a => a -> Result
 failure x = Left $ "Undefined case: " ++ show x
 
+transFunVar :: Parser.Abs.FunVar -> Result
+transFunVar x = case x of
+  Parser.Abs.FunVar string -> failure x
 transVariable :: Parser.Abs.Variable -> Result
 transVariable x = case x of
   Parser.Abs.Variable string -> failure x
@@ -24,24 +27,25 @@ transProgram x = case x of
   Parser.Abs.PDef fundecs -> failure x
 transTerm :: Parser.Abs.Term -> Result
 transTerm x = case x of
-  Parser.Abs.TBit bit -> failure x
   Parser.Abs.TVar variable -> failure x
-  Parser.Abs.TTup term1 term2 -> failure x
-  Parser.Abs.TStar -> failure x
-  Parser.Abs.TMeas term -> failure x
-  Parser.Abs.TNew term -> failure x
-  Parser.Abs.TApp term1 term2 -> failure x
-  Parser.Abs.TLamb lambda variable term -> failure x
-  Parser.Abs.TIfEl term1 term2 term3 -> failure x
+  Parser.Abs.TBit bit -> failure x
   Parser.Abs.TGate gate -> failure x
-  Parser.Abs.TLet term1 term2 term3 term4 -> failure x
+  Parser.Abs.TTup tup -> failure x
+  Parser.Abs.TStar -> failure x
+  Parser.Abs.TApp term1 term2 -> failure x
+  Parser.Abs.TIfEl term1 term2 term3 -> failure x
+  Parser.Abs.TLet tup term1 term2 -> failure x
+  Parser.Abs.TLamb lambda variable term -> failure x
+transTup :: Parser.Abs.Tup -> Result
+transTup x = case x of
+  Parser.Abs.Tuple term1 term2 -> failure x
 transBit :: Parser.Abs.Bit -> Result
 transBit x = case x of
   Parser.Abs.BZero -> failure x
   Parser.Abs.BOne -> failure x
 transFunDec :: Parser.Abs.FunDec -> Result
 transFunDec x = case x of
-  Parser.Abs.FDecl variable types function -> failure x
+  Parser.Abs.FDecl funvar type_ function -> failure x
 transFunction :: Parser.Abs.Function -> Result
 transFunction x = case x of
   Parser.Abs.FDef variable args term -> failure x
@@ -50,10 +54,13 @@ transArg x = case x of
   Parser.Abs.FArg variable -> failure x
 transType :: Parser.Abs.Type -> Result
 transType x = case x of
+  Parser.Abs.TypeVar variable -> failure x
   Parser.Abs.TypeBit -> failure x
-  Parser.Abs.TQbit -> failure x
-  Parser.Abs.TVoid -> failure x
-  Parser.Abs.TTens type_1 type_2 -> failure x
+  Parser.Abs.TypeQbit -> failure x
+  Parser.Abs.TypeVoid -> failure x
+  Parser.Abs.TypeDup type_ -> failure x
+  Parser.Abs.TypeTens type_1 type_2 -> failure x
+  Parser.Abs.TypeFunc type_1 type_2 -> failure x
 transGate :: Parser.Abs.Gate -> Result
 transGate x = case x of
   Parser.Abs.GH -> failure x

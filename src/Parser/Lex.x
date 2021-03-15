@@ -19,7 +19,7 @@ $i = [$l $d _ ']     -- identifier character
 $u = [. \n]          -- universal: any character
 
 @rsyms =    -- symbols and non-identifier-like reserved words
-   \( | \, | \) | \* | \- \> | \= | "0" | "1" | \: | \> \< | \- "o"
+   \* | \= | \. | \( | \) | \, | "0" | "1" | \! | \> \< | \- "o"
 
 :-
 
@@ -29,9 +29,11 @@ $u = [. \n]          -- universal: any character
 $white+ ;
 @rsyms
     { tok (\p s -> PT p (eitherResIdent TV s)) }
-$s $l ([\' \_]| ($d | $l)) *
+$s ([\' \_]| ($d | $l)) * \  * \:
+    { tok (\p s -> PT p (eitherResIdent T_FunVar s)) }
+$s ([\' \_]| ($d | $l)) *
     { tok (\p s -> PT p (eitherResIdent T_Variable s)) }
-($c $l)+
+$c +
     { tok (\p s -> PT p (eitherResIdent T_GateIdent s)) }
 \\
     { tok (\p s -> PT p (eitherResIdent T_Lambda s)) }
@@ -55,6 +57,7 @@ data Tok =
  | TV !String         -- identifiers
  | TD !String         -- double precision float literals
  | TC !String         -- character literals
+ | T_FunVar !String
  | T_Variable !String
  | T_GateIdent !String
  | T_Lambda !String
@@ -95,6 +98,7 @@ tokenText t = case t of
   PT _ (TD s)   -> s
   PT _ (TC s)   -> s
   Err _         -> "#error"
+  PT _ (T_FunVar s) -> s
   PT _ (T_Variable s) -> s
   PT _ (T_GateIdent s) -> s
   PT _ (T_Lambda s) -> s
@@ -113,7 +117,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "I" 16 (b "1" 8 (b "," 4 (b ")" 2 (b "(" 1 N N) (b "*" 3 N N)) (b "-o" 6 (b "->" 5 N N) (b "0" 7 N N))) (b "Bit" 12 (b "=" 10 (b ":" 9 N N) (b "><" 11 N N)) (b "FREDKIN" 14 (b "CNOT" 13 N N) (b "H" 15 N N)))) (b "Z" 24 (b "T" 20 (b "S" 18 (b "QBit" 17 N N) (b "SWAP" 19 N N)) (b "X" 22 (b "TOFFOLI" 21 N N) (b "Y" 23 N N))) (b "let" 28 (b "if" 26 (b "else" 25 N N) (b "in" 27 N N)) (b "new" 30 (b "measure" 29 N N) (b "then" 31 N N))))
+resWords = b "H" 15 (b "0" 8 (b "*" 4 (b "(" 2 (b "!" 1 N N) (b ")" 3 N N)) (b "-o" 6 (b "," 5 N N) (b "." 7 N N))) (b "Bit" 12 (b "=" 10 (b "1" 9 N N) (b "><" 11 N N)) (b "FREDKIN" 14 (b "CNOT" 13 N N) N))) (b "Y" 23 (b "SWAP" 19 (b "QBit" 17 (b "I" 16 N N) (b "S" 18 N N)) (b "TOFFOLI" 21 (b "T" 20 N N) (b "X" 22 N N))) (b "in" 27 (b "else" 25 (b "Z" 24 N N) (b "if" 26 N N)) (b "then" 29 (b "let" 28 N N) N)))
    where b s n = let bs = s
                  in  B bs (TS bs n)
 

@@ -5,17 +5,20 @@ module Parser.Par
   ( happyError
   , myLexer
   , pProgram
+  , pTerm3
   , pTerm2
   , pTerm1
   , pTerm
+  , pTup
   , pBit
   , pFunDec
   , pListFunDec
   , pFunction
   , pArg
   , pListArg
+  , pType2
+  , pType1
   , pType
-  , pListType
   , pGate
   ) where
 import qualified Parser.Abs
@@ -23,31 +26,34 @@ import Parser.Lex
 }
 
 %name pProgram Program
+%name pTerm3 Term3
 %name pTerm2 Term2
 %name pTerm1 Term1
 %name pTerm Term
+%name pTup Tup
 %name pBit Bit
 %name pFunDec FunDec
 %name pListFunDec ListFunDec
 %name pFunction Function
 %name pArg Arg
 %name pListArg ListArg
+%name pType2 Type2
+%name pType1 Type1
 %name pType Type
-%name pListType ListType
 %name pGate Gate
 -- no lexer declaration
 %monad { Either String } { (>>=) } { return }
 %tokentype {Token}
 %token
-  '(' { PT _ (TS _ 1) }
-  ')' { PT _ (TS _ 2) }
-  '*' { PT _ (TS _ 3) }
-  ',' { PT _ (TS _ 4) }
-  '->' { PT _ (TS _ 5) }
+  '!' { PT _ (TS _ 1) }
+  '(' { PT _ (TS _ 2) }
+  ')' { PT _ (TS _ 3) }
+  '*' { PT _ (TS _ 4) }
+  ',' { PT _ (TS _ 5) }
   '-o' { PT _ (TS _ 6) }
-  '0' { PT _ (TS _ 7) }
-  '1' { PT _ (TS _ 8) }
-  ':' { PT _ (TS _ 9) }
+  '.' { PT _ (TS _ 7) }
+  '0' { PT _ (TS _ 8) }
+  '1' { PT _ (TS _ 9) }
   '=' { PT _ (TS _ 10) }
   '><' { PT _ (TS _ 11) }
   'Bit' { PT _ (TS _ 12) }
@@ -67,14 +73,16 @@ import Parser.Lex
   'if' { PT _ (TS _ 26) }
   'in' { PT _ (TS _ 27) }
   'let' { PT _ (TS _ 28) }
-  'measure' { PT _ (TS _ 29) }
-  'new' { PT _ (TS _ 30) }
-  'then' { PT _ (TS _ 31) }
+  'then' { PT _ (TS _ 29) }
+  L_FunVar { PT _ (T_FunVar $$) }
   L_Variable { PT _ (T_Variable $$) }
   L_GateIdent { PT _ (T_GateIdent $$) }
   L_Lambda { PT _ (T_Lambda $$) }
 
 %%
+
+FunVar :: { Parser.Abs.FunVar}
+FunVar  : L_FunVar { Parser.Abs.FunVar $1 }
 
 Variable :: { Parser.Abs.Variable}
 Variable  : L_Variable { Parser.Abs.Variable $1 }
@@ -88,31 +96,34 @@ Lambda  : L_Lambda { Parser.Abs.Lambda $1 }
 Program :: { Parser.Abs.Program }
 Program : ListFunDec { Parser.Abs.PDef $1 }
 
-Term2 :: { Parser.Abs.Term }
-Term2 : Bit { Parser.Abs.TBit $1 }
-      | Variable { Parser.Abs.TVar $1 }
-      | '(' Term1 ',' Term1 ')' { Parser.Abs.TTup $2 $4 }
+Term3 :: { Parser.Abs.Term }
+Term3 : Variable { Parser.Abs.TVar $1 }
+      | Bit { Parser.Abs.TBit $1 }
+      | Gate { Parser.Abs.TGate $1 }
+      | Tup { Parser.Abs.TTup $1 }
+      | '*' { Parser.Abs.TStar }
       | '(' Term ')' { $2 }
 
+Term2 :: { Parser.Abs.Term }
+Term2 : Term2 Term3 { Parser.Abs.TApp $1 $2 } | Term3 { $1 }
+
 Term1 :: { Parser.Abs.Term }
-Term1 : '*' { Parser.Abs.TStar }
-      | 'measure' Term1 { Parser.Abs.TMeas $2 }
-      | 'new' Term1 { Parser.Abs.TNew $2 }
-      | Term1 Term2 { Parser.Abs.TApp $1 $2 }
-      | Lambda Variable '->' Term { Parser.Abs.TLamb $1 $2 $4 }
-      | 'if' Term 'then' Term 'else' Term { Parser.Abs.TIfEl $2 $4 $6 }
-      | Gate { Parser.Abs.TGate $1 }
-      | 'let' '(' Term ',' Term ')' '=' Term 'in' Term { Parser.Abs.TLet $3 $5 $8 $10 }
+Term1 : 'if' Term2 'then' Term2 'else' Term { Parser.Abs.TIfEl $2 $4 $6 }
+      | 'let' Tup '=' Term2 'in' Term { Parser.Abs.TLet $2 $4 $6 }
+      | Lambda Variable '.' Term { Parser.Abs.TLamb $1 $2 $4 }
       | Term2 { $1 }
 
 Term :: { Parser.Abs.Term }
 Term : Term1 { $1 }
 
+Tup :: { Parser.Abs.Tup }
+Tup : '(' Term ',' Term ')' { Parser.Abs.Tuple $2 $4 }
+
 Bit :: { Parser.Abs.Bit }
 Bit : '0' { Parser.Abs.BZero } | '1' { Parser.Abs.BOne }
 
 FunDec :: { Parser.Abs.FunDec }
-FunDec : Variable ':' ListType Function { Parser.Abs.FDecl $1 $3 $4 }
+FunDec : FunVar Type Function { Parser.Abs.FDecl $1 $2 $3 }
 
 ListFunDec :: { [Parser.Abs.FunDec] }
 ListFunDec : {- empty -} { [] } | FunDec ListFunDec { (:) $1 $2 }
@@ -126,16 +137,21 @@ Arg : Variable { Parser.Abs.FArg $1 }
 ListArg :: { [Parser.Abs.Arg] }
 ListArg : {- empty -} { [] } | Arg ListArg { (:) $1 $2 }
 
-Type :: { Parser.Abs.Type }
-Type : 'Bit' { Parser.Abs.TypeBit }
-     | 'QBit' { Parser.Abs.TQbit }
-     | 'T' { Parser.Abs.TVoid }
-     | Type '><' Type { Parser.Abs.TTens $1 $3 }
+Type2 :: { Parser.Abs.Type }
+Type2 : Variable { Parser.Abs.TypeVar $1 }
+      | 'Bit' { Parser.Abs.TypeBit }
+      | 'QBit' { Parser.Abs.TypeQbit }
+      | 'T' { Parser.Abs.TypeVoid }
+      | '!' Type2 { Parser.Abs.TypeDup $2 }
+      | '(' Type ')' { $2 }
 
-ListType :: { [Parser.Abs.Type] }
-ListType : {- empty -} { [] }
-         | Type { (:[]) $1 }
-         | Type '-o' ListType { (:) $1 $3 }
+Type1 :: { Parser.Abs.Type }
+Type1 : Type2 '><' Type1 { Parser.Abs.TypeTens $1 $3 }
+      | Type2 '-o' Type1 { Parser.Abs.TypeFunc $1 $3 }
+      | Type2 { $1 }
+
+Type :: { Parser.Abs.Type }
+Type : Type1 { $1 }
 
 Gate :: { Parser.Abs.Gate }
 Gate : 'H' { Parser.Abs.GH }
