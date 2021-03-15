@@ -33,6 +33,7 @@ dependencies:
 - mtl
 - numbers
 - array
+- containers
 
 library:
   source-dirs: 

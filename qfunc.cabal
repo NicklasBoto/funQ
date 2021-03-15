@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 82967c0500175efdef77461e474ce7249306324eea3b4f445eedbc9d00d332bd
+-- hash: f0126edf94dea77a6f70527b19dacd230c20196e8cf87a44ae61ffc059d44c41
 
 name:           qfunc
 version:        0.1.0.0
@@ -32,6 +32,7 @@ source-repository head
 
 library
   exposed-modules:
+      AST.AST
       FunQ
       Lib.Core
       Lib.Gates
@@ -61,6 +62,7 @@ library
     , hmatrix
     , mtl
     , numbers
+    , containers
   default-language: Haskell2010
 
 executable qfunc-exe

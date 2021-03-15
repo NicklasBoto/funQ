@@ -6,7 +6,7 @@
 module Parser.Abs where
 
 import Prelude (Char, Double, Integer, String)
-import qualified Prelude as C (Eq, Ord, Show, Read)
+import qualified Prelude as C (Eq, Ord, Show(..), Read, (++))
 import qualified Data.String
 
 newtype FunVar = FunVar String
@@ -59,7 +59,17 @@ data Type
     | TypeDup Type
     | TypeTens Type Type
     | TypeFunc Type Type
-  deriving (C.Eq, C.Ord, C.Show, C.Read)
+  deriving (C.Eq, C.Ord, C.Read)
+
+instance C.Show Type where
+  show (TypeVar (Variable s)) = s
+  show TypeBit = "Bit"
+  show TypeQbit = "QBit"
+  show TypeVoid = "⊤"
+  show (TypeDup t) = "!" C.++ C.show t
+  show (TypeTens l r) = C.show l C.++ " ⊗ " C.++ C.show r
+  show (TypeFunc l r) = C.show l C.++ " ⊸ " C.++ C.show r
+
 
 data Gate
     = GH
