@@ -26,6 +26,8 @@ data Term
     | IfEl Term Term Term
     | Let  (Term, Term) Term Term
     | Abs  Term
+    | New
+    | Meas
     | Void
 
 instance Show Term where
@@ -38,6 +40,8 @@ instance Show Term where
     show (IfEl c t f) = "if " ++ show c ++ " then " ++ show t ++ " else " ++ show f
     show (Let t e i) = "let " ++ show t ++ " = " ++ show e ++ " in " ++ show i
     show (Abs t) = "λ " ++ show t
+    show New = "new"
+    show Meas = "measure"
     show Void = "*"
 
 type Type = P.Type
@@ -45,13 +49,16 @@ type Type = P.Type
 data Function = Func String Type Term 
 
 instance Show Function where
-    show (Func n t e) = n ++ " : " ++ show t ++ "\n"
-                     ++ n ++ " = " ++ show e ++ "\n"
+    show (Func n t e) = "\n" ++ n ++ " : " ++ show t ++ "\n"
+                             ++ n ++ " = " ++ show e ++ "\n"
 
 tobruijn :: Env -> P.Term -> Term 
 tobruijn env (P.TLamb _ var term) = Abs $ tobruijn env' term
     where env' = M.insert (name var) 0 (M.map succ env)
 tobruijn env (P.TApp l r) = App (tobruijn env l) (tobruijn env r)
+tobruijn env (P.TVar (P.Variable "new")) = New 
+tobruijn env (P.TVar (P.Variable "meas")) = Meas
+tobruijn env (P.TVar (P.Variable "measure")) = Meas
 tobruijn env (P.TVar var) = case M.lookup (name var) env of
     Just idx -> Idx idx
     Nothing  -> QVar (name var)
@@ -64,12 +71,12 @@ tobruijn _env (P.TBit b) = Bit b
 tobruijn _env (P.TGate g) = Gate g
 tobruijn _env P.TStar = Void
 
-toDeBruijn :: P.Term -> Term
-toDeBruijn = tobruijn M.empty
+bruijnize :: P.Term -> Term
+bruijnize = tobruijn M.empty
 
 lambdaizeFunction :: P.FunDec -> Function 
-lambdaizeFunction (P.FDecl n t fun) = Func (unfun n) t (toDeBruijn $ lambdaize fun)
-    where unfun (P.FunVar x) = filter (\c -> c/=':' && c/=' ') x
+lambdaizeFunction (P.FDecl n t fun) = Func (unfun n) t (bruijnize $ lambdaize fun)
+    where unfun (P.FunVar x) = init $ filter (/=' ') x
 
 lambdaize :: P.Function -> P.Term
 lambdaize (P.FDef _ [] term) = term
