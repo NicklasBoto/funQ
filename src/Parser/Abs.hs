@@ -66,7 +66,7 @@ instance C.Show Type where
   show TypeBit = "Bit"
   show TypeQbit = "QBit"
   show TypeVoid = "⊤"
-  show (TypeDup t) = "!" C.++ C.show t
+  show (TypeDup t) = "!(" C.++ C.show t C.++ ")"
   show (TypeTens l r) = C.show l C.++ " ⊗ " C.++ C.show r
   show (TypeFunc l r) = C.show l C.++ " ⊸ " C.++ C.show r
 
