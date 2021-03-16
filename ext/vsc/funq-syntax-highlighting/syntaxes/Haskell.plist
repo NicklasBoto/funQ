@@ -695,6 +695,12 @@
 				</dict>
 				<dict>
 					<key>match</key>
+					<string>&gt;&lt;</string>
+					<key>name</key>
+					<string>keyword.other.arrow.funq</string>
+				</dict>
+				<dict>
+					<key>match</key>
 					<string>-o</string>
 					<key>name</key>
 					<string>keyword.other.arrow.funq</string>
