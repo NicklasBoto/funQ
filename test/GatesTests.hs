@@ -2,15 +2,10 @@ module GatesTests (
     runTests
 ) where
 
-import FunQ ( new, Bit, QBit, hadamard )
 import Test.QuickCheck
 import Test.QuickCheck.Monadic as TM
-import QM
 import Numeric.LinearAlgebra as LA
-import Internal.Gates (i)
-import Gates
 import TestCore
-import Control.Monad.Random ( liftM )
 
 
 runTests :: IO ()
@@ -81,7 +76,7 @@ prop_sum_pauliY = prop_gate_sum pauliY
 -- Test reversibility of gates 
 -- | Given a gate that takes a single qbit, applies it and checks reversibility 
 test_rev :: (QBit -> QM QBit) -> IO Bool
-test_rev g = QM.run $ do
+test_rev g = TestCore.run $ do
     qbt <- new 0
     (b,a) <- applyTwice qbt g
     let bf = map realPart (toList $ state b)
@@ -94,11 +89,11 @@ test_rev g = QM.run $ do
 -- | Applies the reversibility tests to all gates that matches type signature of QBit -> QM QBit.
 test_rev_gates :: IO Bool
 test_rev_gates = liftM and $ mapM test_rev gates
-    where gates = [hadamard, pauliX, pauliY, pauliZ, Gates.phase, phasePi8, identity]
+    where gates = [hadamard, pauliX, pauliY, pauliZ, TestCore.phase, phasePi8, identity]
 
 -- | Test reversibility of cnot 
 test_rev_cnot :: IO Bool 
-test_rev_cnot = QM.run $ do
+test_rev_cnot = TestCore.run $ do
     q1 <- new 1
     q2 <- new 0
     b <- get 

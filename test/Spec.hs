@@ -8,7 +8,6 @@ main :: IO ()
 main = do
     QStateTests.runTests
     GatesTests.runTests
-
     return ()
   
 

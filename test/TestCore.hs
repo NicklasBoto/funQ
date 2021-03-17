@@ -11,7 +11,16 @@ module TestCore (
     genBits,
     qrun,
     hmat,
-    p8mat
+    p8mat,
+    Bit,
+    new,
+    QM,
+    QM.run,
+    getState,
+    QBit,
+    get,
+    liftM,
+    module Gates
 ) where  
     -- TODO: would like TestCore to import everything needed
     -- for testing in all other files so just they have to import TestCore

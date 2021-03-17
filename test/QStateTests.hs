@@ -2,17 +2,17 @@ module QStateTests (
     runTests
 ) where
 
-import FunQ ( new, Bit, QBit, hadamard )
 import Test.QuickCheck
 import Test.QuickCheck.Monadic as TM
-import QM
 import Numeric.LinearAlgebra as LA
-import Internal.Gates (i)
 import TestCore
 
 runTests :: IO ()
 runTests = do 
+    putStrLn "QuickCheck tests qstate size keeps good norm after applying hadamard gate"
     quickCheck $ prop_hadamard 8
+
+    putStrLn "QuickCheck tests the norm of generated QStates, of 1 < lengths < n , is one"
     quickCheck $ prop_norm 8
 
 -- | Checks that the QState of arbitrary size after a hadamard gate is applied keeps a good norm and
