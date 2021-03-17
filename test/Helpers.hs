@@ -5,17 +5,26 @@ module Helpers (
     addState,
     applyGate,
     cnot',
-    getRandQbit
+    getRandQbit,
+    (~=),
+    (#=),
+    genBits,
+    qrun,
+    hmat,
+    p8mat
 ) where
 
-import Test.QuickCheck ();
+import Test.QuickCheck;
 import qualified Test.QuickCheck.Monadic as TM (assert, monadicIO, run)
 import Internal.Core (newVector, tensorVector)
 import Core ( new )
-import QM ( io, get, put, run, getState, QState(..), QM, QBit(..) )
 import Gates
-import Numeric.LinearAlgebra ( toList, realPart, Normed(norm_2) )
 import Control.Monad.Random ( evalRandIO, getRandomR, liftM )
+import FunQ ( new, Bit, QBit, hadamard )
+import Test.QuickCheck.Monadic as TM
+import QM
+import Numeric.LinearAlgebra as LA
+import Internal.Gates (i)
 
 -- | Applies a given gate twice to a given qubit. Returns state before and after the operations
 applyTwice :: QBit -> (QBit -> QM QBit) -> QM (QState,QState)
@@ -27,7 +36,7 @@ applyTwice qbt g = do
 
 
 -- helper function to run QM computations within the property monad for quickcheck
-run' = TM.run . run
+run' = TM.run . QM.run
 
 -- | Adds given QState
 addState :: QState -> QM QState
@@ -55,3 +64,42 @@ getRandQbit :: Int -> QM QBit
 getRandQbit size = do
         i <- io $ evalRandIO $ getRandomR (0,size)
         return $ Ptr i
+
+
+-- | Compareas two complex numbers for equality to the 6th decimal
+(~=) :: C -> C -> Bool
+(~=) a b = bm - eqMargin <= am && am <= bm + eqMargin
+  where am = magnitude a
+        bm = magnitude b
+
+-- | The margin allowed for equality checking
+eqMargin :: Double
+eqMargin = 0.000001
+
+-- | Compares two complex matrices for equality, using eqAlmost. 
+(#=) :: Matrix C -> Matrix C -> Bool
+(#=) mx nx = all (==True) $ zipWith (~=) list1 list2
+  where list1 = (concat . toLists) mx
+        list2 = (concat . toLists) nx
+
+-- | Generates a bit string of given length
+genBits :: Int -> Gen [Bit]
+genBits n = vectorOf n (elements [0,1])
+
+-- | Runs a QM program in PropertyM
+qrun :: QM a -> PropertyM IO a
+qrun = TM.run . QM.run
+
+-- | Test matrices for isUnitary
+-- | Hadamard matrix
+hmat :: Matrix C
+hmat = LA.scale (sqrt 0.5) $ (2 LA.>< 2)
+    [ 1 ,  1
+    , 1 , -1 ]
+
+-- | PhasePi8 matrix
+p8mat :: Matrix C
+p8mat = (2 LA.>< 2)
+  [ 1 , 0
+  , 0 , p ]
+  where p = exp (i * pi / 4)
