@@ -8,7 +8,6 @@ import Test.QuickCheck.Monadic as TM
 import QM
 import Numeric.LinearAlgebra as LA
 import Internal.Gates (i)
-import Helpers
 import Gates
 import TestCore
 import Control.Monad.Random ( liftM )

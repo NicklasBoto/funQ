@@ -8,8 +8,7 @@ import Test.QuickCheck.Monadic as TM
 import QM
 import Numeric.LinearAlgebra as LA
 import Internal.Gates (i)
-import Helpers
-
+import TestCore
 
 runTests :: IO ()
 runTests = do 
