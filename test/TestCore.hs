@@ -20,7 +20,7 @@ module TestCore (
     QBit,
     get,
     liftM,
-    module Gates
+    module Gates,
 ) where  
     -- TODO: would like TestCore to import everything needed
     -- for testing in all other files so just they have to import TestCore

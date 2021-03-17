@@ -2,11 +2,10 @@ module GatesTests (
     runTests
 ) where
 
+import TestCore
 import Test.QuickCheck
 import Test.QuickCheck.Monadic as TM
 import Numeric.LinearAlgebra as LA
-import TestCore
-
 
 runTests :: IO ()
 runTests = do 
