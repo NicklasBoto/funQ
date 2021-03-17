@@ -15,7 +15,6 @@ import GatesTests ( runTests )
 
 main :: IO ()
 main = do
-    ReversibilityTests.runTests
     QStateTests.runTests
     GatesTests.runTests
 
