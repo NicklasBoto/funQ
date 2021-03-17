@@ -3,40 +3,38 @@ module TestCore (
     applyTwice,
     run',
     addState,
-    applyGate,
+    applyGate',
     cnot',
     getRandQbit,
     (~=),
     (#=),
     genBits,
     qrun,
-    hmat,
     p8mat,
-    Bit,
-    new,
     QM,
     QM.run,
     getState,
     QBit,
     get,
     liftM,
-    module Gates,
+    module Lib.Core,
+    module Lib.Gates,
+    module Lib.Internal.Gates
 ) where  
     -- TODO: would like TestCore to import everything needed
     -- for testing in all other files so just they have to import TestCore
     -- and that's it
 
 import Test.QuickCheck;
-import qualified Test.QuickCheck.Monadic as TM (assert, monadicIO, run)
-import Internal.Core
-import Core
-import Gates
 import Control.Monad.Random
 import FunQ
 import Test.QuickCheck.Monadic as TM
-import QM
 import Numeric.LinearAlgebra as LA
-import Internal.Gates (i)
+import Lib.QM as QM
+import Lib.Core
+import Lib.Gates
+import Lib.Internal.Core
+import Lib.Internal.Gates
 
 -- Arbitrary instance for QState, not very pretty :) 
 instance Arbitrary QState where
@@ -54,8 +52,8 @@ instance Arbitrary QState where
 applyTwice :: QBit -> (QBit -> QM QBit) -> QM (QState,QState)
 applyTwice qbt g = do
     before <- get
-    once <- applyGate before g qbt
-    twice <- applyGate once g qbt
+    once <- applyGate' before g qbt
+    twice <- applyGate' once g qbt
     return (before,twice)
 
 
@@ -69,8 +67,8 @@ addState q = do
     get
 
 --  | Helper function, apply the given gate on a random qubit in state, return the state
-applyGate :: QState -> (QBit -> QM QBit) -> QBit -> QM QState
-applyGate qs g qbt = do
+applyGate' :: QState -> (QBit -> QM QBit) -> QBit -> QM QState
+applyGate' qs g qbt = do
     addState qs
     g qbt
     get

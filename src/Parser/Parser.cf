@@ -1,0 +1,67 @@
+PDef.  Program ::= [FunDec] ;
+
+--- Terms ---
+TVar  . Term3 ::= Variable                            ;
+TBit  . Term3 ::= Bit                                 ;
+TGate . Term3 ::= Gate                                ;
+TTup  . Term3 ::= Tup                                 ; 
+TStar . Term3 ::= "*"                                 ;
+TApp  . Term2 ::= Term2 Term3                         ; 
+TIfEl . Term1 ::= "if" Term2 "then" Term2 "else" Term ; 
+TLet  . Term1 ::= "let" Tup "=" Term2 "in" Term       ;
+TLamb . Term1 ::= Lambda Variable "." Term            ; 
+coercions Term 3;
+
+Tuple. Tup ::= "(" Term "," Term ")" ;
+
+--- Bits ---
+BZero. Bit ::= "0";
+BOne.  Bit ::= "1";
+
+--- Function declaration  --- 
+FDecl. FunDec ::= FunVar Type Function;
+terminator FunDec "";
+
+FDef.  Function ::= Variable [Arg] "=" Term;
+
+FArg. Arg ::= Variable ;
+separator Arg " ";
+
+comment "--" ; 
+
+token FunVar (lower (letter | digit | '_' | '\'')* (' ')* ':') ;
+ 
+--- Variable ---
+token Variable (lower (letter | digit | '_' | '\'')*) ;
+
+--- GateIdent ---
+token GateIdent ((upper)+) ;
+
+--- Lambda token ---
+-- token Lambda char (0xBB) ;
+token Lambda '\\' ;
+
+--- Type ---
+
+TypeVar  . Type2  ::= Variable         ;
+TypeBit  . Type2  ::= "Bit"            ;
+TypeQbit . Type2  ::= "QBit"           ;
+TypeVoid . Type2  ::= "T"              ;
+TypeDup  . Type2  ::= "!" Type2        ;
+TypeTens . Type1  ::= Type2 "><" Type1 ;
+TypeFunc . Type1  ::= Type2 "-o" Type1 ;
+coercions Type 2;
+
+--- Gates ---
+GH    . Gate ::= "H"       ;
+GX    . Gate ::= "X"       ;
+GY    . Gate ::= "Y"       ;
+GZ    . Gate ::= "Z"       ;
+GI    . Gate ::= "I"       ;
+GS    . Gate ::= "S"       ;
+GT    . Gate ::= "T"       ;
+GCNOT . Gate ::= "CNOT"    ;
+GTOF  . Gate ::= "TOFFOLI" ;
+GSWP  . Gate ::= "SWAP"    ;
+GFRDK . Gate ::= "FREDKIN" ;
+GGate . Gate ::= GateIdent ; 

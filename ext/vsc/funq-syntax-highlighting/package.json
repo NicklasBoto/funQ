@@ -1,0 +1,27 @@
+{
+    "name": "funq-syntax-highlighting",
+    "displayName": "funq-syntax-highlighting",
+    "description": "funq-syntax-highlighting",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.54.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "funq",
+            "aliases": ["FunQ", "funq"],
+            "extensions": [".fq"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [
+            {
+            "language": "funq",
+            "scopeName": "source.funq",
+            "path": "./syntaxes/Haskell.plist"
+            }
+        ]
+    }
+}

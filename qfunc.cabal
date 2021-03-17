@@ -4,13 +4,13 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4d88c4b0be89f283ce756896526c2ddb0a2de1cff75da229db9409565e6d7b5f
+-- hash: f0126edf94dea77a6f70527b19dacd230c20196e8cf87a44ae61ffc059d44c41
 
 name:           qfunc
 version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/NicklasBoto/qfunc#readme>
-homepage:       https://github.com/NicklasBoto/qfunc#readme
-bug-reports:    https://github.com/NicklasBoto/qfunc/issues
+homepage:       https://github.com/NicklasBoto/funQ#readme
+bug-reports:    https://github.com/NicklasBoto/funQ/issues
 author:         Nicklas Botö,
                 Fabian Forslund,
                 Matilda Blomqvist,
@@ -28,21 +28,26 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/NicklasBoto/qfunc
+  location: https://github.com/NicklasBoto/funQ
 
 library
   exposed-modules:
-      Core
+      AST.AST
       FunQ
-      Gates
-      Internal.Core
-      Internal.Gates
-      QM
+      Lib.Core
+      Lib.Gates
+      Lib.Internal.Core
+      Lib.Internal.Gates
+      Lib.QM
+      Parser.Abs
+      Parser.ErrM
+      Parser.Lex
+      Parser.Par
+      Parser.Print
+      Parser.Skel
       CoinFlip
       Deutsch
       DeutschJozsa
-      -- Logic WEIRD needed to merge into tests?
-      -- Shor
       Teleport
   other-modules:
       Paths_qfunc
@@ -51,11 +56,13 @@ library
       examples
   build-depends:
       MonadRandom
+    , array
     , base >=4.7 && <5
     , bitvec
     , hmatrix
     , mtl
     , numbers
+    , containers
   default-language: Haskell2010
 
 executable qfunc-exe
@@ -67,6 +74,7 @@ executable qfunc-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       MonadRandom
+    , array
     , base >=4.7 && <5
     , bitvec
     , hmatrix
@@ -90,6 +98,7 @@ test-suite qfunc-test
   build-depends:
       MonadRandom
     , QuickCheck
+    , array
     , base >=4.7 && <5
     , bitvec
     , hmatrix

@@ -47,7 +47,7 @@ prop_gate_sum g q = TM.monadicIO $ do
     run' $ addState q
     (_,size) <- run' getState
     qbt <- run' $ getRandQbit size
-    s <- run' $ applyGate q g qbt
+    s <- run' $ applyGate' q g qbt
     let su = norm_2 $ state s
     TM.assert (su < 1.00001 && su > 0.9999) --due to rounding errors, cannot test == 1
 

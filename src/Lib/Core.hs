@@ -9,7 +9,7 @@ Stability   : experimental
 
 The core language operations.
 -}
-module Core (
+module Lib.Core (
     -- * QBit manipulation
       new
     , measure
@@ -26,8 +26,8 @@ module Core (
     , Data.Bit.Bit
 ) where
 
-import QM ( QM, QBit(Ptr), io, put, get, modify, run, getState )
-import Internal.Core ( findQbitProb1, remImpossibleStates, Prob, appendState, newVector, rngQbit )
+import Lib.QM ( QM, QBit(Ptr), io, put, get, modify, run, getState )
+import Lib.Internal.Core ( findQbitProb1, remImpossibleStates, Prob, appendState, newVector, rngQbit )
 import Data.Bit ( Bit )
 import Control.Monad ( replicateM )
 

@@ -7,10 +7,10 @@ Stability   : experimental
 
 Internal matrix and measurment operations
 -}
-module Internal.Core where
+module Lib.Internal.Core where
 
 import Data.Bit ( Bit )
-import QM ( QState(QState), Ix, QBit (Ptr), stateSize )
+import Lib.QM ( QState(QState), Ix, QBit (Ptr), stateSize )
 import Data.Bits ( Bits((.&.)) )
 import Numeric.LinearAlgebra
     ( Complex,

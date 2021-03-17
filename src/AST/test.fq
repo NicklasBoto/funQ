@@ -1,0 +1,2 @@
+f : a >< b -o a
+fst b = let (x,y) = b in x

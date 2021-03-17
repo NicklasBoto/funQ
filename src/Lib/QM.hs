@@ -9,7 +9,7 @@ Stability   : experimental
 
 Definition of the quantum monad (`QM`) and helper functions
 -}
-module QM (
+module Lib.QM (
     -- * The Quantum Monad
       QM
     , run
