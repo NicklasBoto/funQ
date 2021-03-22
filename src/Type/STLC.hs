@@ -12,7 +12,10 @@ import Text.Parsec.String (Parser)
 import Text.Parsec.Language (haskellStyle)
 import qualified Text.Parsec.Expr as Ex
 import qualified Text.Parsec.Token as Tok
-import FunQ hiding ( run )
+import qualified FunQ as Q
+
+instance MonadFail Q.QM where
+    fail = error
 
 data Named
     = Bound Integer
@@ -78,6 +81,7 @@ data Gate
 
 data Exp
     = Abs Type Exp
+    | Abs1 String Type Exp
     | Idx Integer
     | Var String
     | App Exp Exp
@@ -86,7 +90,7 @@ data Exp
     | New
     | Meas
     | Gate Gate
-    | Bit Bit
+    | Bit Q.Bit
     | Tup [Exp]
 
 instance Show Exp where
@@ -151,7 +155,8 @@ typecheck = tc 0
             Idx j -> lookupVar (Bound j)
             Var x -> lookupVar (Free  x)
 
-test1 = ("test1", Abs TypeBit (App New (Bit 0)))
+test1, test2, test3, test4, test5, test6, test7 :: (String, Exp)
+test1 = ("test1",Abs TypeBit (App New (Bit 0)))
 test2 = ("test2",Abs TypeBit (App (Abs TypeBit (Idx 1)) (Bit 0)))
 test3 = ("test3",Tup [Bit 0, App New (Bit 1), Abs TypeBit (Idx 0)])
 test4 = ("test4",App Meas (App (Gate H) (App New (Bit 0))))
@@ -174,16 +179,18 @@ test (name, exp) = case runCheck (typecheck exp) of
                          ++ name ++ " = " ++ show exp
 
 data Value
-    = VBit Bit
+    = VBit Q.Bit
+    | VQBit Q.QBit
     | VTup [Value]
     | VFunc [Value] Exp
 
 instance Show Value where
     show (VBit b)  = show b
     show (VTup bs) = show bs
+    show (VQBit q) = show q
     show VFunc{}   = "<closure>"
 
-type Eval = SymT Exp QM Value
+type Eval = SymT Exp Q.QM Value
 
 eval :: Exp -> Eval
 eval = ev 0
@@ -192,8 +199,7 @@ eval = ev 0
         ev i = \case
             Abs _ e -> throwError NotValueType
 
--- evl :: [Value] -> Exp -> ExceptT Error QM Value
-evl :: [Value] -> Exp -> Except Error Value
+evl :: [Value] -> Exp -> ExceptT Error Q.QM Value
 evl vs = \case
     Bit b -> return $ VBit b
 
@@ -203,6 +209,20 @@ evl vs = \case
 
     Abs _ e -> return $ VFunc vs e
 
+    App New b -> do
+        VBit b' <- evl vs b
+        q <- lift $ Q.new b'
+        return $ VQBit q
+
+    App Meas q -> do
+        VQBit q' <- evl vs q
+        b <- lift $ Q.measure q' 
+        return $ VBit b
+
+    App (Gate g) q -> case g of
+        H -> runGate Q.hadamard q vs
+        X -> runGate Q.pauliX q vs
+
     App e1 e2 -> evl vs e1 >>= \case
         VFunc e a -> do
             v <- evl vs e2
@@ -210,13 +230,21 @@ evl vs = \case
 
     _ -> throwError $ Fail "not implemented"
 
+runGate :: (Q.QBit -> Q.QM Q.QBit) -> Exp -> [Value] -> ExceptT Error Q.QM Value
+runGate g q vs = do
+    VQBit q' <- evl vs q
+    VQBit <$> lift (g q')
 
-runE :: String -> Either Error (Exp, Type, Value)
+runEval :: String -> IO (Either Error Value)
+runEval prog = case parseExpr prog of
+    Right s -> Q.run $ runExceptT (evl [] s)
+    Left  e -> return $ Left e
+
+runE :: String -> Either Error (Exp, Type)
 runE prog = do
     e <- parseExpr prog
     t <- runCheck (typecheck e)
-    v <- runExcept (evl [] e)
-    return (e,t,v)
+    return (e,t)
 
 lexer :: Tok.TokenParser ()
 lexer = Tok.makeTokenParser style
@@ -274,9 +302,16 @@ op :: Parser Exp
 op =  (reservedOp "new" >> return New)
   <|> (reservedOp "measure" >> return Meas)
 
+brackets = Tok.brackets lexer
+comma = Tok.comma lexer
+
+tup :: Parser Exp
+tup = Tup <$> brackets (sepBy1 expr comma)
+
 term :: Parser Exp
 term =  parens expr
     <|> number
+    <|> tup
     <|> bit
     <|> gate
     <|> op
@@ -301,7 +336,7 @@ type' = Ex.buildExpressionParser tyops tyatom
     infixOp x f = Ex.Infix (reservedOp x >> return f)
     tyops = [
         [infixOp "-o" (:=>) Ex.AssocRight],
-        [infixOp "><" (:><) Ex.AssocRight ]
+        [infixOp "><" (:><) Ex.AssocRight]
       ]
 
 parseExpr :: String -> Either Error Exp
@@ -311,13 +346,21 @@ parseExpr input = case parse (contents expr) "<stdin>" input of
 
 run :: String -> IO ()
 run prg = case runE prg of
-        Left  err     -> putStrLn $ "*** Exception:\n" ++ show err
-        Right (e,t,v) -> putStrLn $ "foo" ++ " : " ++ show t ++ "\n"
-                               ++ "foo" ++ " = " ++ show e ++ "\n\n"
-                               ++ "Result: " ++ show v
+        Left  err   -> putStrLn $ "*** Exception:\n" ++ show err
+        Right (e,t) -> do
+            Right v <- runEval prg
+            putStrLn $ "foo" ++ " : " ++ show t ++ "\n"
+                    ++ "foo" ++ " = " ++ show e ++ "\n\n"
+                    ++ "Result: " ++ show v 
 
+run1, run2, run3, run4, run5 :: String
 run1 = "\\Bit . new b0" -- Abs TypeBit (App New (Bit 0))
 run2 = "\\Bit . (\\Bit . 1) b0" -- Abs TypeBit (App (Abs TypeBit (Idx 1)) (Bit 0))
-run3 = "(b0, new b1, \\Bit . 0)" -- Tup [Bit 0, App New (Bit 1), Abs TypeBit (Idx 0)]
+run3 = "[b0, new b1, \\Bit . 0]" -- Tup [Bit 0, App New (Bit 1), Abs TypeBit (Idx 0)]
 run4 = "measure (H (new b0))" -- App Meas (App (Gate H) (App New (Bit 0)))
-run5 = "(\\Bit . (0,0)) b0"
+run5 = "(\\Bit . [0,0]) b0"
+
+-- duplicate = \QBit . [0,0]
+
+-- duplicate   : QBit -o QBit >< QBit
+-- duplicate q = (q,q)
