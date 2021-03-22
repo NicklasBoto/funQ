@@ -100,8 +100,8 @@ instance Print Double where
 instance Print Parser.Abs.FunVar where
   prt _ (Parser.Abs.FunVar i) = doc $ showString $ i
 
-instance Print Parser.Abs.Var where
-  prt _ (Parser.Abs.Var i) = doc $ showString $ i
+instance Print Parser.Abs.Variable where
+  prt _ (Parser.Abs.Variable i) = doc $ showString $ i
 
 instance Print Parser.Abs.GateIdent where
   prt _ (Parser.Abs.GateIdent i) = doc $ showString $ i
@@ -115,24 +115,19 @@ instance Print Parser.Abs.Program where
 
 instance Print Parser.Abs.Term where
   prt i e = case e of
-    Parser.Abs.TVar var -> prPrec i 3 (concatD [prt 0 var])
+    Parser.Abs.TVar variable -> prPrec i 3 (concatD [prt 0 variable])
     Parser.Abs.TBit bit -> prPrec i 3 (concatD [prt 0 bit])
     Parser.Abs.TGate gate -> prPrec i 3 (concatD [prt 0 gate])
     Parser.Abs.TTup tup -> prPrec i 3 (concatD [prt 0 tup])
     Parser.Abs.TStar -> prPrec i 3 (concatD [doc (showString "*")])
     Parser.Abs.TApp term1 term2 -> prPrec i 2 (concatD [prt 2 term1, prt 3 term2])
     Parser.Abs.TIfEl term1 term2 term3 -> prPrec i 1 (concatD [doc (showString "if"), prt 2 term1, doc (showString "then"), prt 2 term2, doc (showString "else"), prt 0 term3])
-    Parser.Abs.TLet var1 var2 term1 term2 -> prPrec i 1 (concatD [doc (showString "let"), doc (showString "("), prt 0 var1, doc (showString ","), prt 0 var2, doc (showString ")"), doc (showString "="), prt 2 term1, doc (showString "in"), prt 0 term2])
-    Parser.Abs.TLamb lambda var term -> prPrec i 1 (concatD [prt 0 lambda, prt 0 var, doc (showString "."), prt 0 term])
-  prtList _ [x] = concatD [prt 0 x]
-  prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
+    Parser.Abs.TLet tup term1 term2 -> prPrec i 1 (concatD [doc (showString "let"), prt 0 tup, doc (showString "="), prt 2 term1, doc (showString "in"), prt 0 term2])
+    Parser.Abs.TLamb lambda variable term -> prPrec i 1 (concatD [prt 0 lambda, prt 0 variable, doc (showString "."), prt 0 term])
 
 instance Print Parser.Abs.Tup where
   prt i e = case e of
-    Parser.Abs.Tuple term terms -> prPrec i 0 (concatD [doc (showString "("), prt 0 term, doc (showString ","), prt 0 terms, doc (showString ")")])
-
-instance Print [Parser.Abs.Term] where
-  prt = prtList
+    Parser.Abs.Tuple term1 term2 -> prPrec i 0 (concatD [doc (showString "("), prt 0 term1, doc (showString ","), prt 0 term2, doc (showString ")")])
 
 instance Print Parser.Abs.Bit where
   prt i e = case e of
@@ -150,11 +145,11 @@ instance Print [Parser.Abs.FunDec] where
 
 instance Print Parser.Abs.Function where
   prt i e = case e of
-    Parser.Abs.FDef var args term -> prPrec i 0 (concatD [prt 0 var, prt 0 args, doc (showString "="), prt 0 term])
+    Parser.Abs.FDef variable args term -> prPrec i 0 (concatD [prt 0 variable, prt 0 args, doc (showString "="), prt 0 term])
 
 instance Print Parser.Abs.Arg where
   prt i e = case e of
-    Parser.Abs.FArg var -> prPrec i 0 (concatD [prt 0 var])
+    Parser.Abs.FArg variable -> prPrec i 0 (concatD [prt 0 variable])
   prtList _ [] = concatD []
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString " "), prt 0 xs]
 
@@ -163,7 +158,7 @@ instance Print [Parser.Abs.Arg] where
 
 instance Print Parser.Abs.Type where
   prt i e = case e of
-    Parser.Abs.TypeVar var -> prPrec i 2 (concatD [prt 0 var])
+    Parser.Abs.TypeVar variable -> prPrec i 2 (concatD [prt 0 variable])
     Parser.Abs.TypeBit -> prPrec i 2 (concatD [doc (showString "Bit")])
     Parser.Abs.TypeQbit -> prPrec i 2 (concatD [doc (showString "QBit")])
     Parser.Abs.TypeVoid -> prPrec i 2 (concatD [doc (showString "T")])

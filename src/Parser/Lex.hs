@@ -95,7 +95,7 @@ data Tok =
  | TD !String         -- double precision float literals
  | TC !String         -- character literals
  | T_FunVar !String
- | T_Variable !String
+ | T_Var !String
  | T_GateIdent !String
  | T_Lambda !String
 
@@ -136,7 +136,7 @@ tokenText t = case t of
   PT _ (TC s)   -> s
   Err _         -> "#error"
   PT _ (T_FunVar s) -> s
-  PT _ (T_Variable s) -> s
+  PT _ (T_Var s) -> s
   PT _ (T_GateIdent s) -> s
   PT _ (T_Lambda s) -> s
 
@@ -241,7 +241,7 @@ utf8Encode = map fromIntegral . go . ord
 
 alex_action_2 =  tok (\p s -> PT p (eitherResIdent TV s)) 
 alex_action_3 =  tok (\p s -> PT p (eitherResIdent T_FunVar s)) 
-alex_action_4 =  tok (\p s -> PT p (eitherResIdent T_Variable s)) 
+alex_action_4 =  tok (\p s -> PT p (eitherResIdent T_Var s)) 
 alex_action_5 =  tok (\p s -> PT p (eitherResIdent T_GateIdent s)) 
 alex_action_6 =  tok (\p s -> PT p (eitherResIdent T_Lambda s)) 
 alex_action_7 =  tok (\p s -> PT p (eitherResIdent TV s)) 
@@ -254,7 +254,6 @@ alex_action_7 =  tok (\p s -> PT p (eitherResIdent TV s))
 
 -- -----------------------------------------------------------------------------
 -- INTERNALS and main scanner engine
-
 
 
 
@@ -306,7 +305,6 @@ uncheckedShiftL# = shiftL#
 #endif
 
 {-# INLINE alexIndexInt16OffAddr #-}
-alexIndexInt16OffAddr :: AlexAddr -> Int# -> Int#
 alexIndexInt16OffAddr (AlexA# arr) off =
 #ifdef WORDS_BIGENDIAN
   narrow16Int# i
@@ -316,10 +314,7 @@ alexIndexInt16OffAddr (AlexA# arr) off =
         low  = int2Word# (ord# (indexCharOffAddr# arr off'))
         off' = off *# 2#
 #else
-#if __GLASGOW_HASKELL__ >= 901
-  int16ToInt#
-#endif
-    (indexInt16OffAddr# arr off)
+  indexInt16OffAddr# arr off
 #endif
 
 
@@ -327,7 +322,6 @@ alexIndexInt16OffAddr (AlexA# arr) off =
 
 
 {-# INLINE alexIndexInt32OffAddr #-}
-alexIndexInt32OffAddr :: AlexAddr -> Int# -> Int#
 alexIndexInt32OffAddr (AlexA# arr) off =
 #ifdef WORDS_BIGENDIAN
   narrow32Int# i
@@ -341,10 +335,7 @@ alexIndexInt32OffAddr (AlexA# arr) off =
    b0   = int2Word# (ord# (indexCharOffAddr# arr off'))
    off' = off *# 4#
 #else
-#if __GLASGOW_HASKELL__ >= 901
-  int32ToInt#
-#endif
-    (indexInt32OffAddr# arr off)
+  indexInt32OffAddr# arr off
 #endif
 
 

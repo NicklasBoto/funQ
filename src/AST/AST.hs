@@ -1,35 +1,45 @@
-{-# LANGUAGE LambdaCase #-}
-
 module AST.AST where
 
 import Parser.Par
+import Parser.Print
 import qualified Parser.Abs as P
 import qualified Data.Map as M
 
-type Bit = P.Bit
-type Gate = P.Gate
+
 type Env = M.Map String Integer
 
-name :: P.Variable -> String
-name (P.Variable v) = v
+-- | Types for our intermediatary representation.
+--   Use the same as the parser generated types.
+type Type = P.Type
+type Bit = P.Bit
+type Gate = P.Gate
 
-tupmap :: (P.Term -> b) -> P.Tup -> (b, b)
-tupmap f (P.Tuple a b) = (f a, f b)
+-- | Representation of functions 
+data Function = Func String Type Term 
 
+name :: P.Var -> String
+name (P.Var v) = v
+
+-- | Convert parsed tuple to list representation
+tupmap :: (P.Term -> b) -> P.Tup -> [b]
+tupmap f (P.Tuple a bs) = fmap f (a:bs)
+
+-- | A term in our intermediatary representation.
 data Term
     = Idx  Integer       -- bound
     | QVar String        -- free
     | Bit  Bit
     | Gate Gate
-    | Tup  (Term, Term)
+    | Tup  [Term]
     | App  Term Term
     | IfEl Term Term Term
-    | Let  (Term, Term) Term Term
+    | Let Term Term
     | Abs  Term
     | New
     | Meas
     | Void
 
+-- | Should be able to print a Term.
 instance Show Term where
     show (Idx i) = show i
     show (QVar s) = s
@@ -38,59 +48,97 @@ instance Show Term where
     show (Tup t) = show t
     show (App l r) = show l ++ " " ++ show r
     show (IfEl c t f) = "if " ++ show c ++ " then " ++ show t ++ " else " ++ show f
-    show (Let t e i) = "let " ++ show t ++ " = " ++ show e ++ " in " ++ show i
+    show (Let t e) = "let " ++ show t ++ " in " ++ show e
     show (Abs t) = "λ " ++ show t
     show New = "new"
     show Meas = "measure"
     show Void = "*"
 
-type Type = P.Type
-
-data Function = Func String Type Term 
-
 instance Show Function where
     show (Func n t e) = "\n" ++ n ++ " : " ++ show t ++ "\n"
                              ++ n ++ " = " ++ show e ++ "\n"
 
-tobruijn :: Env -> P.Term -> Term 
-tobruijn env (P.TLamb _ var term) = Abs $ tobruijn env' term
+-- | Converts a Parser Term to our intermediatary Term.
+-- 
+--   de Bruijn every bound variable (Let and function abstraction).
+--   Uses an environment to keep track of the Bruijn indicies.
+--   Converts names such as "new" to its own terms New.
+makeImTerm :: Env -> P.Term -> Term 
+makeImTerm env (P.TLamb _ var term) = Abs $ makeImTerm env' term
     where env' = M.insert (name var) 0 (M.map succ env)
-tobruijn env (P.TApp l r) = App (tobruijn env l) (tobruijn env r)
-tobruijn env (P.TVar (P.Variable "new")) = New 
-tobruijn env (P.TVar (P.Variable "meas")) = Meas
-tobruijn env (P.TVar (P.Variable "measure")) = Meas
-tobruijn env (P.TVar var) = case M.lookup (name var) env of
+makeImTerm env (P.TApp l r) = App (makeImTerm env l) (makeImTerm env r)
+makeImTerm env (P.TVar (P.Var "new")) = New 
+makeImTerm env (P.TVar (P.Var "meas")) = Meas
+makeImTerm env (P.TVar (P.Var "measure")) = Meas
+makeImTerm env (P.TVar var) = case M.lookup (name var) env of
     Just idx -> Idx idx
     Nothing  -> QVar (name var)
-tobruijn env (P.TIfEl cond true false) = 
-    IfEl (tobruijn env cond) (tobruijn env true) (tobruijn env false)
-tobruijn env (P.TLet tup eq inn) = 
-    Let (tupmap (tobruijn env) tup) (tobruijn env eq) (tobruijn env inn)
-tobruijn env (P.TTup t) = Tup $ tupmap (tobruijn env) t
-tobruijn _env (P.TBit b) = Bit b
-tobruijn _env (P.TGate g) = Gate g
-tobruijn _env P.TStar = Void
+makeImTerm env (P.TIfEl cond true false) = 
+    IfEl (makeImTerm env cond) (makeImTerm env true) (makeImTerm env false)
+makeImTerm env (P.TLet x y eq inn) = Let (makeImTerm env eq) (makeImTerm env' inn)
+    where env' = M.insert (name y) 1 $ M.insert (name x) 0 (M.map (succ . succ) env)
+makeImTerm env (P.TTup t) = Tup $ tupmap (makeImTerm env) t
+makeImTerm _env (P.TBit b) = Bit b
+makeImTerm _env (P.TGate g) = Gate g
+makeImTerm _env P.TStar = Void
 
-bruijnize :: P.Term -> Term
-bruijnize = tobruijn M.empty
-
-lambdaizeFunction :: P.FunDec -> Function 
-lambdaizeFunction (P.FDecl n t fun) = Func (unfun n) t (bruijnize $ lambdaize fun)
+-- | Convert a function to intermediate abstract syntax (lambdaized, with de Bruijn indices)
+makeImFunction :: P.FunDec -> Function 
+makeImFunction (P.FDecl n t fun) = Func (unfun n) t (makeImTerm M.empty $ lambdaize fun)
     where unfun (P.FunVar x) = init $ filter (/=' ') x
 
+-- | Convert all functions to lambda abstractions
 lambdaize :: P.Function -> P.Term
 lambdaize (P.FDef _ [] term) = term
 lambdaize (P.FDef _n (a:args) term) = P.TLamb lambda (unArg a) (lambdaize (P.FDef _n args term))
     where unArg (P.FArg v) = v
           lambda = P.Lambda "\\"
 
+-- | Translate abstract syntax from parser to intermediate abstract syntax
 toIm :: P.Program -> [Function]
-toIm (P.PDef fs) = map lambdaizeFunction fs
+toIm (P.PDef fs) = map makeImFunction fs
+
+
+-- | Translate the intermediate abstract syntax to the abstract parser syntax.
+fromIm :: [Function] -> P.Program
+fromIm = P.PDef . map reverseImFunction
+
+-- | Convert a function from intermediate abstract syntax to the abstract parser syntax.
+reverseImFunction :: Function -> P.FunDec
+reverseImFunction (Func name t term) = P.FDecl (P.FunVar (name++" :")) t (P.FDef (P.Var name) [] term')
+    where term' = reverseImTerm 0 term 
+
+-- | imTerm in reverse. From the intermediate term to the parser term.
+reverseImTerm :: Integer -> Term -> P.Term
+reverseImTerm env (Idx idx)    = P.TVar $ P.Var $ 'x' : show (env - idx - 1)
+reverseImTerm env (QVar s)     = P.TVar $ P.Var s
+reverseImTerm env (Bit b)      = P.TBit b 
+reverseImTerm env (Gate g)     = P.TGate g
+reverseImTerm env (Tup (x:xs)) = P.TTup $ P.Tuple (reverseImTerm env x) (map (reverseImTerm env) xs)
+reverseImTerm env (App  t1 t2) = P.TApp (reverseImTerm env t1) (reverseImTerm env t2)
+reverseImTerm env (IfEl c t e) = P.TIfEl (reverseImTerm env c) (reverseImTerm env t) (reverseImTerm env e)
+reverseImTerm env (Let eq inn) = P.TLet (P.Var ('x' : show (env + 1))) (P.Var ('x' : show env)) (reverseImTerm env eq) (reverseImTerm (env + 2) inn)
+reverseImTerm env (Abs  term)  = P.TLamb (P.Lambda "\\") (P.Var ('x' : show env)) (reverseImTerm (env+1) term)
+reverseImTerm env New          = P.TVar (P.Var "new")
+reverseImTerm env Meas         = P.TVar (P.Var "meas")
+reverseImTerm env Void         = P.TStar
 
 run :: String -> [Function]
 run s = case pProgram (myLexer s) of
     Left s -> error s
     Right p -> toIm p
+
+test :: String -> String
+test = printTree . fromIm . run
+
+testFile :: FilePath -> IO String
+testFile path = test <$> readFile path
+
+propTestFile :: FilePath  -> IO Bool
+propTestFile path = do
+    once <- testFile path
+    let twice = test once
+    return (once == twice)
 
 runFile :: FilePath -> IO [Function]
 runFile path = run <$> readFile path
