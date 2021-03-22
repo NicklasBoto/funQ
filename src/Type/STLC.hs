@@ -26,6 +26,7 @@ data Error
     = Mismatch Type Type
     | NotInScope Named
     | NotFunction Type
+    | NotProduct Type
     | NotValueType
     | ParseError String
     | Fail String
@@ -44,6 +45,9 @@ instance Show Error where
     show (ParseError s) =
         "Parsec failed:\n" ++ s
 
+    show (NotProduct t) =
+        "Not a factorizable type '" ++ show t ++ "'"
+
     show (Fail s) =
         "Something went wrong\n" ++ s
 
@@ -52,7 +56,7 @@ data Type
     | Type :>< Type
     | TypeBit
     | TypeQBit
-    | TypeVoid
+    | TypeUnit
     deriving Eq
 
 instance Show Type where
@@ -60,7 +64,7 @@ instance Show Type where
     show (a :>< b) = show a ++ " ⊗  " ++ show b
     show TypeBit = "Bit"
     show TypeQBit = "QBit"
-    show TypeVoid = "⊤"
+    show TypeUnit = "⊤"
 
 infixr 1 :=>
 infixr 2 :><
@@ -80,27 +84,30 @@ data Gate
     deriving Show
 
 data Exp
-    = Abs Type Exp
-    | Abs1 String Type Exp
-    | Idx Integer
-    | Var String
+    = Idx Integer
+    | QVar String
+    | Bit Q.Bit
+    | Gate Gate
+    | Tup [Exp]
     | App Exp Exp
-    | Let Exp Exp
     | IfEl Exp Exp Exp
+    | Let Exp Exp
+    | Abs Type Exp
     | New
     | Meas
-    | Gate Gate
-    | Bit Q.Bit
-    | Tup [Exp]
+    | Unit
 
 instance Show Exp where
     show (Abs t e) = "λ[" ++ show t ++ "]." ++ show e
     show (Idx x) = "{" ++ show x ++ "}"
-    show (Var s) = s
+    show (QVar s) = s
     show (App a b) = "(" ++ show a ++ " " ++ show b ++ ")"
     show (Bit b) = show b
     show New = "new"
     show Meas = "measure"
+    show Unit = "*"
+    show (Let e i) = "let " ++ show e ++ " in " ++ show i
+    show (IfEl b t f) = "if " ++ show b ++ " then " ++ show t ++ " else " ++ show f
     show (Gate g) = show g
     show (Tup es) = show es
 
@@ -108,11 +115,8 @@ type SymT e m = ExceptT Error (ReaderT (M.Map Named e) m)
 
 type Check = SymT Type Identity
 
-extend :: Named -> a -> M.Map Named a -> M.Map Named a
-extend = M.insert
-
 inEnv :: Monad m => Named -> e -> SymT e m a -> SymT e m a
-inEnv x t = local (extend x t)
+inEnv x t = local (M.insert x t)
 
 lookupVar :: Monad m => Named -> SymT e m e
 lookupVar x = do
@@ -128,6 +132,7 @@ typecheck = tc 0
         gateType  n = gateType' n :=> gateType' n
 
         tc i = \case
+            Unit   -> return TypeUnit
             Bit _  -> return TypeBit
             New    -> return (TypeBit :=> TypeQBit)
             Meas   -> return (TypeQBit :=> TypeBit)
@@ -152,10 +157,31 @@ typecheck = tc 0
 
             Tup es -> foldr1 (:><) <$> mapM (tc i) es
 
-            Idx j -> lookupVar (Bound j)
-            Var x -> lookupVar (Free  x)
+            IfEl b t f -> do
+                tt <- tc i t
+                tf <- tc i f
+                tb <- tc i b
+                case tb of
+                    TypeBit | tt == tf  -> return tt
+                            | otherwise -> throwError $ Mismatch tt tf
+                    _ -> throwError $ Mismatch TypeBit tb
+            -- let (??) = eq in inn
+            Let eq inn -> tc i eq >>= \case
+                    (a1 :>< a2) -> inEnv (Bound (i+1)) a1 
+                                 $ inEnv (Bound i) a2 (tc (i+2) inn)
 
-test1, test2, test3, test4, test5, test6, test7 :: (String, Exp)
+                    teq -> throwError $ NotProduct teq
+
+
+
+                -- M = a >< (b >< c)
+                --  G1 |- M : (A1 >< A2)   G2, x1 : A1, x2 : A2 |- N : a
+                -- ------------------------------------------------------
+                --         G1, G2 |- let (x1,x2) = M in N : A
+            Idx  j -> lookupVar (Bound j)
+            QVar x -> lookupVar (Free  x)
+
+test1, test2, test3, test4, test5, test6, test7, test8, test9 :: (String, Exp)
 test1 = ("test1",Abs TypeBit (App New (Bit 0)))
 test2 = ("test2",Abs TypeBit (App (Abs TypeBit (Idx 1)) (Bit 0)))
 test3 = ("test3",Tup [Bit 0, App New (Bit 1), Abs TypeBit (Idx 0)])
@@ -163,6 +189,9 @@ test4 = ("test4",App Meas (App (Gate H) (App New (Bit 0))))
 test5 = ("test5",App (snd test2) (Bit 1))
 test6 = ("test6",Abs TypeBit (Tup [Idx 0, Idx 0]))
 test7 = ("test7",App (snd test6) (Bit 0))
+test8 = ("test8",Let (Tup [Bit 0, Unit]) (Idx 1)) -- let (x,y) = (0,*) in y
+test9 = ("test9",IfEl New (App New (Bit 0)) (Bit 1))
+test10 = ("test10", Abs (TypeQBit :=> TypeBit) (App (Idx 0) (App New (Bit 0))))
 
 runCheck :: Check a -> Either Error a
 runCheck c = runIdentity (runReaderT (runExceptT c) M.empty)
@@ -181,14 +210,17 @@ test (name, exp) = case runCheck (typecheck exp) of
 data Value
     = VBit Q.Bit
     | VQBit Q.QBit
+    | VUnit
     | VTup [Value]
-    | VFunc [Value] Exp
+    | VFunc Type [Value] Exp
 
 instance Show Value where
-    show (VBit b)  = show b
-    show (VTup bs) = show bs
-    show (VQBit q) = show q
-    show VFunc{}   = "<closure>"
+    show (VBit b)    = show b
+    show (VTup bs)   = show bs
+    show (VQBit q)   = show q
+    show VUnit       = "*"
+    show (VFunc t _ e) = case runCheck (typecheck (Abs t e)) of
+        Right t' -> show t'
 
 type Eval = SymT Exp Q.QM Value
 
@@ -203,11 +235,20 @@ evl :: [Value] -> Exp -> ExceptT Error Q.QM Value
 evl vs = \case
     Bit b -> return $ VBit b
 
+    Unit -> return VUnit
+
     Tup bs -> VTup <$> mapM (evl vs) bs
 
     Idx j -> return $ vs !! fromInteger j
 
-    Abs _ e -> return $ VFunc vs e
+    -- one = \f.\x.f x
+    -- suc = \n.\f.\x.n f (f x)
+    -- eval $ suc one
+    -- suc[n := one] -\beta> 
+    -- \f.\x. (\f.\x.f x ) f (f x)
+    -- \f.\x. f (f x)
+
+    Abs t e -> return $ VFunc t vs e
 
     App New b -> do
         VBit b' <- evl vs b
@@ -222,13 +263,24 @@ evl vs = \case
     App (Gate g) q -> case g of
         H -> runGate Q.hadamard q vs
         X -> runGate Q.pauliX q vs
+        
+    App e1 e2 -> do
+        VFunc _ e a <- evl vs e1
+        v <- evl vs e2
+        evl (v : vs) a
 
-    App e1 e2 -> evl vs e1 >>= \case
-        VFunc e a -> do
-            v <- evl vs e2
-            evl (v : vs) a
+    IfEl bit l r -> do
+        VBit b <- evl vs bit 
+        evl vs $ if b == 1 then l else r
+    
+    Let eq inn -> do 
+        VTup [x1, x2] <- evl vs eq 
+        evl (x2 : x1 : vs) inn
 
     _ -> throwError $ Fail "not implemented"
+
+testE :: Exp -> IO (Either Error Value)
+testE s = Q.run $ runExceptT (evl [] s)
 
 runGate :: (Q.QBit -> Q.QM Q.QBit) -> Exp -> [Value] -> ExceptT Error Q.QM Value
 runGate g q vs = do
@@ -245,6 +297,19 @@ runE prog = do
     e <- parseExpr prog
     t <- runCheck (typecheck e)
     return (e,t)
+
+data PExp
+    = PAbs String Type PExp
+    | PBit Q.Bit
+    | PUnit
+    | PNew
+    | PMeas
+    | PGate Gate
+    | PApp PExp PExp
+    | PTup PExp PExp
+    | PVar String
+    | PLet String String PExp PExp
+    | PIfEl PExp PExp PExp
 
 lexer :: Tok.TokenParser ()
 lexer = Tok.makeTokenParser style
@@ -276,52 +341,81 @@ contents p = do
 natural :: Parser Integer
 natural = Tok.natural lexer
 
-variable :: Parser Exp
-variable = Var <$> identifier
+variable :: Parser PExp
+variable = PVar <$> identifier
 
-number :: Parser Exp
-number = Idx <$> natural
-
-lambda :: Parser Exp
+lambda :: Parser PExp
 lambda = do
   reservedOp "\\"
+  s <- identifier
+  reservedOp ":"
   t <- type'
   reservedOp "."
   e <- expr
-  return (Abs t e)
+  return (PAbs s t e)
 
-bit :: Parser Exp
-bit =  (reservedOp "b0" >> return (Bit 0))
-   <|> (reservedOp "b1" >> return (Bit 1))
+bit :: Parser PExp
+bit =  (reservedOp "0" >> return (PBit 0))
+   <|> (reservedOp "1" >> return (PBit 1))
 
-gate :: Parser Exp
-gate =  (reservedOp "H" >> return (Gate H))
-    <|> (reservedOp "X" >> return (Gate X))
+gate :: Parser PExp
+gate =  (reservedOp "H" >> return (PGate H))
+    <|> (reservedOp "X" >> return (PGate X))
 
-op :: Parser Exp
-op =  (reservedOp "new" >> return New)
-  <|> (reservedOp "measure" >> return Meas)
+op :: Parser PExp
+op =  (reservedOp "new" >> return PNew)
+  <|> (reservedOp "measure" >> return PMeas)
 
 brackets = Tok.brackets lexer
 comma = Tok.comma lexer
 
-tup :: Parser Exp
-tup = Tup <$> brackets (sepBy1 expr comma)
+----tup :: Parser PExp
+--tup = Tup <$> brackets (sepBy1 expr comma)
 
-term :: Parser Exp
+tup :: Parser PExp
+tup = do
+    ts <- brackets (sepBy1 term comma)
+    return $ foldr1 PTup ts
+
+ifel :: Parser PExp
+ifel = do
+    reservedOp "if"
+    b <- term
+    reservedOp "then"
+    t <- term
+    reservedOp "else"
+    f <- term
+    return $ PIfEl b t f
+
+plet :: Parser PExp
+plet = do
+    reservedOp "let"
+    reserved "["
+    x1 <- identifier
+    reserved ","
+    x2 <- identifier
+    reserved "]"
+    reservedOp "="
+    eq <- term
+    reservedOp "in"
+    inn <- term
+    return $ PLet x1 x2 eq inn
+
+term :: Parser PExp
 term =  parens expr
-    <|> number
-    <|> tup
     <|> bit
     <|> gate
     <|> op
+    <|> plet
+    <|> tup
+    <|> ifel
     <|> variable
     <|> lambda
 
-expr :: Parser Exp
+expr :: Parser PExp
 expr = do
   es <- many1 term
-  return (foldl1 App es)
+  return (foldl1 PApp es)
 
 tyatom :: Parser Type
 tyatom = tylit <|> parens type'
@@ -342,7 +436,25 @@ type' = Ex.buildExpressionParser tyops tyatom
 parseExpr :: String -> Either Error Exp
 parseExpr input = case parse (contents expr) "<stdin>" input of
     Left  err -> Left . ParseError . show $ err
-    Right exp -> Right exp
+    Right exp -> Right $ convertExp M.empty exp
+
+convertExp :: M.Map String Integer -> PExp -> Exp
+convertExp env (PAbs var typ term) = Abs typ $ convertExp env' term
+    where env' = M.insert var 0 (M.map succ env)
+convertExp env (PApp l r) = App (convertExp env l) (convertExp env r)
+convertExp env PNew = New
+convertExp env PMeas = Meas
+convertExp env (PVar var) = case M.lookup var env of
+    Just idx -> Idx idx
+    Nothing  -> QVar var
+convertExp env (PIfEl cond true false) =
+    IfEl (convertExp env cond) (convertExp env true) (convertExp env false)
+convertExp env (PLet x y eq inn) = Let (convertExp env eq) (convertExp env' inn)
+    where env' = M.insert y 1 $ M.insert x 0 (M.map (succ . succ) env)
+convertExp env (PTup e1 e2) = Tup $ map (convertExp env) [e1,e2]
+convertExp env (PBit b) = Bit b
+convertExp env (PGate g) = Gate g
+convertExp env PUnit = Unit
 
 run :: String -> IO ()
 run prg = case runE prg of
@@ -351,14 +463,20 @@ run prg = case runE prg of
             Right v <- runEval prg
             putStrLn $ "foo" ++ " : " ++ show t ++ "\n"
                     ++ "foo" ++ " = " ++ show e ++ "\n\n"
-                    ++ "Result: " ++ show v 
+                    ++ "Result: " ++ show v
+
+runFile :: FilePath -> IO ()
+runFile path = run =<< readFile path
 
 run1, run2, run3, run4, run5 :: String
-run1 = "\\Bit . new b0" -- Abs TypeBit (App New (Bit 0))
-run2 = "\\Bit . (\\Bit . 1) b0" -- Abs TypeBit (App (Abs TypeBit (Idx 1)) (Bit 0))
-run3 = "[b0, new b1, \\Bit . 0]" -- Tup [Bit 0, App New (Bit 1), Abs TypeBit (Idx 0)]
-run4 = "measure (H (new b0))" -- App Meas (App (Gate H) (App New (Bit 0)))
-run5 = "(\\Bit . [0,0]) b0"
+run1 = "\\x : Bit . new 0"
+run2 = "(\\x: Bit . (\\y: Bit . x) 0) 1" -- Abs TypeBit (App (Abs TypeBit (Idx 1)) (Bit 0))
+run3 = "\\ x : Bit . (\\ y : Bit . x) x"
+run4 = "[b0, new b1, \\x: Bit . x]" -- Tup [Bit 0, App New (Bit 1), Abs TypeBit (Idx 0)]
+run5 = "measure (H (new b0))" -- App Meas (App (Gate H) (App New (Bit 0)))
+run6 = "(\\x: Bit . [x,x]) b0"
+
+plus = "(\\x : Bit . (\\x : Bit . \\y : Bit . if x then (if y then 0 else 1) else (if y then 1 else 0)) x x) (measure (H (new 0)))"
 
 -- duplicate = \QBit . [0,0]
 
