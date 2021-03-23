@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f0126edf94dea77a6f70527b19dacd230c20196e8cf87a44ae61ffc059d44c41
+-- hash: 4fe612f44b111f844f1206762ae416c9bf9241d53c94faf041e5a7577809eac4
 
 name:           qfunc
 version:        0.1.0.0
@@ -45,6 +45,7 @@ library
       Parser.Par
       Parser.Print
       Parser.Skel
+--      Parser.Test
       CoinFlip
       Deutsch
       DeutschJozsa
@@ -59,10 +60,10 @@ library
     , array
     , base >=4.7 && <5
     , bitvec
+    , containers
     , hmatrix
     , mtl
     , numbers
-    , containers
   default-language: Haskell2010
 
 executable qfunc-exe
@@ -77,6 +78,7 @@ executable qfunc-exe
     , array
     , base >=4.7 && <5
     , bitvec
+    , containers
     , hmatrix
     , mtl
     , numbers
@@ -97,6 +99,7 @@ test-suite qfunc-test
     , array
     , base >=4.7 && <5
     , bitvec
+    , containers
     , hmatrix
     , mtl
     , numbers
