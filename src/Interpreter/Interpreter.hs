@@ -2,6 +2,8 @@
 
 module Interpreter.Interpreter where
 
+import System.IO
+
 import qualified Data.Map as M
 import Control.Monad.Except
 import Control.Monad.Reader
@@ -10,6 +12,10 @@ import Control.Monad.Identity
 import qualified FunQ as Q
 import Control.Monad.State
 import Parser.Abs as Abs
+    ( Gate(GS, GH, GX, GY, GZ, GI, GT),
+      Type,
+      Bit(BOne, BZero),
+      Program )
 import qualified AST.AST as A
 import Parser.Par              (pProgram, myLexer)
 
@@ -30,7 +36,6 @@ type Eval a = ExceptT Error Q.QM a
 data Ctx = Ctx {
       values :: [Value]
     , functions :: Sig      -- Maps function identifiers to terms
-    -- , variables :: Map Ident 
 }
 
 data Value
@@ -39,52 +44,52 @@ data Value
     | VUnit
     | VTup [Value]
     | VFunc [Value] A.Term
-
--- instance Show Value where
---     show (VBit b)    = show b
---     show (VTup bs)   = show bs
---     show (VQBit q)   = show q
---     show VUnit       = "*"
---     show (VFunc t _ e) = case runCheck (typecheck (Abs t e)) of
---         Right t' -> show t'
+    
+instance Show Value where
+    show (VBit b)    = show b
+    show (VTup bs)   = show bs
+    show (VQBit q)   = show q
+    show VUnit       = "*"
+    show (VFunc t e)     = "nope"
+    -- show (VFunc vs e) = case runCheck (typecheck (Abs t e)) of
+    --     Right t' -> show t'
 
 -- Main function in interpreter (which we export )
 interpret :: [A.Function] -> Eval Value
-interpret fs = do 
+interpret fs = do
     -- Create context 
-    let ctx = createctxs (M.empty) fs
+    let ctx = createctxs M.empty fs
     -- Eval main function
     let mainTerm = getMainTerm ctx
     -- Return the return value from main
-    val <- eval ctx mainTerm
-    return val
+    eval ctx mainTerm
 
 createctxs :: Sig -> [A.Function] -> Ctx
-createctxs sig fs = undefined --  Ctx {functions = map insertM fs} -- Ctx { functions = (map . uncurry) (M.insert sig) [(s, t) | (A.Func s _ t) <- fs]}
-    where insertM env k a = M.insert k a env
---ctx {functions = M.insert s t}
--- Func String Type Term 
--- (Func fname _ fterm)
-
-
---  cxt{ functions = Map.insert fname fterm env }
+createctxs sig fs = Ctx { functions = M.fromList [(s, t) | (A.Func s _ t) <- fs],
+                            values = []}
 
 getMainTerm :: Ctx -> A.Term
-getMainTerm ctx = case M.lookup "main" (functions ctx) of 
-    Just term -> term 
+getMainTerm ctx = case M.lookup "main" (functions ctx) of
+    Just term -> term
     Nothing   -> error "No main function" -- TODO: use our own errors
+
+runInterpreter :: Eval a -> ExceptT Value IO a
+runInterpreter st =  undefined
+
+-- exceptToIO :: Eval Value -> IO (Either Value a)
+-- exceptToIO  = liftIO . runExceptT . runInterpreter
 
 eval :: Ctx -> A.Term -> Eval Value     -- ??
 eval ctx = \case
     A.Idx j -> return $ values ctx !! fromInteger j
 
     -- A.QVar s -> qbits?
-        
+
     A.Bit BZero -> return $ VBit 0
     A.Bit BOne -> return $ VBit 1
-    
+
     A.Gate g -> error "Using gate on nothing" -- TODO: correct errors
-    
+
     A.App (A.Gate g) q -> case g of
          Abs.GH    -> runGate Q.hadamard q ctx
          Abs.GX    -> runGate Q.pauliX q ctx
@@ -102,14 +107,19 @@ eval ctx = \case
 
 runGate :: (Q.QBit -> Q.QM Q.QBit) -> A.Term -> Ctx -> Eval Value
 runGate g q ctx = do
-    VQBit q' <- eval ctx q
-    VQBit <$> lift (g q')
+    res <- eval ctx q 
+    case res of
+        VQBit q' -> VQBit <$> lift (g q')
+        _        -> error ""            -- TODO: correct errors
     
+
 
 -- runCNOT :: A.Term -> Ctx -> Eval Value
 -- runCNOT q ctx = do
---     VTup q' <- eval ctx q
---     VTup <$> lift [fst (Q.cnot q), snd (Q.cnot q)]
+--     VTup [VQBit a, VQBit b] <- eval ctx q
+--     let (c,d) = Q.cnot (a, b)
+--     return $ VBit 0
+
     -- A.Void -> return VUnit
 
     -- A.Tup bs -> VTup <$> mapM (eval ctx) bs
@@ -149,7 +159,7 @@ runGate g q ctx = do
    --     eval ctx{values = x2 : x1 : values} inn
 --
    -- _ -> throwError $ Fail "not implemented"
-    
+
 --  case t of
 --          Bit b -> return $ VBit b
 
@@ -168,19 +178,27 @@ runGate g q ctx = do
 --    | Meas
 --    | Void
 
-    
--- Should be in a main pipeline file
-run :: String -> IO Value 
-run prg = do 
-    program <- parse prg
-    i <- interpret (A.toIm program)
-    return (VBit 0)
 
-parse :: String -> IO ()
+
+-- Should be in a main pipeline file
+run :: String -> IO ()
+run fileName = do
+    prg <- readFile fileName
+    program <- parse prg
+    res <- Q.run $ runExceptT $ interpret (A.toIm program)
+    case res of
+        Left err -> do
+            putStrLn "INTERPRETER ERROR "
+            error ""
+        Right i -> do
+            putStrLn $ "Result " ++ show i
+
+parse :: String -> IO Program
 parse s = case pProgram (myLexer s) of
   Left err -> do
     putStrLn "SYNTAX ERROR"
     putStrLn err
     error "SYNTAX ERROR"
-  Right prg -> do 
-    putStr "hej" -- prg
+  Right prg -> do
+    return prg
+
