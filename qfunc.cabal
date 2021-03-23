@@ -87,6 +87,10 @@ test-suite qfunc-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      GateSumToOneTests
+      Helpers
+      ReversibilityTests
+      TestCore
       Paths_qfunc
   hs-source-dirs:
       test
