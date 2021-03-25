@@ -2,70 +2,70 @@
 
 module Interpreter.Interpreter where
 
-import System.IO
+import System.IO ()
 
 import qualified Data.Map as M
 import Control.Monad.Except
-import Control.Monad.Reader
-import Data.List
-import Control.Monad.Identity
+    ( MonadTrans(lift), ExceptT, MonadError(throwError), runExceptT )
+import Control.Monad.Reader ()
+import Data.List ()
+import Control.Monad.Identity ()
 import qualified FunQ as Q
-import Control.Monad.State
+import Control.Monad.State ()
 import Parser.Abs as Abs
     ( Gate(GS, GH, GX, GY, GZ, GI, GT, GCNOT, GTOF, GSWP, GFRDK),
-      Type,
       Bit(BOne, BZero),
       Program )
 import qualified AST.AST as A
 import Parser.Par              (pProgram, myLexer)
 
 -- TODO:
--- fixa errors 
--- teleportera 1, och få 1
--- eval för custom run gate (vart/hur definierar ens användaren sina egna gates?)
--- generell run gate???
--- show för VFunc? 
--- main driver: egen fil? turtle och haskelline? 
 -- test suite
+-- generell run gate (för att få med quantum fourier, genom Runnable TypeClass ex)
+-- teleportera 1, och få 1
+
+-- När vi tycker interpreter är klar! 
+-- main driver: egen fil? turtle och haskelline? 
+
+-- Nice to Have:
+-- let user define custom gates (needs syntax for gate definition, type checking of arbitrary gate and evaluation of it)
+
 
 data Error
     = NotFunction String
-    | Fail String
     | NoMainFunction String
     | NotApplied String
+    | Fail String
     
 type Sig = M.Map String A.Term
 
 type Eval a = ExceptT Error Q.QM a
 
-
 data Ctx = Ctx {
-      values :: [Value]
-    , functions :: Sig      -- Maps function identifiers to terms
+      values    :: [Value]
+    , functions :: Sig 
 }
-
 
 instance Show Value where
     show (VBit b)    = show b
     show (VTup bs)   = show bs
     show (VQBit q)   = show q
-    show  VUnit      = "*"
-    show (VFunc t e) = "nope"
-    -- show (VFunc vs e) = case runCheck (typecheck (Abs t e)) of
-    --     Right t' -> show t'
+    show VUnit       = "*"
+    show (VFunc _ t) = "Function " ++ show t
 
 -- Main function in interpreter (which we export)
 interpret :: [A.Function] -> Eval Value
 interpret fs = do
     -- Create context 
-    let ctx = createctxs M.empty fs
+    let ctx = createctxs fs
     -- Eval main function
     mainTerm <- getMainTerm ctx
     -- Return the return value from main
     eval ctx mainTerm
 
-createctxs :: Sig -> [A.Function] -> Ctx
-createctxs sig fs = Ctx { functions = M.fromList [(s, t) | (A.Func s _ t) <- fs],
+-- | Creates a context from a list of functions. 
+createctxs :: [A.Function] -> Ctx
+createctxs fs = Ctx { functions = M.fromList [(s, t) | (A.Func s _ t) <- fs],
                             values = []}
 
 getMainTerm :: Ctx -> Eval A.Term
@@ -110,6 +110,9 @@ eval ctx = \case
         --  , urot
         --  , crot
         --  , qft
+
+        -- typeclass runnable, ta in gate och a, spotta ut QM a
+        -- kan definiera olika fel
         
     A.App A.New b -> do
         VBit b' <- eval ctx b
@@ -125,7 +128,7 @@ eval ctx = \case
         VFunc _ a <- eval ctx e1
         v <- eval ctx e2
         eval ctx{ values = v : values ctx } a
-
+    
     A.IfEl bit l r -> do
         VBit b <- eval ctx bit 
         eval ctx $ if b == 1 then l else r
@@ -175,7 +178,8 @@ run fileName = do
     case res of
         Left err -> do
             putStrLn "INTERPRETER ERROR"
-            error ""
+            putStrLn $ show err
+            error "INTERPRETER ERROR"
         Right i -> do
             putStrLn $ "Result " ++ show i
 

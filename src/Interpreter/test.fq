@@ -1,21 +1,33 @@
 -- teleport example
 
 bellMeasure : !(QBit -o QBit -o (QBit >< QBit))
-bellMeasure a b = let (x,y) = CNOT (a,b) in (measure (H x), measure y)
+bellMeasure q2 q1 = let (x,y) = CNOT (q1,q2) in (measure (H x), measure y)
 
 epr : T -o QBit >< QBit
 epr x = CNOT (H (new 0), new 0)
 
 correction : !(QBit -o ((Bit >< Bit) -o QBit))
-correction q bits = let (a,b) = bits in
-    if a then (if b then Z (X q) else X q) 
-         else (if b then Z q     else I q)
-
+correction q bits = let (x,y) = bits in
+    if x then (if y then Z (X q) else Z q) 
+         else (if y then X q     else I q)     
+        
 teleport : QBit -o QBit
-teleport psi = let (a,b) = epr * in correction b (bellMeasure a psi)
+teleport psi = let (x,y) = epr * in correction y (bellMeasure x psi)
 
 main : Bit
-main = measure (CNOT (H (new 0), new 0))
+main = measure (teleport (new 1))
+
+-- Testa alla individuella delar av teleport -> se var felet ligger.
+
+-- coinflip example
+--let (x,y) = CNOT (new 1, new 1) in measure (coinflip (measure x))
+-- coinflip : Bit -o QBit
+-- coinflip a = H (new a)
 
 -- measure (H (new 0))   
 -- measure (teleport (new 1))
+
+-- teleport' : QBit -o QBit
+-- teleport' psi = let (x,y) = epr * in let (f,a) = bellMeasure x in let (g,b) = correction y in f(g(psi))
+
+-- correction b (bellMeasure a psi)
