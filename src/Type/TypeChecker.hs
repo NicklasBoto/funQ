@@ -88,7 +88,7 @@ typecheck i (Bit _) t = baseType t TypeBit
 typecheck i (Gate g) t = baseType t =<< inferGate g
 typecheck i New t = baseType t (TypeBit :=> TypeQBit)
 typecheck i Meas t = baseType t (TypeQBit :=> TypeBit)
-typecheck i Void t = baseType t TypeVoid
+typecheck i Unit t = baseType t TypeUnit
 typecheck i (QVar v) t = do
     c <- get
     case M.lookup (Free v) c of
@@ -139,7 +139,7 @@ infer i (Idx x)  = do
         Just type' -> return type'
         Nothing -> throwError $ NotInScopeError v
 infer i (Bit _)  = return TypeBit 
-infer i Void     = return TypeVoid
+infer i Unit     = return TypeUnit
 infer i (Gate g) = inferGate g
 infer i Meas     = return $ TypeQBit :=> TypeBit
 infer i New      = return $ TypeBit :=> TypeQBit

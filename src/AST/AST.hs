@@ -14,6 +14,7 @@ module AST.AST
      -- * Run functions
     , runFile
     , run
+    , reverseType
     )
     where
 
@@ -56,7 +57,7 @@ data Term
     | Abs Term
     | New
     | Meas
-    | Void
+    | Unit
     deriving Show
 
 -- | Should be able to print a Term.
@@ -82,7 +83,7 @@ data Type
     = TypeVar String
     | TypeBit
     | TypeQBit
-    | TypeVoid
+    | TypeUnit
     | TypeDup Type
     | Type :>< Type
     | Type :=> Type
@@ -96,7 +97,7 @@ convertType :: P.Type -> Type
 convertType (P.TypeVar (P.Var var)) = TypeVar var
 convertType P.TypeBit               = TypeBit
 convertType P.TypeQbit              = TypeQBit
-convertType P.TypeVoid              = TypeVoid
+convertType P.TypeVoid              = TypeUnit
 convertType (P.TypeDup type')       = TypeDup (convertType type')
 convertType (P.TypeTens l r)        = convertType l :>< convertType r
 convertType (P.TypeFunc l r)        = convertType l :=> convertType r
@@ -106,7 +107,7 @@ reverseType :: Type -> P.Type
 reverseType (TypeVar var) = P.TypeVar (P.Var var)
 reverseType TypeBit = P.TypeBit
 reverseType TypeQBit = P.TypeQbit
-reverseType TypeVoid = P.TypeVoid
+reverseType TypeUnit = P.TypeVoid
 reverseType (TypeDup type') = P.TypeDup (reverseType type')
 reverseType (l :>< r) = P.TypeTens (reverseType l) (reverseType r)
 reverseType (l :=> r) = P.TypeFunc (reverseType l) (reverseType r)
@@ -133,7 +134,7 @@ makeImTerm env (P.TLet x y eq inn) = Let (makeImTerm env eq) (makeImTerm env' in
 makeImTerm env (P.TTup t) = Tup $ tupmap (makeImTerm env) t
 makeImTerm _env (P.TBit b) = Bit b
 makeImTerm _env (P.TGate g) = Gate g
-makeImTerm _env P.TStar = Void
+makeImTerm _env P.TStar = Unit
 
 -- | Convert a function to intermediate abstract syntax (lambdaized, with de Bruijn indices)
 makeImFunction :: P.FunDec -> Function
@@ -173,7 +174,7 @@ reverseImTerm env (Let eq inn) = P.TLet (P.Var ('x' : show (env + 1))) (P.Var ('
 reverseImTerm env (Abs  term)  = P.TLamb (P.Lambda "\\") (P.Var ('x' : show env)) (reverseImTerm (env+1) term)
 reverseImTerm env New          = P.TVar (P.Var "new")
 reverseImTerm env Meas         = P.TVar (P.Var "meas")
-reverseImTerm env Void         = P.TStar
+reverseImTerm env Unit         = P.TStar
 
 run :: String -> Program
 run s = case pProgram (myLexer s) of

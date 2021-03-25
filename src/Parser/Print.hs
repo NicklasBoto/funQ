@@ -168,8 +168,8 @@ instance Print Parser.Abs.Type where
     Parser.Abs.TypeQbit -> prPrec i 2 (concatD [doc (showString "QBit")])
     Parser.Abs.TypeVoid -> prPrec i 2 (concatD [doc (showString "T")])
     Parser.Abs.TypeDup type_ -> prPrec i 2 (concatD [doc (showString "!"), prt 2 type_])
-    Parser.Abs.TypeTens type_1 type_2 -> prPrec i 1 (concatD [prt 2 type_1, doc (showString "><"), prt 1 type_2])
-    Parser.Abs.TypeFunc type_1 type_2 -> prPrec i 1 (concatD [prt 2 type_1, doc (showString "-o"), prt 1 type_2])
+    Parser.Abs.TypeTens type_1 type_2 -> prPrec i 1 (concatD [prt 2 type_1, doc (showString "⊗ "), prt 1 type_2])
+    Parser.Abs.TypeFunc type_1 type_2 -> prPrec i 1 (concatD [prt 2 type_1, doc (showString "⊸"), prt 1 type_2])
 
 instance Print Parser.Abs.Gate where
   prt i e = case e of

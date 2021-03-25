@@ -165,6 +165,7 @@ typecheck = tc 0
                     TypeBit | tt == tf  -> return tt
                             | otherwise -> throwError $ Mismatch tt tf
                     _ -> throwError $ Mismatch TypeBit tb
+            
             -- let (??) = eq in inn
             Let eq inn -> tc i eq >>= \case
                     (a1 :>< a2) -> inEnv (Bound (i+1)) a1 
@@ -172,13 +173,11 @@ typecheck = tc 0
 
                     teq -> throwError $ NotProduct teq
 
-
-
-                -- M = a >< (b >< c)
                 --  G1 |- M : (A1 >< A2)   G2, x1 : A1, x2 : A2 |- N : a
                 -- ------------------------------------------------------
                 --         G1, G2 |- let (x1,x2) = M in N : A
-            Idx  j -> lookupVar (Bound j)
+
+            Idx  j -> lookupVar (Bound (i-j-1))
             QVar x -> lookupVar (Free  x)
 
 test1, test2, test3, test4, test5, test6, test7, test8, test9 :: (String, Exp)
@@ -241,13 +240,6 @@ evl vs = \case
 
     Idx j -> return $ vs !! fromInteger j
 
-    -- one = \f.\x.f x
-    -- suc = \n.\f.\x.n f (f x)
-    -- eval $ suc one
-    -- suc[n := one] -\beta> 
-    -- \f.\x. (\f.\x.f x ) f (f x)
-    -- \f.\x. f (f x)
-
     Abs t e -> return $ VFunc t vs e
 
     App New b -> do
@@ -282,6 +274,7 @@ evl vs = \case
 testE :: Exp -> IO (Either Error Value)
 testE s = Q.run $ runExceptT (evl [] s)
 
+-- does not work for n-qubit gates
 runGate :: (Q.QBit -> Q.QM Q.QBit) -> Exp -> [Value] -> ExceptT Error Q.QM Value
 runGate g q vs = do
     VQBit q' <- evl vs q
@@ -473,7 +466,7 @@ run1 = "\\x : Bit . new 0"
 run2 = "(\\x: Bit . (\\y: Bit . x) 0) 1" -- Abs TypeBit (App (Abs TypeBit (Idx 1)) (Bit 0))
 run3 = "\\ x : Bit . (\\ y : Bit . x) x"
 run4 = "[b0, new b1, \\x: Bit . x]" -- Tup [Bit 0, App New (Bit 1), Abs TypeBit (Idx 0)]
-run5 = "measure (H (new b0))" -- App Meas (App (Gate H) (App New (Bit 0)))
+run5 = "measure (H (new 0))" -- App Meas (App (Gate H) (App New (Bit 0)))
 run6 = "(\\x: Bit . [x,x]) b0"
 
 plus = "(\\x : Bit . (\\x : Bit . \\y : Bit . if x then (if y then 0 else 1) else (if y then 1 else 0)) x x) (measure (H (new 0)))"

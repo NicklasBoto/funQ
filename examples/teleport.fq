@@ -1,15 +1,18 @@
 -- teleport example
 
-bellMeasure : !(QBit -o QBit -o (QBit >< QBit))
+bellMeasure : QBit -o QBit -o (Bit >< Bit)
 bellMeasure a b = let (x,y) = CNOT (a,b) in (measure (H x), measure y)
 
 epr : T -o QBit >< QBit
 epr x = CNOT (H (new 0), new 0)
 
-correction : !(QBit -o ((Bit >< Bit) -o QBit))
+correction : QBit -o ((Bit >< Bit) -o QBit)
 correction q bits = let (a,b) = bits in
     if a then (if b then Z (X q) else X q) 
          else (if b then Z q     else I q)
 
 teleport : QBit -o QBit
 teleport psi = let (a,b) = epr * in correction b (bellMeasure a psi)
+
+x : Bit -o Bit
+x a = a

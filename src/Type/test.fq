@@ -1,0 +1,17 @@
+map : (a -o b) -o (a >< a) -o (b >< b)
+map f xs = let (x,y) = xs in (f x, f y)
+
+plus : Bit -o Bit -o Bit
+plus x y = if x 
+    then (if y then 0 else 1)
+    else (if y then 1 else 0)
+
+bits : Bit >< Bit
+bits = map (plus 1) (0,0)
+
+f : b -o b
+f = \x . x
+
+----
+
+\x . x
