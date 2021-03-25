@@ -54,6 +54,7 @@ instance Show Error where
 data Type
     = Type :=> Type
     | Type :>< Type
+    | TypeDup Type
     | TypeBit
     | TypeQBit
     | TypeUnit
@@ -62,6 +63,7 @@ data Type
 instance Show Type where
     show (n :=> p) = show n ++ " ⊸ " ++ show p
     show (a :>< b) = show a ++ " ⊗  " ++ show b
+    show (TypeDup t) = "! " ++ show t
     show TypeBit = "Bit"
     show TypeQBit = "QBit"
     show TypeUnit = "⊤"
@@ -113,29 +115,32 @@ instance Show Exp where
 
 type SymT e m = ExceptT Error (ReaderT (M.Map Named e) m)
 
-type Check = SymT Type Identity
+-- type Check = SymT Type Identity
+type Check a = ExceptT Error (ReaderT (M.Map Named Type) (State (M.Map Named Int))) a
 
-inEnv :: Monad m => Named -> e -> SymT e m a -> SymT e m a
+inEnv :: Named -> Type -> Check a -> Check a
 inEnv x t = local (M.insert x t)
 
-lookupVar :: Monad m => Named -> SymT e m e
+lookupVar :: Named -> Check Type
 lookupVar x = do
     env <- ask
     case M.lookup x env of
         Just e  -> return e
         Nothing -> throwError $ NotInScope x
 
+type LinEnv = M.Map Named Int 
+
 typecheck :: Exp -> Check Type
-typecheck = tc 0
+typecheck = tc 0 
     where
         gateType' n = foldr (:><) TypeQBit (replicate (n-1) TypeQBit)
         gateType  n = gateType' n :=> gateType' n
 
-        tc i = \case
+        tc i = case e of
             Unit   -> return TypeUnit
-            Bit _  -> return TypeBit
-            New    -> return (TypeBit :=> TypeQBit)
-            Meas   -> return (TypeQBit :=> TypeBit)
+            Bit _  -> return TypeDup TypeBit
+            New    -> return TypeBit :=> TypeQBit
+            Meas   -> return TypeQBit :=> TypeBit
             Gate g -> return . gateType $ case g of
                             FREDKIN -> 3
                             TOFFOLI -> 3
@@ -144,7 +149,14 @@ typecheck = tc 0
                             _       -> 1
 
             Abs t e -> do
-                rhs <- inEnv (Bound i) t (tc (i+1) e)
+                linEnv <- get 
+                -- Lägga till med count 0. 
+                linEnv' = M.insert linEnv (Bound i) 0
+
+                rhs <- inEnv (Bound i) t (tc (i+1) e) -- | Skapa ny i counter mapp. 
+                linEnv <- getITAgain
+                count = M.lookup linEnv (Bound i)
+
                 return (t :=> rhs)
 
             App e1 e2 -> do
@@ -177,8 +189,13 @@ typecheck = tc 0
                 -- ------------------------------------------------------
                 --         G1, G2 |- let (x1,x2) = M in N : A
 
-            Idx  j -> lookupVar (Bound (i-j-1))
+            Idx  j -> lookupVar (Bound (i-j-1)) -- +1 
             QVar x -> lookupVar (Free  x)
+
+countOccurance :: Integer -> Exp -> M.Map Named Int
+countOccurance = undefined
+-- \x. (\x.x) (\x.x)
+
 
 test1, test2, test3, test4, test5, test6, test7, test8, test9 :: (String, Exp)
 test1 = ("test1",Abs TypeBit (App New (Bit 0)))
@@ -193,7 +210,7 @@ test9 = ("test9",IfEl New (App New (Bit 0)) (Bit 1))
 test10 = ("test10", Abs (TypeQBit :=> TypeBit) (App (Idx 0) (App New (Bit 0))))
 
 runCheck :: Check a -> Either Error a
-runCheck c = runIdentity (runReaderT (runExceptT c) M.empty)
+runCheck c = runState (runReaderT (runExceptT c) M.empty) M.empty
 
 check :: Exp -> IO ()
 check e = case runCheck (typecheck e) of
@@ -218,7 +235,7 @@ instance Show Value where
     show (VTup bs)   = show bs
     show (VQBit q)   = show q
     show VUnit       = "*"
-    show (VFunc t _ e) = case runCheck (typecheck (Abs t e)) of
+    show (VFunc t _ e) = case runCheck (typecheck (Abs t e) M.empty) of
         Right t' -> show t'
 
 type Eval = SymT Exp Q.QM Value
