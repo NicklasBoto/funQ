@@ -26,8 +26,8 @@ tupmap f (P.Tuple a bs) = fmap f (a:bs)
 
 -- | A term in our intermediatary representation.
 data Term
-    = Idx  Integer       -- bound
-    | QVar String        -- free
+    = Idx  Integer      -- bound
+    | Fun String        -- free
     | Bit  Bit
     | Gate Gate
     | Tup  [Term]
@@ -42,7 +42,7 @@ data Term
 -- | Should be able to print a Term.
 instance Show Term where
     show (Idx i) = show i
-    show (QVar s) = s
+    show (Fun s) = s
     show (Bit b) = show b
     show (Gate g) = show g
     show (Tup t) = show t
@@ -72,7 +72,7 @@ makeImTerm env (P.TVar (P.Var "meas")) = Meas
 makeImTerm env (P.TVar (P.Var "measure")) = Meas
 makeImTerm env (P.TVar var) = case M.lookup (name var) env of
     Just idx -> Idx idx
-    Nothing  -> QVar (name var)
+    Nothing  -> Fun (name var)
 makeImTerm env (P.TIfEl cond true false) = 
     IfEl (makeImTerm env cond) (makeImTerm env true) (makeImTerm env false)
 makeImTerm env (P.TLet x y eq inn) = Let (makeImTerm env eq) (makeImTerm env' inn)
@@ -111,7 +111,7 @@ reverseImFunction (Func name t term) = P.FDecl (P.FunVar (name++" :")) t (P.FDef
 -- | imTerm in reverse. From the intermediate term to the parser term.
 reverseImTerm :: Integer -> Term -> P.Term
 reverseImTerm env (Idx idx)    = P.TVar $ P.Var $ 'x' : show (env - idx - 1)
-reverseImTerm env (QVar s)     = P.TVar $ P.Var s
+reverseImTerm env (Fun s)     = P.TVar $ P.Var s
 reverseImTerm env (Bit b)      = P.TBit b 
 reverseImTerm env (Gate g)     = P.TGate g
 reverseImTerm env (Tup (x:xs)) = P.TTup $ P.Tuple (reverseImTerm env x) (map (reverseImTerm env) xs)

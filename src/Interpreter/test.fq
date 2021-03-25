@@ -15,7 +15,7 @@ teleport : QBit -o QBit
 teleport psi = let (a,b) = epr * in correction b (bellMeasure a psi)
 
 main : Bit
-main = measure (teleport (new 1))
+main = measure (CNOT (H (new 0), new 0))
 
-gate : Gate
-gate = undefined
+-- measure (H (new 0))   
+-- measure (teleport (new 1))
