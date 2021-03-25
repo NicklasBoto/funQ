@@ -28,19 +28,16 @@ import Parser.Par              (pProgram, myLexer)
 -- main driver: egen fil? turtle och haskelline? 
 -- test suite
 
-type Named = Int
 data Error
-    = Mismatch Type Type
-    | NotInScope Named
-    | NotFunction Type
-    | NotProduct Type
-    | NotValueType
-    | ParseError String
+    = NotFunction String
     | Fail String
-
+    | NoMainFunction String
+    | NotApplied String
+    
 type Sig = M.Map String A.Term
 
 type Eval a = ExceptT Error Q.QM a
+
 
 data Ctx = Ctx {
       values :: [Value]
@@ -63,7 +60,7 @@ interpret fs = do
     -- Create context 
     let ctx = createctxs M.empty fs
     -- Eval main function
-    let mainTerm = getMainTerm ctx
+    mainTerm <- getMainTerm ctx
     -- Return the return value from main
     eval ctx mainTerm
 
@@ -71,10 +68,10 @@ createctxs :: Sig -> [A.Function] -> Ctx
 createctxs sig fs = Ctx { functions = M.fromList [(s, t) | (A.Func s _ t) <- fs],
                             values = []}
 
-getMainTerm :: Ctx -> A.Term
+getMainTerm :: Ctx -> Eval A.Term
 getMainTerm ctx = case M.lookup "main" (functions ctx) of
-    Just term -> term
-    Nothing   -> error "No main function" -- TODO: use our own errors
+    Just term -> return term
+    Nothing   -> throwError $ NoMainFunction "Main function not defined"
 
 data Value
     = VBit Q.Bit
@@ -87,14 +84,12 @@ eval :: Ctx -> A.Term -> Eval Value
 eval ctx = \case
     A.Idx j -> return $ values ctx !! fromInteger j
 
-    A.QVar s -> case M.lookup s (functions ctx) of
+    A.Fun s -> case M.lookup s (functions ctx) of
         Just t  -> eval ctx t
-        Nothing -> error "qbit?"  -- Must be a free variable? qbit?
+        Nothing -> throwError $ NotFunction $ "Function " ++ show s ++ " is not defined" 
 
     A.Bit BZero -> return $ VBit 0
     A.Bit BOne -> return $ VBit 1
-
-    A.Gate g -> error "Using gate on nothing" -- TODO: correct errors
 
     A.Tup bs -> VTup <$> mapM (eval ctx) bs
 
@@ -109,8 +104,12 @@ eval ctx = \case
          Abs.GCNOT -> run2Gate Q.cnot q ctx
          Abs.GTOF  -> run3Gate Q.toffoli q ctx
          Abs.GSWP  -> run2Gate Q.swap q ctx
-         Abs.GFRDK -> run3Gate Q.fredkin q ctx
+         Abs.GFRDK -> run3Gate Q.fredkin q ctx      
         -- GGate GateIdent
+        --  , phasePi8
+        --  , urot
+        --  , crot
+        --  , qft
         
     A.App A.New b -> do
         VBit b' <- eval ctx b
@@ -135,13 +134,15 @@ eval ctx = \case
         VTup [x1, x2] <- eval ctx eq 
         eval ctx{ values = x2 : x1 : values ctx } inn
 
-    A.Abs e -> return $ VFunc (values ctx) e
+    A.Abs e  -> return $ VFunc (values ctx) e
 
-    A.Void -> return VUnit
+    A.Void   -> return VUnit
 
-    A.New -> error "New should not be found by itself"
+    A.Gate g -> throwError $ NotApplied $ "Gate " ++ show g ++ " must be applied to something"
+
+    A.New    -> throwError $ NotApplied "New must be applied to something"
     
-    A.Meas -> error "Meas should not be found by itself"
+    A.Meas   -> throwError $ NotApplied "Meas must be applied to something"
 
 
 -- TODO: refactor more generally!
