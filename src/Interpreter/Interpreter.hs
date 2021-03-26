@@ -17,7 +17,6 @@ import Parser.Abs as Abs
       Bit(BOne, BZero),
       Program )
 import qualified AST.AST as A
-import Parser.Par              (pProgram, myLexer)
 
 -- TODO:
 -- test suite
@@ -36,7 +35,9 @@ data Error
     | NoMainFunction String
     | NotApplied String
     | Fail String
-    
+    | IndexTooLarge String
+     deriving Show
+
 type Sig = M.Map String A.Term
 
 type Eval a = ExceptT Error Q.QM a
@@ -82,7 +83,11 @@ data Value
 
 eval :: Ctx -> A.Term -> Eval Value     
 eval ctx = \case
-    A.Idx j -> return $ values ctx !! fromInteger j
+    A.Idx j -> do
+        if fromIntegral j >= length (values ctx) then do
+            throwError $ IndexTooLarge $ "Index " ++ show j ++ " too large, Values=" ++ concat (map show (values ctx))
+         else do 
+             return $ values ctx !! fromInteger j
 
     A.Fun s -> case M.lookup s (functions ctx) of
         Just t  -> eval ctx t
@@ -168,27 +173,4 @@ run3Gate g q ctx = do
     return $ VTup (tupToList res)
         where tupToList (a,b,c) = [VQBit a, VQBit b, VQBit c] 
 
-
--- Should be in a main pipeline file
-run :: String -> IO ()
-run fileName = do
-    prg <- readFile fileName
-    program <- parse prg
-    res <- Q.run $ runExceptT $ interpret (A.toIm program)
-    case res of
-        Left err -> do
-            putStrLn "INTERPRETER ERROR"
-            putStrLn $ show err
-            error "INTERPRETER ERROR"
-        Right i -> do
-            putStrLn $ "Result " ++ show i
-
-parse :: String -> IO Program
-parse s = case pProgram (myLexer s) of
-  Left err -> do
-    putStrLn "SYNTAX ERROR"
-    putStrLn err
-    error "SYNTAX ERROR"
-  Right prg -> do
-    return prg
 

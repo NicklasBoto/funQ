@@ -1,10 +1,8 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
---
--- hash: 4fe612f44b111f844f1206762ae416c9bf9241d53c94faf041e5a7577809eac4
 
 name:           qfunc
 version:        0.1.0.0
@@ -34,6 +32,10 @@ library
   exposed-modules:
       AST.AST
       FunQ
+      Interpreter.Interpreter
+      Interpreter.InterpreterJoelMatilda
+      Interpreter.Main
+      Interpreter.TestRunner
       Lib.Core
       Lib.Gates
       Lib.Internal.Core
@@ -42,10 +44,12 @@ library
       Parser.Abs
       Parser.ErrM
       Parser.Lex
+      Parser.Lex
+      Parser.Par
       Parser.Par
       Parser.Print
       Parser.Skel
---      Parser.Test
+      Parser.Test
       CoinFlip
       Deutsch
       DeutschJozsa

@@ -1,5 +1,3 @@
--- teleport example
-
 bellMeasure : !(QBit -o QBit -o (QBit >< QBit))
 bellMeasure q2 q1 = let (x,y) = CNOT (q1,q2) in (measure (H x), measure y)
 
@@ -16,18 +14,3 @@ teleport psi = let (x,y) = epr * in correction y (bellMeasure x psi)
 
 main : Bit
 main = measure (teleport (new 1))
-
--- Testa alla individuella delar av teleport -> se var felet ligger.
-
--- coinflip example
---let (x,y) = CNOT (new 1, new 1) in measure (coinflip (measure x))
--- coinflip : Bit -o QBit
--- coinflip a = H (new a)
-
--- measure (H (new 0))   
--- measure (teleport (new 1))
-
--- teleport' : QBit -o QBit
--- teleport' psi = let (x,y) = epr * in let (f,a) = bellMeasure x in let (g,b) = correction y in f(g(psi))
-
--- correction b (bellMeasure a psi)

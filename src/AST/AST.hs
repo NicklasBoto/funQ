@@ -76,7 +76,7 @@ makeImTerm env (P.TVar var) = case M.lookup (name var) env of
 makeImTerm env (P.TIfEl cond true false) = 
     IfEl (makeImTerm env cond) (makeImTerm env true) (makeImTerm env false)
 makeImTerm env (P.TLet x y eq inn) = Let (makeImTerm env eq) (makeImTerm env' inn)
-    where env' = M.insert (name y) 1 $ M.insert (name x) 0 (M.map (succ . succ) env)
+    where env' = M.insert (name y) 0 $ M.insert (name x) 1 (M.map (succ . succ) env)
 makeImTerm env (P.TTup t) = Tup $ tupmap (makeImTerm env) t
 makeImTerm _env (P.TBit b) = Bit b
 makeImTerm _env (P.TGate g) = Gate g

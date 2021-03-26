@@ -7,7 +7,7 @@ TGate . Term3 ::= Gate                                                ;
 TTup  . Term3 ::= Tup                                                 ; 
 TStar . Term3 ::= "*"                                                 ;
 TApp  . Term2 ::= Term2 Term3                                         ; 
-TIfEl . Term1 ::= "if" Term2 "then" Term2 "else" Term                 ; 
+TIfEl . Term1 ::= "if" Term2 "then" Term "else" Term                  ; 
 TLet  . Term1 ::= "let" "(" Var "," Var ")" "=" Term2 "in" Term       ;
 TLamb . Term1 ::= Lambda Var "." Term                                 ; 
 coercions Term 3;
@@ -44,11 +44,7 @@ token Lambda '\\' ;
 
 --- Type ---
 
-TypeVar  . Type2  ::= Var              ;
-TypeBit  . Type2  ::= "Bit"            ;
-TypeQbit . Type2  ::= "QBit"           ;
-TypeVoid . Type2  ::= "T"              ;
-TypeDup  . Type2  ::= "!" Type2        ;
+TypeVar  .a  ::= "!" Type2        ;
 TypeTens . Type1  ::= Type2 "><" Type1 ;
 TypeFunc . Type1  ::= Type2 "-o" Type1 ;
 coercions Type 2;
