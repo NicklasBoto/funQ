@@ -5,9 +5,10 @@ module Type.STLC where
 import qualified Data.Map as M
 import Control.Monad.Except
 import Control.Monad.Reader
+import Control.Monad.State
 import Data.List
 import Control.Monad.Identity
-import Text.Parsec
+import Text.Parsec hiding ( State )
 import Text.Parsec.String (Parser)
 import Text.Parsec.Language (haskellStyle)
 import qualified Text.Parsec.Expr as Ex
@@ -28,6 +29,7 @@ data Error
     | NotFunction Type
     | NotProduct Type
     | NotValueType
+    | NotLinear Exp
     | ParseError String
     | Fail String
 
@@ -136,11 +138,11 @@ typecheck = tc 0
         gateType' n = foldr (:><) TypeQBit (replicate (n-1) TypeQBit)
         gateType  n = gateType' n :=> gateType' n
 
-        tc i = case e of
+        tc i = \case
             Unit   -> return TypeUnit
-            Bit _  -> return TypeDup TypeBit
-            New    -> return TypeBit :=> TypeQBit
-            Meas   -> return TypeQBit :=> TypeBit
+            Bit _  -> return $ TypeDup TypeBit
+            New    -> return $ TypeBit :=> TypeQBit
+            Meas   -> return $ TypeQBit :=> TypeBit
             Gate g -> return . gateType $ case g of
                             FREDKIN -> 3
                             TOFFOLI -> 3
@@ -149,13 +151,13 @@ typecheck = tc 0
                             _       -> 1
 
             Abs t e -> do
-                linEnv <- get 
+                -- linEnv <- get 
                 -- Lägga till med count 0. 
-                linEnv' = M.insert linEnv (Bound i) 0
-
-                rhs <- inEnv (Bound i) t (tc (i+1) e) -- | Skapa ny i counter mapp. 
-                linEnv <- getITAgain
-                count = M.lookup linEnv (Bound i)
+                -- let linEnv' = M.insert linEnv (Bound i) 0
+                checkLinear e t
+                rhs <- inEnv (Bound i) t (tc (i+1) e) -- Skapa ny i counter mapp. 
+                -- linEnv <- getITAgain
+                -- let count = M.lookup linEnv (Bound i)
 
                 return (t :=> rhs)
 
@@ -192,10 +194,19 @@ typecheck = tc 0
             Idx  j -> lookupVar (Bound (i-j-1)) -- +1 
             QVar x -> lookupVar (Free  x)
 
-countOccurance :: Integer -> Exp -> M.Map Named Int
-countOccurance = undefined
--- \x. (\x.x) (\x.x)
+checkLinear :: Exp -> Type -> Check ()
+checkLinear e = \case
+    TypeDup t -> return ()
+    _notdup   -> if countOccurance e <= 1
+                    then return ()
+                    else throwError $ NotLinear e
 
+countOccurance :: Exp -> Integer
+countOccurance = cO 0
+    where cO i = \case
+            Idx   j -> if i - j == 0 then 1 else 0
+            Abs _ e -> cO (i+1) e
+            App l r -> cO i l + cO i r
 
 test1, test2, test3, test4, test5, test6, test7, test8, test9 :: (String, Exp)
 test1 = ("test1",Abs TypeBit (App New (Bit 0)))
@@ -210,7 +221,7 @@ test9 = ("test9",IfEl New (App New (Bit 0)) (Bit 1))
 test10 = ("test10", Abs (TypeQBit :=> TypeBit) (App (Idx 0) (App New (Bit 0))))
 
 runCheck :: Check a -> Either Error a
-runCheck c = runState (runReaderT (runExceptT c) M.empty) M.empty
+runCheck c = evalState (runReaderT (runExceptT c) M.empty) M.empty
 
 check :: Exp -> IO ()
 check e = case runCheck (typecheck e) of
@@ -235,7 +246,7 @@ instance Show Value where
     show (VTup bs)   = show bs
     show (VQBit q)   = show q
     show VUnit       = "*"
-    show (VFunc t _ e) = case runCheck (typecheck (Abs t e) M.empty) of
+    show (VFunc t _ e) = case runCheck (typecheck (Abs t e)) of
         Right t' -> show t'
 
 type Eval = SymT Exp Q.QM Value
@@ -438,9 +449,11 @@ type' :: Parser Type
 type' = Ex.buildExpressionParser tyops tyatom
   where
     infixOp x f = Ex.Infix (reservedOp x >> return f)
+    prefixOp x f = Ex.Prefix (reservedOp x >> return f)
     tyops = [
         [infixOp "-o" (:=>) Ex.AssocRight],
-        [infixOp "><" (:><) Ex.AssocRight]
+        [infixOp "><" (:><) Ex.AssocRight],
+        [prefixOp "!" TypeDup            ]
       ]
 
 parseExpr :: String -> Either Error Exp
