@@ -137,7 +137,7 @@ eval ctx = \case
     A.IfEl bit l r -> do
         VBit b <- eval ctx bit 
         eval ctx $ if b == 1 then l else r
-        
+
     A.Let eq inn -> do 
         VTup [x1, x2] <- eval ctx eq 
         eval ctx{ values = x2 : x1 : values ctx } inn

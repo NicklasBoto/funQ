@@ -8,7 +8,7 @@ TTup  . Term3 ::= Tup                                                 ;
 TStar . Term3 ::= "*"                                                 ;
 TApp  . Term2 ::= Term2 Term3                                         ; 
 TIfEl . Term1 ::= "if" Term2 "then" Term "else" Term                  ; 
-TLet  . Term1 ::= "let" "(" Var "," Var ")" "=" Term2 "in" Term       ;
+TLet  . Term1 ::= "let" "(" Var "," Var ")" "=" Term "in" Term        ;
 TLamb . Term1 ::= Lambda Var "." Term                                 ; 
 coercions Term 3;
 

@@ -2,4 +2,4 @@ id : QBit -o Bit
 id b = meas (I b)
 
 main : Bit 
-main = id (new 1)
+main = id (new 1) -- 1

@@ -23,8 +23,12 @@ goodTests = [
     (testPath "equals1.fq", "1"), 
     (testPath "id.fq",      "1"),
     (testPath "let-tupple0.fq",     "0"),
-    (testPath "let-tupple1.fq",     "1")
+    (testPath "let-tupple1.fq",     "1"),
+    (testPath "let-tupple-Qbit0.fq","0"),
+    (testPath "let-tupple-Qbit1.fq","1"),
     --(testPath "plus.fq",    "0"),
+    (testPath "cnot2.fq","0"),
+    (testPath "second.fq","1")
     --(testPath "cnot.fq",    "0")
     --(testPath "pauliX.fq",  "0")
     ]

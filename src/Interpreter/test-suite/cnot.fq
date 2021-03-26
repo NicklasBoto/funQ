@@ -1,5 +1,5 @@
-cnot : Bit -o Bit -o (QBit >< QBit)
-cnot a b = CNOT (new a, new b)
+cnot : QBit -o QBit -o (QBit >< QBit)
+cnot a b = CNOT (a, b)
 
 main : Bit
-main = let (x,y) = cnot 1 1 in (meas y)
+main = let (x,y) = (cnot (new 1) (new 1)) in (meas y)

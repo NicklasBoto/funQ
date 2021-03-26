@@ -1,0 +1,2 @@
+main : Bit 
+main = let (x,y) = CNOT ((new 1), (new 1)) in meas y -- 0
