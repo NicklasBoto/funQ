@@ -36,6 +36,7 @@ data Error
     | NotApplied String
     | Fail String
     | IndexTooLarge String
+    | ShowX12 String
      deriving Show
 
 type Sig = M.Map String A.Term
@@ -87,7 +88,7 @@ eval ctx = \case
         if fromIntegral j >= length (values ctx) then do
             throwError $ IndexTooLarge $ "Index " ++ show j ++ " too large, Values=" ++ concat (map show (values ctx))
          else do 
-             return $ values ctx !! fromInteger j
+             return $ values ctx !! (fromIntegral j)
 
     A.Fun s -> case M.lookup s (functions ctx) of
         Just t  -> eval ctx t
@@ -133,14 +134,30 @@ eval ctx = \case
         VFunc _ a <- eval ctx e1
         v <- eval ctx e2
         eval ctx{ values = v : values ctx } a
-    
+
     A.IfEl bit l r -> do
         VBit b <- eval ctx bit 
         eval ctx $ if b == 1 then l else r
 
     A.Let eq inn -> do 
-        VTup [x1, x2] <- eval ctx eq 
-        eval ctx{ values = x2 : x1 : values ctx } inn
+         VTup [x1, x2] <- eval ctx eq 
+         throwError $ ShowX12 $ "x1: " ++ show x1 ++ " x2: " ++ show x2
+         eval ctx{ values = x2 : x1 : values ctx } inn
+    -- Två problem: 
+    -- 1. bara 1 qbit i values (borde vara två, x1 och x2 läggs in)   
+    -- 2. Index är alltid 1, oavsett om vi mäter x eller y (ska vara 1 för x, 0 för y)  
+    -- 
+
+    -- [
+    -- cnot : TypeFunc TypeQbit (TypeFunc TypeQbit (TypeTens TypeQbit TypeQbit))
+    -- cnot = λ λ GCNOT [1,0]
+    -- ,
+    -- main : TypeBit
+    -- main = let cnot new BOne new BOne in measure 1
+    -- ]
+    -- INTERPRETER ERROR
+    -- IndexTooLarge "Index 1 too large, Values=Ptr {link = 1}"
+    -- *** Exception: INTERPRETER ERROR
 
     A.Abs e  -> return $ VFunc (values ctx) e
 

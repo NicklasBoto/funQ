@@ -75,12 +75,23 @@ makeImTerm env (P.TVar var) = case M.lookup (name var) env of
     Nothing  -> Fun (name var)
 makeImTerm env (P.TIfEl cond true false) = 
     IfEl (makeImTerm env cond) (makeImTerm env true) (makeImTerm env false)
+-- makeImTerm env (P.TLet x y eq inn) = App (Abs (Abs (makeImTerm env' inn))) (makeImTerm env eq)   
+--     where env' = M.insert (name y) 0 $ M.insert (name x) 1 (M.map (succ . succ) env)
+-- (\x.\y.meas y) (cnot (new 1) (new 1))
+-- P.TLet x y (cnot (new 1) (new 1)) (meas y) 
+--  A let name = eq in inn becomes (λ name → inn) eq.
+-- Ursprunglig: 
 makeImTerm env (P.TLet x y eq inn) = Let (makeImTerm env eq) (makeImTerm env' inn)
     where env' = M.insert (name y) 0 $ M.insert (name x) 1 (M.map (succ . succ) env)
 makeImTerm env (P.TTup t) = Tup $ tupmap (makeImTerm env) t
 makeImTerm _env (P.TBit b) = Bit b
 makeImTerm _env (P.TGate g) = Gate g
 makeImTerm _env P.TStar = Void
+
+-- let (x,y) = eq in inn
+-- let (x,y) = Tup (a,b) in inn
+-- (\x.\y.inn) (Tup (a,b))
+-- inn[x:=a, y:=b]
 
 -- | Convert a function to intermediate abstract syntax (lambdaized, with de Bruijn indices)
 makeImFunction :: P.FunDec -> Function 

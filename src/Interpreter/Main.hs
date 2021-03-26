@@ -33,5 +33,5 @@ parse s = case pProgram (myLexer s) of
     putStrLn err
     error "SYNTAX ERROR"
   Right prg -> do
-    -- putStrLn $ show prg
+    putStrLn $ show $ A.toIm prg
     return prg

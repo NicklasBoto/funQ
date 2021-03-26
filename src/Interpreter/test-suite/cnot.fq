@@ -2,4 +2,4 @@ cnot : QBit -o QBit -o (QBit >< QBit)
 cnot a b = CNOT (a, b)
 
 main : Bit
-main = let (x,y) = (cnot (new 1) (new 1)) in (meas y)
+main = let (x,y) = (cnot (new 1) (new 1)) in (meas x)

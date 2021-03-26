@@ -33,7 +33,6 @@ library
       AST.AST
       FunQ
       Interpreter.Interpreter
-      Interpreter.InterpreterJoelMatilda
       Interpreter.Main
       Interpreter.TestRunner
       Lib.Core
