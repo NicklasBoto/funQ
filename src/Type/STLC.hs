@@ -3,6 +3,7 @@
 module Type.STLC where
 
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
@@ -30,6 +31,7 @@ data Error
     | NotProduct Type
     | NotValueType
     | NotLinear Exp
+    | MultipleDeclarations String
     | ParseError String
     | Fail String
 
@@ -50,8 +52,13 @@ instance Show Error where
     show (NotProduct t) =
         "Not a factorizable type '" ++ show t ++ "'"
 
+    show (NotLinear e) =
+        "Expression breaks linearity constraint: " ++ show e
+
     show (Fail s) =
         "Something went wrong\n" ++ s
+
+    show (NotFunction t) = show t ++ " is not a function!"
 
 data Type
     = Type :=> Type
@@ -118,7 +125,7 @@ instance Show Exp where
 type SymT e m = ExceptT Error (ReaderT (M.Map Named e) m)
 
 -- type Check = SymT Type Identity
-type Check a = ExceptT Error (ReaderT (M.Map Named Type) (State (M.Map Named Int))) a
+type Check a = ExceptT Error (ReaderT (M.Map Named Type) (State (S.Set String))) a
 
 inEnv :: Named -> Type -> Check a -> Check a
 inEnv x t = local (M.insert x t)
@@ -141,8 +148,8 @@ typecheck = tc 0
         tc i = \case
             Unit   -> return TypeUnit
             Bit _  -> return $ TypeDup TypeBit
-            New    -> return $ TypeBit :=> TypeQBit
-            Meas   -> return $ TypeQBit :=> TypeBit
+            New    -> return $ TypeDup (TypeBit :=> TypeQBit)
+            Meas   -> return $ TypeDup (TypeQBit :=> TypeDup TypeBit)
             Gate g -> return . gateType $ case g of
                             FREDKIN -> 3
                             TOFFOLI -> 3
@@ -164,13 +171,13 @@ typecheck = tc 0
             App e1 e2 -> do
                 t1 <- tc i e1
                 t2 <- tc i e2
-                case t1 of
-                    (n :=> p) | n == t2   -> return p
+                case funcType t1 of  -- typedup (n := p)
+                    (n :=> p) | t1 <: t1 && t2 <: n   -> return p
                               | otherwise -> throwError $ Mismatch n t2
                     ty -> throwError $ NotFunction ty
 
             Tup es -> foldr1 (:><) <$> mapM (tc i) es
-
+            
             IfEl b t f -> do
                 tt <- tc i t
                 tf <- tc i f
@@ -192,7 +199,47 @@ typecheck = tc 0
                 --         G1, G2 |- let (x1,x2) = M in N : A
 
             Idx  j -> lookupVar (Bound (i-j-1)) -- +1 
-            QVar x -> lookupVar (Free  x)
+            QVar x -> do
+                tx <- lookupVar (Free x)
+                case tx of 
+                    (TypeDup t) -> return tx 
+                    t           -> do 
+                         linEnv <- get 
+                         if S.member x linEnv
+                             then throwError $ NotLinear (QVar x)
+                             else modify (S.insert x) >> return tx 
+
+
+funcType :: Type -> Type
+funcType (TypeDup t@(n :=> p)) = t 
+funcType t = t
+
+-- f : !(Bit -o Bit)
+-- f x = x
+
+-- f : let 
+
+-- f : A -o ((A >< B) -o A)
+-- f a b = a
+-- f = (\a : A. \b : A >< B -o A. a)
+
+-- f : !(Bit -o QBit)
+-- f = new
+
+-- q : QBit
+-- q = new 0
+
+-- \x . x
+
+-- Function Bit -o Bit (\x : Bit . x)
+
+-- | Subtyping relation from QLambda 4.1
+(<:) :: Type -> Type -> Bool
+TypeDup a <: TypeDup b     = TypeDup a <: b
+TypeDup a <:         b     = a <: b
+(a1 :>< a2) <: (b1 :>< b2) = a1 <: b1 && a2 <: b2
+(a' :=>  b) <: (a :=>  b') = a <: a' && b <: b'
+a           <:  b          = a == b
 
 checkLinear :: Exp -> Type -> Check ()
 checkLinear e = \case
@@ -204,10 +251,17 @@ checkLinear e = \case
 countOccurance :: Exp -> Integer
 countOccurance = cO 0
     where cO i = \case
-            Idx   j -> if i - j == 0 then 1 else 0
-            Abs _ e -> cO (i+1) e
-            App l r -> cO i l + cO i r
+            Idx   j    -> if i - j == 0 then 1 else 0
+            Abs _ e    -> cO (i+1) e
+            App l r    -> cO i l + cO i r
+            IfEl b t f -> cO i b + max (cO i t) (cO i f)
+            Tup xs     -> sum $ map (cO i) xs
+            Let _ e    -> cO (i+2) e -- FIXME
+            -- \x . let (a,b) = x in M
+            e -> 0
 
+-- !(A >< B) ≃ (!A >< !B) 
+-- !((A >< B >< C >< D)         
 test1, test2, test3, test4, test5, test6, test7, test8, test9 :: (String, Exp)
 test1 = ("test1",Abs TypeBit (App New (Bit 0)))
 test2 = ("test2",Abs TypeBit (App (Abs TypeBit (Idx 1)) (Bit 0)))
@@ -221,7 +275,7 @@ test9 = ("test9",IfEl New (App New (Bit 0)) (Bit 1))
 test10 = ("test10", Abs (TypeQBit :=> TypeBit) (App (Idx 0) (App New (Bit 0))))
 
 runCheck :: Check a -> Either Error a
-runCheck c = evalState (runReaderT (runExceptT c) M.empty) M.empty
+runCheck c = evalState (runReaderT (runExceptT c) M.empty) S.empty
 
 check :: Exp -> IO ()
 check e = case runCheck (typecheck e) of
