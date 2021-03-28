@@ -1,4 +1,4 @@
-(\x : Bit . 
+(\x : !Bit . 
     (\a : Bit . \b : Bit . 
         if a 
         then (if b then 0 else 1) 

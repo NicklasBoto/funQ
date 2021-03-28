@@ -13,6 +13,3 @@ correction q bits = let (a,b) = bits in
 
 teleport : QBit -o QBit
 teleport psi = let (a,b) = epr * in correction b (bellMeasure a psi)
-
-x : Bit -o Bit
-x a = a

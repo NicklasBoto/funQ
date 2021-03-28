@@ -72,7 +72,7 @@ data Type
 instance Show Type where
     show (n :=> p) = show n ++ " ⊸ " ++ show p
     show (a :>< b) = show a ++ " ⊗  " ++ show b
-    show (TypeDup t) = "! " ++ show t
+    show (TypeDup t) = "!" ++ show t
     show TypeBit = "Bit"
     show TypeQBit = "QBit"
     show TypeUnit = "⊤"
@@ -144,6 +144,9 @@ typecheck = tc 0
     where
         gateType' n = foldr (:><) TypeQBit (replicate (n-1) TypeQBit)
         gateType  n = gateType' n :=> gateType' n
+        
+        funcType (TypeDup t@(n :=> p)) = t 
+        funcType t = t
 
         tc i = \case
             Unit   -> return TypeUnit
@@ -158,21 +161,15 @@ typecheck = tc 0
                             _       -> 1
 
             Abs t e -> do
-                -- linEnv <- get 
-                -- Lägga till med count 0. 
-                -- let linEnv' = M.insert linEnv (Bound i) 0
                 checkLinear e t
                 rhs <- inEnv (Bound i) t (tc (i+1) e) -- Skapa ny i counter mapp. 
-                -- linEnv <- getITAgain
-                -- let count = M.lookup linEnv (Bound i)
-
                 return (t :=> rhs)
 
             App e1 e2 -> do
                 t1 <- tc i e1
                 t2 <- tc i e2
                 case funcType t1 of  -- typedup (n := p)
-                    (n :=> p) | t1 <: t1 && t2 <: n   -> return p
+                    (n :=> p) | t2 <: n   -> return p
                               | otherwise -> throwError $ Mismatch n t2
                     ty -> throwError $ NotFunction ty
 
@@ -199,6 +196,7 @@ typecheck = tc 0
                 --         G1, G2 |- let (x1,x2) = M in N : A
 
             Idx  j -> lookupVar (Bound (i-j-1)) -- +1 
+
             QVar x -> do
                 tx <- lookupVar (Free x)
                 case tx of 
@@ -209,10 +207,6 @@ typecheck = tc 0
                              then throwError $ NotLinear (QVar x)
                              else modify (S.insert x) >> return tx 
 
-
-funcType :: Type -> Type
-funcType (TypeDup t@(n :=> p)) = t 
-funcType t = t
 
 -- f : !(Bit -o Bit)
 -- f x = x
@@ -235,21 +229,22 @@ funcType t = t
 
 -- | Subtyping relation from QLambda 4.1
 (<:) :: Type -> Type -> Bool
-TypeDup a <: TypeDup b     = TypeDup a <: b
-TypeDup a <:         b     = a <: b
+TypeDup  a  <: TypeDup b   = TypeDup a <: b
+TypeDup  a  <:         b   = a  <: b
 (a1 :>< a2) <: (b1 :>< b2) = a1 <: b1 && a2 <: b2
-(a' :=>  b) <: (a :=>  b') = a <: a' && b <: b'
+(a' :=>  b) <: (a :=>  b') = a  <: a' && b  <: b'
 a           <:  b          = a == b
 
 checkLinear :: Exp -> Type -> Check ()
 checkLinear e = \case
     TypeDup t -> return ()
-    _notdup   -> if countOccurance e <= 1
+    _notdup   -> if headCount e <= 1
                     then return ()
                     else throwError $ NotLinear e
 
-countOccurance :: Exp -> Integer
-countOccurance = cO 0
+-- | The number of variables bound to the head
+headCount :: Exp -> Integer
+headCount = cO 0
     where cO i = \case
             Idx   j    -> if i - j == 0 then 1 else 0
             Abs _ e    -> cO (i+1) e
@@ -302,6 +297,7 @@ instance Show Value where
     show VUnit       = "*"
     show (VFunc t _ e) = case runCheck (typecheck (Abs t e)) of
         Right t' -> show t'
+        Left err -> show err
 
 type Eval = SymT Exp Q.QM Value
 
@@ -340,8 +336,8 @@ evl vs = \case
         
     App e1 e2 -> do
         VFunc _ e a <- evl vs e1
-        v <- evl vs e2
-        evl (v : vs) a
+        v <- evl e e2
+        evl (v : e) a
 
     IfEl bit l r -> do
         VBit b <- evl vs bit 
@@ -440,6 +436,7 @@ gate =  (reservedOp "H" >> return (PGate H))
 op :: Parser PExp
 op =  (reservedOp "new" >> return PNew)
   <|> (reservedOp "measure" >> return PMeas)
+  <|> (reservedOp "*" >> return PUnit)
 
 brackets = Tok.brackets lexer
 comma = Tok.comma lexer
@@ -498,6 +495,7 @@ tyatom = tylit <|> parens type'
 tylit :: Parser Type
 tylit =  (reservedOp "Bit" >> return TypeBit) 
      <|> (reservedOp "QBit" >> return TypeQBit)
+     <|> (reservedOp "T" >> return TypeUnit)
 
 type' :: Parser Type
 type' = Ex.buildExpressionParser tyops tyatom
