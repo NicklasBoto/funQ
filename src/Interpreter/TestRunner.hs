@@ -1,4 +1,4 @@
-module TestRunner where
+module Interpreter.TestRunner where
 
 {-# LANGUAGE CPP               #-}
 {-# LANGUAGE ViewPatterns      #-}
