@@ -38,21 +38,22 @@ data Term
     | New
     | Meas
     | Void
+    deriving Show
 
 -- | Should be able to print a Term.
-instance Show Term where
-    show (Idx i) = show i
-    show (Fun s) = s
-    show (Bit b) = show b
-    show (Gate g) = show g
-    show (Tup t) = show t
-    show (App l r) = show l ++ " " ++ show r
-    show (IfEl c t f) = "if " ++ show c ++ " then " ++ show t ++ " else " ++ show f
-    show (Let t e) = "let " ++ show t ++ " in " ++ show e
-    show (Abs t) = "λ " ++ show t
-    show New = "new"
-    show Meas = "measure"
-    show Void = "*"
+-- instance Show Term where
+--     show (Idx i) = show i
+--     show (Fun s) = s
+--     show (Bit b) = show b
+--     show (Gate g) = show g
+--     show (Tup t) = show t
+--     show (App l r) = show l ++ " " ++ show r
+--     show (IfEl c t f) = "if " ++ show c ++ " then " ++ show t ++ " else " ++ show f
+--     show (Let t e) = "let " ++ show t ++ " in " ++ show e
+--     show (Abs t) = "λ " ++ show t
+--     show New = "new"
+--     show Meas = "measure"
+--     show Void = "*"  
 
 instance Show Function where
     show (Func n t e) = "\n" ++ n ++ " : " ++ show t ++ "\n"
@@ -75,23 +76,12 @@ makeImTerm env (P.TVar var) = case M.lookup (name var) env of
     Nothing  -> Fun (name var)
 makeImTerm env (P.TIfEl cond true false) = 
     IfEl (makeImTerm env cond) (makeImTerm env true) (makeImTerm env false)
--- makeImTerm env (P.TLet x y eq inn) = App (Abs (Abs (makeImTerm env' inn))) (makeImTerm env eq)   
---     where env' = M.insert (name y) 0 $ M.insert (name x) 1 (M.map (succ . succ) env)
--- (\x.\y.meas y) (cnot (new 1) (new 1))
--- P.TLet x y (cnot (new 1) (new 1)) (meas y) 
---  A let name = eq in inn becomes (λ name → inn) eq.
--- Ursprunglig: 
 makeImTerm env (P.TLet x y eq inn) = Let (makeImTerm env eq) (makeImTerm env' inn)
     where env' = M.insert (name y) 0 $ M.insert (name x) 1 (M.map (succ . succ) env)
 makeImTerm env (P.TTup t) = Tup $ tupmap (makeImTerm env) t
 makeImTerm _env (P.TBit b) = Bit b
 makeImTerm _env (P.TGate g) = Gate g
 makeImTerm _env P.TStar = Void
-
--- let (x,y) = eq in inn
--- let (x,y) = Tup (a,b) in inn
--- (\x.\y.inn) (Tup (a,b))
--- inn[x:=a, y:=b]
 
 -- | Convert a function to intermediate abstract syntax (lambdaized, with de Bruijn indices)
 makeImFunction :: P.FunDec -> Function 
