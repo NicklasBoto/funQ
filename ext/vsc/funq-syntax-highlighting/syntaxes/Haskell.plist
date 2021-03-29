@@ -707,6 +707,12 @@
 				</dict>
 				<dict>
 					<key>match</key>
+					<string>!</string>
+					<key>name</key>
+					<string>keyword.other.arrow.funq</string>
+				</dict>
+				<dict>
+					<key>match</key>
 					<string>=&gt;</string>
 					<key>name</key>
 					<string>keyword.other.big-arrow.funq</string>
