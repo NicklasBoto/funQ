@@ -9,6 +9,7 @@ import Control.Monad.Reader
 import Control.Monad.State
 import Data.List
 import Control.Monad.Identity
+import Data.Bifunctor
 import Text.Parsec hiding ( State )
 import Text.Parsec.String (Parser)
 import Text.Parsec.Language (haskellStyle)
@@ -153,7 +154,7 @@ typecheck = tc 0
             Bit _  -> return $ TypeDup TypeBit
             New    -> return $ TypeDup (TypeBit :=> TypeQBit)
             Meas   -> return $ TypeDup (TypeQBit :=> TypeDup TypeBit)
-            Gate g -> return . gateType $ case g of
+            Gate g -> return . TypeDup . gateType $ case g of
                             FREDKIN -> 3
                             TOFFOLI -> 3
                             SWAP    -> 2
@@ -184,16 +185,15 @@ typecheck = tc 0
                             | otherwise -> throwError $ Mismatch tt tf
                     _ -> throwError $ Mismatch TypeBit tb
             
-            -- let (??) = eq in inn
-            Let eq inn -> tc i eq >>= \case
-                    (a1 :>< a2) -> inEnv (Bound (i+1)) a1 
-                                 $ inEnv (Bound i) a2 (tc (i+2) inn)
+            Let eq inn -> do
+                teq <- tc i eq
+                case teq of
+                    (a1 :>< a2) -> do
+                        checkLinear inn a2
+                        checkLinear (Abs a2 inn) a1
+                        inEnv (Bound (i+1)) a1 $ inEnv (Bound i) a2 (tc (i+2) inn)
 
-                    teq -> throwError $ NotProduct teq
-
-                --  G1 |- M : (A1 >< A2)   G2, x1 : A1, x2 : A2 |- N : a
-                -- ------------------------------------------------------
-                --         G1, G2 |- let (x1,x2) = M in N : A
+                    _ -> throwError $ NotProduct teq
 
             Idx  j -> lookupVar (Bound (i-j-1)) -- +1 
 
@@ -251,9 +251,14 @@ headCount = cO 0
             App l r    -> cO i l + cO i r
             IfEl b t f -> cO i b + max (cO i t) (cO i f)
             Tup xs     -> sum $ map (cO i) xs
-            Let _ e    -> cO (i+2) e -- FIXME
+            Let e1 e2  -> cO i e1 + cO (i+2) e2
             -- \x . let (a,b) = x in M
             e -> 0
+
+hc = Abs (TypeBit :>< TypeBit) (Let (Idx 0) (Tup [Idx 0, Idx 1])) -- \x : Bit . let (a,b) = x in (a,a)
+
+-- \x : (Bit >< Bit) . let (a,b) = x in \.x+a
+
 
 -- !(A >< B) ≃ (!A >< !B) 
 -- !((A >< B >< C >< D)         
@@ -346,6 +351,8 @@ evl vs = \case
     Let eq inn -> do 
         VTup [x1, x2] <- evl vs eq 
         evl (x2 : x1 : vs) inn
+    
+    
 
     _ -> throwError $ Fail "not implemented"
 
@@ -381,6 +388,19 @@ data PExp
     | PVar String
     | PLet String String PExp PExp
     | PIfEl PExp PExp PExp
+
+instance Show PExp where
+    show (PAbs name type' term) = "λ" ++ name ++ " : " ++ show type' ++ " . " ++ show term
+    show (PBit b)               = show b 
+    show PUnit                  = "*" 
+    show PNew                   = "new" 
+    show PMeas                  = "meas" 
+    show (PGate g)              = show g 
+    show (PApp e1 e2)           = show e1 ++ " " ++ show e2 
+    show (PTup e1 e2)           = "(" ++ show e1 ++ "," ++ show e2 ++ ")"
+    show (PVar s)               = s
+    show (PLet a b eq inn)      = "let (" ++ a ++ "," ++ b ++ ")" ++ " = " ++ show eq ++ " in " ++ show inn
+    show (PIfEl b l r)          = "if " ++  show b ++ " then " ++ show l ++ " else " ++ show r
 
 lexer :: Tok.TokenParser ()
 lexer = Tok.makeTokenParser style
@@ -440,6 +460,7 @@ op =  (reservedOp "new" >> return PNew)
 
 brackets = Tok.brackets lexer
 comma = Tok.comma lexer
+semi = Tok.semi lexer
 
 ----tup :: Parser PExp
 --tup = Tup <$> brackets (sepBy1 expr comma)
@@ -462,16 +483,13 @@ ifel = do
 plet :: Parser PExp
 plet = do
     reservedOp "let"
-    reserved "["
     x1 <- identifier
-    reserved ","
     x2 <- identifier
-    reserved "]"
     reservedOp "="
     eq <- term
     reservedOp "in"
     inn <- term
-    return $ PLet x1 x2 eq inn
+    return $ PLet x2 x1 eq inn
 
 term :: Parser PExp
 term =  parens expr
@@ -488,6 +506,13 @@ expr :: Parser PExp
 expr = do
   es <- many1 term
   return (foldl1 PApp es)
+
+func :: Parser (String, PExp)
+func = do
+    name <- identifier
+    reservedOp ":="
+    term <- expr
+    return (name, term)
 
 tyatom :: Parser Type
 tyatom = tylit <|> parens type'
@@ -513,6 +538,11 @@ parseExpr input = case parse (contents expr) "<stdin>" input of
     Left  err -> Left . ParseError . show $ err
     Right exp -> Right $ convertExp M.empty exp
 
+parseProg :: String -> Either Error Program
+parseProg input = case parse (contents (sepEndBy func semi)) "<stdin>" input of
+    Left  err -> Left . ParseError . show $ err
+    Right prg -> Right $ map (second (convertExp M.empty)) prg
+    
 convertExp :: M.Map String Integer -> PExp -> Exp
 convertExp env (PAbs var typ term) = Abs typ $ convertExp env' term
     where env' = M.insert var 0 (M.map succ env)
@@ -531,17 +561,41 @@ convertExp env (PBit b) = Bit b
 convertExp env (PGate g) = Gate g
 convertExp env PUnit = Unit
 
-run :: String -> IO ()
-run prg = case runE prg of
+type Program = [(String, Exp)]
+
+runExp  :: String -> IO ()
+runExp prg = case runE prg of
         Left  err   -> putStrLn $ "*** Exception:\n" ++ show err
         Right (e,t) -> do
             Right v <- runEval prg
-            putStrLn $ "foo" ++ " : " ++ show t ++ "\n"
-                    ++ "foo" ++ " = " ++ show e ++ "\n\n"
+            putStrLn $ "foo : " ++ show t ++ "\n"
+                    ++ "foo = " ++ show e ++ "\n\n"
                     ++ "Result: " ++ show v
 
 runFile :: FilePath -> IO ()
 runFile path = run =<< readFile path
+
+showTyped :: (Named, Type) -> String
+showTyped (Free n,t) = n ++ " : " ++ show t
+
+run :: String -> IO ()
+run prog = do
+    let parsed = case parseProg prog of
+                    Left  e -> error $ show e
+                    Right p -> p
+    let ts = M.toList $ buildEnv parsed 
+    let sts = intercalate "\n" (map showTyped ts)
+    putStrLn sts 
+
+
+
+buildEnv :: Program -> M.Map Named Type
+buildEnv = foldl addToEnv M.empty 
+
+addToEnv :: M.Map Named Type -> (String, Exp) -> M.Map Named Type
+addToEnv env (name, term) = case evalState (runReaderT (runExceptT (typecheck term)) env) S.empty of
+    Left err -> error $ show err
+    Right  t -> M.insert (Free name) t env
 
 run1, run2, run3, run4, run5 :: String
 run1 = "\\x : Bit . new 0"
@@ -557,3 +611,32 @@ plus = "(\\x : Bit . (\\x : Bit . \\y : Bit . if x then (if y then 0 else 1) els
 
 -- duplicate   : QBit -o QBit >< QBit
 -- duplicate q = (q,q)
+
+reverseExp :: Integer -> Exp -> PExp 
+reverseExp i (Idx j)       = PVar $ 'x' : show (i - j - 1)
+reverseExp i (QVar s)      = PVar s
+reverseExp i (Bit b)       = PBit b 
+reverseExp i (Gate g)      = PGate g 
+reverseExp i (Tup xs)      = foldr1 PTup $ map (reverseExp i) xs
+reverseExp i (App e1 e2)   = PApp (reverseExp i e1) (reverseExp i e2) 
+reverseExp i (IfEl c t f)  = PIfEl (reverseExp i c) (reverseExp i t) (reverseExp i f)  
+reverseExp i (Let eq inn)  = PLet ('x' : show (i + 1)) ('x' : show i) (reverseExp i eq) (reverseExp (i + 2) inn)
+reverseExp i (Abs t e)     = PAbs ('x' : show i) t (reverseExp (i+1) e)
+reverseExp i New           = PNew
+reverseExp i Meas          = PMeas 
+reverseExp i Unit          = PUnit 
+
+
+-- reverseImTerm :: Integer -> Term -> P.Term
+-- reverseImTerm env (Idx idx)    = P.TVar $ P.Var $ 'x' : show (env - idx - 1)
+-- reverseImTerm env (QVar s)     = P.TVar $ P.Var s
+-- reverseImTerm env (Bit b)      = P.TBit b
+-- reverseImTerm env (Gate g)     = P.TGate g
+-- reverseImTerm env (Tup (x:xs)) = P.TTup $ P.Tuple (reverseImTerm env x) (map (reverseImTerm env) xs)
+-- reverseImTerm env (App  t1 t2) = P.TApp (reverseImTerm env t1) (reverseImTerm env t2)
+-- reverseImTerm env (IfEl c t e) = P.TIfEl (reverseImTerm env c) (reverseImTerm env t) (reverseImTerm env e)
+-- reverseImTerm env (Let eq inn) = P.TLet (P.Var ('x' : show (env + 1))) (P.Var ('x' : show env)) (reverseImTerm env eq) (reverseImTerm (env + 2) inn)
+-- reverseImTerm env (Abs  term)  = P.TLamb (P.Lambda "\\") (P.Var ('x' : show env)) (reverseImTerm (env+1) term)
+-- reverseImTerm env New          = P.TVar (P.Var "new")
+-- reverseImTerm env Meas         = P.TVar (P.Var "meas")
+-- reverseImTerm env Unit         = P.TStar
