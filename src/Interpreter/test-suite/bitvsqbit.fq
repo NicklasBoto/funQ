@@ -1,5 +1,0 @@
-had : QBit -o Bit
-had a = H a
-
-main : Bit
-main = let (x,y) = (0, 1) in x

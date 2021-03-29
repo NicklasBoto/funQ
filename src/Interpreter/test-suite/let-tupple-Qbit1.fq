@@ -1,2 +1,0 @@
-main : Bit 
-main = let (x,y) = (new 0, new 1) in meas y -- 1

@@ -1,4 +1,3 @@
-
 second : Bit -o Bit -o Bit
 second x y = y 
 

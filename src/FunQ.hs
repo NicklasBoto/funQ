@@ -17,6 +17,7 @@ module FunQ
     , QBit
     , Bit
     , QM
+    , io
     
     -- * Gates
     , pauliX
@@ -46,7 +47,7 @@ module FunQ
     ) where
 
 import Control.Monad ( replicateM, mapM )
-import Lib.QM ( QM, QBit, run, runDebug )
+import Lib.QM ( QM, QBit, run, runDebug, io)
 import Lib.Core
     ( Bit,
       new,

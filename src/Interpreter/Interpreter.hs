@@ -21,7 +21,6 @@ import qualified AST.AST as A
 -- TODO:
 -- test suite
 -- generell run gate (för att få med quantum fourier, genom Runnable TypeClass ex)
--- teleportera 1, och få 1
 
 -- När vi tycker interpreter är klar! 
 -- main driver: egen fil? turtle och haskelline? 
@@ -45,7 +44,7 @@ type Eval a = ExceptT Error Q.QM a
 
 data Ctx = Ctx {
       values    :: [Value]
-    , functions :: Sig 
+    , functions :: Sig
 }
 
 instance Show Value where
@@ -80,19 +79,19 @@ data Value
     | VQBit Q.QBit
     | VUnit
     | VTup [Value]
-    | VFunc [Value] A.Term -- could [Value] be removed?
+    | VFunc [Value] A.Term 
 
-eval :: Ctx -> A.Term -> Eval Value     
+eval :: Ctx -> A.Term -> Eval Value
 eval ctx = \case
     A.Idx j -> do
         if fromIntegral j >= length (values ctx) then do
             throwError $ IndexTooLarge $ "Index " ++ show j ++ " too large, Values=" ++ concat (map show (values ctx))
-         else do 
+         else do
              return $ values ctx !! (fromIntegral j)
 
     A.Fun s -> case M.lookup s (functions ctx) of
         Just t  -> eval ctx t
-        Nothing -> throwError $ NotFunction $ "Function " ++ show s ++ " is not defined" 
+        Nothing -> throwError $ NotFunction $ "Function " ++ show s ++ " is not defined"
 
     A.Bit BZero -> return $ VBit 0
     A.Bit BOne -> return $ VBit 1
@@ -110,7 +109,7 @@ eval ctx = \case
          Abs.GCNOT -> run2Gate Q.cnot q ctx
          Abs.GTOF  -> run3Gate Q.toffoli q ctx
          Abs.GSWP  -> run2Gate Q.swap q ctx
-         Abs.GFRDK -> run3Gate Q.fredkin q ctx      
+         Abs.GFRDK -> run3Gate Q.fredkin q ctx
         -- GGate GateIdent
         --  , phasePi8
         --  , urot
@@ -119,7 +118,7 @@ eval ctx = \case
 
         -- typeclass runnable, ta in gate och a, spotta ut QM a
         -- kan definiera olika fel
-        
+
     A.App A.New b -> do
         VBit b' <- eval ctx b
         q <- lift $ Q.new b'
@@ -127,61 +126,23 @@ eval ctx = \case
 
     A.App A.Meas q -> do
         VQBit q' <- eval ctx q
-        b <- lift $ Q.measure q' 
+        b <- lift $ Q.measure q'
         return $ VBit b
 
     A.App e1 e2 -> do
-        v <- eval ctx e2
-        VFunc _ a <- eval ctx e1
-        eval ctx{ values = v : values ctx } a
-
-        -- let (VFunc _ a) = e1
-        -- evaluera argumenten
-        -- v <- eval ctx e2
-
-        -- -- lägga till i en kontext
-        -- let newContext = ctx{ values = v : values ctx }
-
-        -- -- hämta ut e1 termen
-        -- VFunc vals a <- eval newContext e1
-
-        -- -- eval ctx{values = vals} a
-        -- eval newContext a
-        -- eval newContext e1
-
-        -- evaluera e1 med uppdaterade kontexten
-
-        -- VFunc _ a <- eval ctx e1 
-
-        -- eval ctx{ values = v : values ctx } a 
+        v2 <- eval ctx e2
+        VFunc v1 a <- eval ctx e1
+        eval ctx{ values = v2 : v1 ++ values ctx} a
 
     A.IfEl bit l r -> do
-        VBit b <- eval ctx bit 
+        VBit b <- eval ctx bit
         eval ctx $ if b == 1 then l else r
 
-    A.Let eq inn -> do 
-         --throwError $ ShowX12 "Before eval ctx eq"
-         VTup [x1, x2] <- eval ctx eq 
-         -- throwError $ ShowX12 $ "x1: " ++ show x1 ++ " x2: " ++ show x2
+    A.Let eq inn -> do
+         VTup [x1, x2] <- eval ctx eq
          eval ctx{ values = x2 : x1 : values ctx } inn
-    -- Två problem: 
-    -- 1. bara 1 qbit i values (borde vara två, x1 och x2 läggs in)   
-    -- 2. Index är alltid 1, oavsett om vi mäter x eller y (ska vara 1 för x, 0 för y)  
-    -- 
-
-    -- [
-    -- cnot : TypeFunc TypeQbit (TypeFunc TypeQbit (TypeTens TypeQbit TypeQbit))
-    -- cnot = λ λ GCNOT [1,0]
-    -- ,
-    -- main : TypeBit
-    -- main = let cnot new BOne new BOne in measure 1
-    -- ]
-    -- INTERPRETER ERROR
-    -- IndexTooLarge "Index 1 too large, Values=Ptr {link = 1}"
-    -- *** Exception: INTERPRETER ERROR
 
     A.Abs e  -> do
-        throwError $ Fail $ "Eval Abs"
         return $ VFunc (values ctx) e
 
     A.Void   -> return VUnit
@@ -189,13 +150,13 @@ eval ctx = \case
     A.Gate g -> throwError $ NotApplied $ "Gate " ++ show g ++ " must be applied to something"
 
     A.New    -> throwError $ NotApplied "New must be applied to something"
-    
+
     A.Meas   -> throwError $ NotApplied "Meas must be applied to something"
 
 
 runGate :: (Q.QBit -> Q.QM Q.QBit) -> A.Term -> Ctx -> Eval Value
 runGate g q ctx = do
-    VQBit q' <- eval ctx q 
+    VQBit q' <- eval ctx q
     VQBit <$> lift (g q')
 
 run2Gate :: ((Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit)) -> A.Term -> Ctx -> Eval Value
@@ -206,10 +167,10 @@ run2Gate g q ctx = do
         where tupToList (a,b) = [VQBit a,VQBit b]
 
 run3Gate :: ((Q.QBit, Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit, Q.QBit)) -> A.Term -> Ctx -> Eval Value
-run3Gate g q ctx = do 
+run3Gate g q ctx = do
     VTup [VQBit a, VQBit b, VQBit c] <- eval ctx q
     res <- lift $ g (a,b,c)
     return $ VTup (tupToList res)
-        where tupToList (a,b,c) = [VQBit a, VQBit b, VQBit c] 
+        where tupToList (a,b,c) = [VQBit a, VQBit b, VQBit c]
 
 

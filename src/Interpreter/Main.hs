@@ -19,10 +19,10 @@ run fileName = do
     case res of
         Left err -> do
             putStrLn "INTERPRETER ERROR"
-            putStrLn $ show err
+            -- putStrLn $ show err
             error "INTERPRETER ERROR"
         Right i -> do
-            putStrLn $ "Result " ++ show i
+            -- putStrLn $ "Result " ++ show i
             return i
 
 
@@ -33,6 +33,6 @@ parse s = case pProgram (myLexer s) of
     putStrLn err
     error "SYNTAX ERROR"
   Right prg -> do
-    putStrLn $ show prg 
-    putStrLn $ show $ A.toIm prg
+    -- putStrLn $ show prg 
+    -- putStrLn $ show $ A.toIm prg
     return prg
