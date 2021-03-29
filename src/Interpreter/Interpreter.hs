@@ -130,18 +130,39 @@ eval ctx = \case
         b <- lift $ Q.measure q' 
         return $ VBit b
 
-    A.App e1 e2 -> do 
-        VFunc _ a <- eval ctx e1
+    A.App e1 e2 -> do
         v <- eval ctx e2
+        VFunc _ a <- eval ctx e1
         eval ctx{ values = v : values ctx } a
+
+        -- let (VFunc _ a) = e1
+        -- evaluera argumenten
+        -- v <- eval ctx e2
+
+        -- -- lägga till i en kontext
+        -- let newContext = ctx{ values = v : values ctx }
+
+        -- -- hämta ut e1 termen
+        -- VFunc vals a <- eval newContext e1
+
+        -- -- eval ctx{values = vals} a
+        -- eval newContext a
+        -- eval newContext e1
+
+        -- evaluera e1 med uppdaterade kontexten
+
+        -- VFunc _ a <- eval ctx e1 
+
+        -- eval ctx{ values = v : values ctx } a 
 
     A.IfEl bit l r -> do
         VBit b <- eval ctx bit 
         eval ctx $ if b == 1 then l else r
 
     A.Let eq inn -> do 
+         --throwError $ ShowX12 "Before eval ctx eq"
          VTup [x1, x2] <- eval ctx eq 
-         throwError $ ShowX12 $ "x1: " ++ show x1 ++ " x2: " ++ show x2
+         -- throwError $ ShowX12 $ "x1: " ++ show x1 ++ " x2: " ++ show x2
          eval ctx{ values = x2 : x1 : values ctx } inn
     -- Två problem: 
     -- 1. bara 1 qbit i values (borde vara två, x1 och x2 läggs in)   
@@ -159,7 +180,9 @@ eval ctx = \case
     -- IndexTooLarge "Index 1 too large, Values=Ptr {link = 1}"
     -- *** Exception: INTERPRETER ERROR
 
-    A.Abs e  -> return $ VFunc (values ctx) e
+    A.Abs e  -> do
+        throwError $ Fail $ "Eval Abs"
+        return $ VFunc (values ctx) e
 
     A.Void   -> return VUnit
 
@@ -170,7 +193,6 @@ eval ctx = \case
     A.Meas   -> throwError $ NotApplied "Meas must be applied to something"
 
 
--- TODO: refactor more generally!
 runGate :: (Q.QBit -> Q.QM Q.QBit) -> A.Term -> Ctx -> Eval Value
 runGate g q ctx = do
     VQBit q' <- eval ctx q 
