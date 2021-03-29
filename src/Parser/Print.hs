@@ -107,7 +107,7 @@ instance Print Parser.Abs.GateIdent where
   prt _ (Parser.Abs.GateIdent i) = doc $ showString $ i
 
 instance Print Parser.Abs.Lambda where
-  prt _ (Parser.Abs.Lambda i) = doc $ showString $ i
+  prt _ (Parser.Abs.Lambda i) = doc $ showString "λ"
 
 instance Print Parser.Abs.Program where
   prt i e = case e of

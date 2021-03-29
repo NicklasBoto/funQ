@@ -50,7 +50,7 @@ data Term
     | QVar String        -- free
     | Bit  Bit
     | Gate Gate
-    | Tup  [Term]
+    | Tup  Term Term
     | App  Term Term
     | IfEl Term Term Term
     | Let Term Term
@@ -58,7 +58,9 @@ data Term
     | New
     | Meas
     | Unit
-    deriving Show
+
+instance Show Term where
+    show = printTree . reverseImTerm 0
 
 -- | Should be able to print a Term.
 -- instance Show Term where
@@ -87,10 +89,13 @@ data Type
     | TypeDup Type
     | Type :>< Type
     | Type :=> Type
-    deriving (Eq, Ord, Show, Read)
+    deriving (Eq, Ord, Read)
 
 infixr 1 :=>
 infixr 2 :><
+
+instance Show Type where
+    show = printTree . reverseType
 
 -- | Converts from Parser type to our representation of type.
 convertType :: P.Type -> Type
@@ -131,7 +136,7 @@ makeImTerm env (P.TIfEl cond true false) =
     IfEl (makeImTerm env cond) (makeImTerm env true) (makeImTerm env false)
 makeImTerm env (P.TLet x y eq inn) = Let (makeImTerm env eq) (makeImTerm env' inn)
     where env' = M.insert (name y) 1 $ M.insert (name x) 0 (M.map (succ . succ) env)
-makeImTerm env (P.TTup t) = Tup $ tupmap (makeImTerm env) t
+makeImTerm env (P.TTup (P.Tuple t ts)) = foldr1 Tup $ map (makeImTerm env) (t:ts)
 makeImTerm _env (P.TBit b) = Bit b
 makeImTerm _env (P.TGate g) = Gate g
 makeImTerm _env P.TStar = Unit
@@ -167,7 +172,7 @@ reverseImTerm env (Idx idx)    = P.TVar $ P.Var $ 'x' : show (env - idx - 1)
 reverseImTerm env (QVar s)     = P.TVar $ P.Var s
 reverseImTerm env (Bit b)      = P.TBit b
 reverseImTerm env (Gate g)     = P.TGate g
-reverseImTerm env (Tup (x:xs)) = P.TTup $ P.Tuple (reverseImTerm env x) (map (reverseImTerm env) xs)
+reverseImTerm env (Tup l r)    = P.TTup $ P.Tuple (reverseImTerm env l) [reverseImTerm env r] -- FIXME
 reverseImTerm env (App  t1 t2) = P.TApp (reverseImTerm env t1) (reverseImTerm env t2)
 reverseImTerm env (IfEl c t e) = P.TIfEl (reverseImTerm env c) (reverseImTerm env t) (reverseImTerm env e)
 reverseImTerm env (Let eq inn) = P.TLet (P.Var ('x' : show (env + 1))) (P.Var ('x' : show env)) (reverseImTerm env eq) (reverseImTerm (env + 2) inn)
