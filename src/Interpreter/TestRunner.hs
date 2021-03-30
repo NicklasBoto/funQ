@@ -18,48 +18,44 @@ import Data.Monoid
 testPath :: String -> String
 testPath testName = "src/Interpreter/test-suite/" ++ testName
 
-goodTests :: [(FilePath, String)]
-goodTests = [
-    (testPath "cnot.fq", "0"),
-    (testPath "equals.fq", "1"),
-    (testPath "id.fq", "1"),
-    (testPath "let-tup-q.fq", "0"),
-    (testPath "let-tup.fq", "0"),
-    (testPath "pauliX.fq", "1"),     
-    (testPath "plus.fq", "0"),
-    (testPath "second-q.fq", "0"),
-    (testPath "second.fq", "1"),
-    (testPath "third.fq", "1"),
-    (testPath "seventh.fq", "0"),
-    (testPath "teleport.fq", "1")
+tests :: [(FilePath, String)]
+tests = [
+    ("cnot.fq",     "0"),
+    ("equals.fq",   "1"),
+    -- TODO ("fredkin.fq",  "0"), 
+    ("id.fq",       "1"),
+    ("let-tup-q.fq","0"),
+    ("let-tup.fq",  "0"),
+    ("pauliX.fq",   "1"), 
+    ("pauliY.fq",   "1"),     
+    ("pauliZ.fq",   "0"),   
+    ("phase.fq",    "1"),  
+    ("plus.fq",     "0"),
+    ("second-q.fq", "0"),
+    ("second.fq",   "1"),
+    ("seventh.fq",  "0"),
+    ("swap.fq",     "1"),
+    ("swapTwice.fq","1"),
+    ("tdagger.fq",  "1"),
+    ("teleport.fq", "1"),
+    ("third.fq",    "1")
+    -- TODO ("toffoli-fq")
     ]
 
--- runTests :: IO ()
--- runTests = do 
---     mapM_ runTest goodTests
+runTests :: IO ()
+runTests = do 
+    correct <- foldr runTest (return 0) tests
+    putStrLn $ "\nSuccesful tests " ++ show correct ++ "/" ++ show (length tests) ++ "\n"
 
--- runTest :: (FilePath, String) -> Int -> (Int, IO ())
--- runTest (path, expectedValue) = do 
---     res <- run path
---     if show res == expectedValue then putStrLn $ "Test for " ++ show path ++ " successful!" ++ "\n" 
---     else putStrLn $ "Test for " ++ show path ++ " failed! Expected " ++ expectedValue ++ " but got " ++ show res ++ "\n"
-
-
-runTests' :: IO ()
-runTests' = do 
-    --mapM_ runTest goodTests
-    correct <- foldr runTest' (return 0) goodTests
-    putStrLn $ "Succesful tests " ++ show correct ++ "/" ++ show (length goodTests)
-    --return ()
-
--- a = (FilePath,String), b = IO Int 
-runTest' :: (FilePath, String) -> IO Int -> IO Int
-runTest' (path, expectedValue) b = do 
-    res <- run path
+runTest :: (String, String) -> IO Int -> IO Int
+runTest (fileName, expectedValue) b = do 
+    putStrLn $ "file: " ++ fileName
+    res <- run $ testPath fileName
     acc <- b
     if show res == expectedValue then do 
-        putStrLn $ "Test for " ++ show path ++ " successful!" ++ "\n" 
+        putStrLn $ "Test for " ++ fileName ++ " successful!" 
+        putStrLn $ "Got result " ++ show res ++ ", expected " ++ expectedValue ++ "\n"
         return $ acc + 1
     else do 
-        putStrLn $ "Test for " ++ show path ++ " failed! Expected " ++ expectedValue ++ " but got " ++ show res ++ "\n"
+        putStrLn $ "Test for " ++ fileName ++ " failed! Expected " ++ expectedValue ++ " but got " ++ show res
         return acc

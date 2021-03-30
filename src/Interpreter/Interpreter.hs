@@ -19,7 +19,7 @@ import Parser.Abs as Abs
 import qualified AST.AST as A
 
 -- TODO:
--- test suite
+-- test suite; i princip klart, men borde skriva lite större testprogram (likt teleport)
 -- generell run gate (för att få med quantum fourier, genom Runnable TypeClass ex)
 
 -- När vi tycker interpreter är klar! 
@@ -42,7 +42,7 @@ type Sig = M.Map String A.Term
 
 type Eval a = ExceptT Error Q.QM a
 
-data Ctx = Ctx {
+data Env = Env {
       values    :: [Value]
     , functions :: Sig
 }
@@ -57,20 +57,20 @@ instance Show Value where
 -- Main function in interpreter (which we export)
 interpret :: [A.Function] -> Eval Value
 interpret fs = do
-    -- Create context 
-    let ctx = createctxs fs
+    -- Create environment 
+    let env = createEnv fs
     -- Eval main function
-    mainTerm <- getMainTerm ctx
+    mainTerm <- getMainTerm env
     -- Return the return value from main
-    eval ctx mainTerm
+    eval env mainTerm
 
--- | Creates a context from a list of functions. 
-createctxs :: [A.Function] -> Ctx
-createctxs fs = Ctx { functions = M.fromList [(s, t) | (A.Func s _ t) <- fs],
+-- | Creates an environment from a list of functions. 
+createEnv :: [A.Function] -> Env
+createEnv fs = Env { functions = M.fromList [(s, t) | (A.Func s _ t) <- fs],
                             values = []}
 
-getMainTerm :: Ctx -> Eval A.Term
-getMainTerm ctx = case M.lookup "main" (functions ctx) of
+getMainTerm :: Env -> Eval A.Term
+getMainTerm env = case M.lookup "main" (functions env) of
     Just term -> return term
     Nothing   -> throwError $ NoMainFunction "Main function not defined"
 
@@ -81,35 +81,35 @@ data Value
     | VTup [Value]
     | VFunc [Value] A.Term
 
-eval :: Ctx -> A.Term -> Eval Value
-eval ctx = \case
+eval :: Env -> A.Term -> Eval Value
+eval env = \case
     A.Idx j -> do
-        if fromIntegral j >= length (values ctx) then do
-            throwError $ IndexTooLarge $ "Index " ++ show j ++ " too large, Values=" ++ concat (map show (values ctx))
+        if fromIntegral j >= length (values env) then do
+            throwError $ IndexTooLarge $ "Index " ++ show j ++ " too large, Values=" ++ concat (map show (values env))
          else do
-             return $ values ctx !! (fromIntegral j)
+             return $ values env !! (fromIntegral j)
 
-    A.Fun s -> case M.lookup s (functions ctx) of
-        Just t  -> eval ctx t
+    A.Fun s -> case M.lookup s (functions env) of
+        Just t  -> eval env t
         Nothing -> throwError $ NotFunction $ "Function " ++ show s ++ " is not defined"
 
     A.Bit BZero -> return $ VBit 0
     A.Bit BOne -> return $ VBit 1
 
-    A.Tup bs -> VTup <$> mapM (eval ctx) bs
+    A.Tup bs -> VTup <$> mapM (eval env) bs
 
     A.App (A.Gate g) q -> case g of
-         Abs.GH    -> runGate  Q.hadamard q ctx
-         Abs.GX    -> runGate  Q.pauliX q ctx
-         Abs.GY    -> runGate  Q.pauliY q ctx
-         Abs.GZ    -> runGate  Q.pauliZ q ctx
-         Abs.GI    -> runGate  Q.identity q ctx
-         Abs.GT    -> runGate  Q.tdagger q ctx
-         Abs.GS    -> runGate  Q.phase q ctx
-         Abs.GCNOT -> run2Gate Q.cnot q ctx
-         Abs.GTOF  -> run3Gate Q.toffoli q ctx
-         Abs.GSWP  -> run2Gate Q.swap q ctx
-         Abs.GFRDK -> run3Gate Q.fredkin q ctx
+         Abs.GH    -> runGate  Q.hadamard q env
+         Abs.GX    -> runGate  Q.pauliX q env
+         Abs.GY    -> runGate  Q.pauliY q env
+         Abs.GZ    -> runGate  Q.pauliZ q env
+         Abs.GI    -> runGate  Q.identity q env
+         Abs.GT    -> runGate  Q.tdagger q env
+         Abs.GS    -> runGate  Q.phase q env
+         Abs.GCNOT -> run2Gate Q.cnot q env
+         Abs.GTOF  -> run3Gate Q.toffoli q env
+         Abs.GSWP  -> run2Gate Q.swap q env
+         Abs.GFRDK -> run3Gate Q.fredkin q env
         -- GGate GateIdent
         --  , phasePi8
         --  , urot
@@ -120,31 +120,31 @@ eval ctx = \case
         -- kan definiera olika fel
 
     A.App A.New b -> do
-        VBit b' <- eval ctx b
+        VBit b' <- eval env b
         q <- lift $ Q.new b'
         return $ VQBit q
 
     A.App A.Meas q -> do
-        VQBit q' <- eval ctx q
+        VQBit q' <- eval env q
         b <- lift $ Q.measure q'
         return $ VBit b
 
     A.App e1 e2 -> do
-        v2 <- eval ctx e2
+        v2 <- eval env e2
         -- (lift . Q.io . print) $ "v2: " ++ show v2
-        VFunc v1 a <- eval ctx e1
+        VFunc v1 a <- eval env e1
         -- (lift . Q.io . print) $ "a: " ++ show a
-        eval ctx{ values = v2 : v1 ++ values ctx} a
+        eval env{ values = v2 : v1 ++ values env} a
 
     A.IfEl bit l r -> do
-        VBit b <- eval ctx bit
-        eval ctx $ if b == 1 then l else r
+        VBit b <- eval env bit
+        eval env $ if b == 1 then l else r
 
     A.Let eq inn -> do
-         VTup [x1, x2] <- eval ctx eq
-         eval ctx{ values = x2 : x1 : values ctx } inn
+         VTup [x1, x2] <- eval env eq
+         eval env{ values = x2 : x1 : values env } inn
 
-    A.Abs e  -> return $ VFunc (values ctx) e
+    A.Abs e  -> return $ VFunc (values env) e
 
     A.Void   -> return VUnit
 
@@ -154,25 +154,27 @@ eval ctx = \case
 
     A.Meas   -> throwError $ NotApplied "Meas must be applied to something"
 
+printE :: Show a => a -> Eval ()
+printE = (lift . Q.io . putStrLn . show)
 
 tuple :: Read a => [Q.QBit] -> a
 tuple lst = read $ "(" ++ (init . tail . show) lst  ++ ")" 
 
-runGate :: (Q.QBit -> Q.QM Q.QBit) -> A.Term -> Ctx -> Eval Value
-runGate g q ctx = do
-    VQBit q' <- eval ctx q
+runGate :: (Q.QBit -> Q.QM Q.QBit) -> A.Term -> Env -> Eval Value
+runGate g q env = do
+    VQBit q' <- eval env q
     VQBit <$> lift (g q')
 
-run2Gate :: ((Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit)) -> A.Term -> Ctx -> Eval Value
-run2Gate g q ctx = do
-    VTup [VQBit a, VQBit b] <- eval ctx q
+run2Gate :: ((Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit)) -> A.Term -> Env -> Eval Value
+run2Gate g q env = do
+    VTup [VQBit a, VQBit b] <- eval env q
     res <- lift $ g (a,b)
     return $ VTup (tupToList res)
         where tupToList (a,b) = [VQBit a,VQBit b]
 
-run3Gate :: ((Q.QBit, Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit, Q.QBit)) -> A.Term -> Ctx -> Eval Value
-run3Gate g q ctx = do
-    VTup [VQBit a, VQBit b, VQBit c] <- eval ctx q
+run3Gate :: ((Q.QBit, Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit, Q.QBit)) -> A.Term -> Env -> Eval Value
+run3Gate g q env = do
+    VTup [VQBit a, VQBit b, VQBit c] <- eval env q
     res <- lift $ g (a,b,c)
     return $ VTup (tupToList res)
         where tupToList (a,b,c) = [VQBit a, VQBit b, VQBit c]

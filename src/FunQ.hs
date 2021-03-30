@@ -1,3 +1,5 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeFamilies #-}
 {-|
 Module      : FunQ
 Description : Main library
@@ -89,12 +91,25 @@ bellMeasure (x,y) = do
     m_y <- measure y
     return (m_x, m_y)
 
-tuple :: Read a => [QBit] -> a
-tuple lst = read $ "(" ++ (init . tail . show) lst  ++ ")" 
+data Gate a = H a | CNOT a a | TOFF a a a
 
-test :: QM ()
-test = do
-  q <- new 1
-  q' <- new 0
-  cnot $ tuple [q, q']
-  checkState
+type family Tuple t :: * where
+  Tuple [a,a] = (a,a)
+  Tuple [a,a,a] = (a,a,a)
+  Tuple [a,a,a,a] = (a,a,a,a)
+
+-- class Runnable a where
+--   run :: a -> QM a
+
+-- tuple :: Tuple a -> QM (QBit, QBit)
+-- tuple = undefined
+
+-- tuple :: [QBit] -> Tuple t
+-- tuple lst = undefined
+
+-- test :: QM ()
+-- test = do
+--   q <- new 1
+--   q' <- new 0
+--   cnot $ tuple [q, q']
+--   checkState

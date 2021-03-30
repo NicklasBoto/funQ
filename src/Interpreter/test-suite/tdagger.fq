@@ -1,0 +1,5 @@
+tdagger : QBit -o QBit 
+tdagger q = T q 
+
+main : Bit
+main = meas (tdagger (new 1)) -- 1

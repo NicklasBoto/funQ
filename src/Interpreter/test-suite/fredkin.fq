@@ -1,0 +1,14 @@
+fredkin : QBit -o QBit -o QBit -o QBit >< QBit >< QBit
+fredkin a b c = FREDKIN (a,b,c) 
+
+-- fredkin : QBit -o QBit -o QBit -o QBit
+-- fredkin a b c = c
+
+main : Bit 
+main = fredkin (new 1) (new 1) (new 1)
+
+-- let (x,y) = fredkin (new 1) (new 1) (new 1) in let (a,b) = y in (meas b) -- 0
+
+-- let (x,(y,z)) = fredkin (new 1) (new 1) (new 1) in (meas x,(meas y, meas z))
+
+

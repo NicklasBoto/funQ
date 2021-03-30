@@ -91,7 +91,7 @@ instance Monad QM where
         runQM (k a) s'
 
 instance MonadFail QM where 
-    fail = error "Panic behavior!"  
+    fail s = error $ "Panic behavior!" ++ " " ++ s
 
 -- | Perform IO action inside the quantum monad
 io :: IO a -> QM a

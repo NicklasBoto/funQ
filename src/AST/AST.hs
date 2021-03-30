@@ -38,21 +38,22 @@ data Term
     | New
     | Meas
     | Void
+    deriving Show
 
 -- | Should be able to print a Term.
-instance Show Term where
-   show (Idx i) = show i
-   show (Fun s) = s
-   show (Bit b) = show b
-   show (Gate g) = show g
-   show (Tup t) = show t
-   show (App l r) = show l ++ " " ++ show r
-   show (IfEl c t f) = "if " ++ show c ++ " then " ++ show t ++ " else " ++ show f
-   show (Let t e) = "let " ++ show t ++ " in " ++ show e
-   show (Abs t) = "λ " ++ show t
-   show New = "new"
-   show Meas = "measure"
-   show Void = "*"  
+-- instance Show Term where
+--    show (Idx i) = show i
+--    show (Fun s) = s
+--    show (Bit b) = show b
+--    show (Gate g) = show g
+--    show (Tup t) = show t
+--    show (App l r) = show l ++ " " ++ show r
+--    show (IfEl c t f) = "if " ++ show c ++ " then " ++ show t ++ " else " ++ show f
+--    show (Let t e) = "let " ++ show t ++ " in " ++ show e
+--    show (Abs t) = "λ " ++ show t
+--    show New = "new"
+--    show Meas = "measure"
+--    show Void = "*"  
 
 instance Show Function where
     show (Func n t e) = "\n" ++ n ++ " : " ++ show t ++ "\n"

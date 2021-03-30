@@ -1,0 +1,5 @@
+phase : QBit -o QBit
+phase q = S q
+
+main : Bit 
+main = meas (phase (new 1)) -- 1
