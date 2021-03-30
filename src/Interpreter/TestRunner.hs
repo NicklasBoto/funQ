@@ -29,16 +29,37 @@ goodTests = [
     (testPath "plus.fq", "0"),
     (testPath "second-q.fq", "0"),
     (testPath "second.fq", "1"),
+    (testPath "third.fq", "1"),
+    (testPath "seventh.fq", "0"),
     (testPath "teleport.fq", "1")
     ]
 
-runTests :: IO ()
-runTests = do 
-    mapM_ runTest goodTests
+-- runTests :: IO ()
+-- runTests = do 
+--     mapM_ runTest goodTests
 
-runTest :: (FilePath, String) -> IO ()
-runTest (path, expectedValue) = do 
+-- runTest :: (FilePath, String) -> Int -> (Int, IO ())
+-- runTest (path, expectedValue) = do 
+--     res <- run path
+--     if show res == expectedValue then putStrLn $ "Test for " ++ show path ++ " successful!" ++ "\n" 
+--     else putStrLn $ "Test for " ++ show path ++ " failed! Expected " ++ expectedValue ++ " but got " ++ show res ++ "\n"
+
+
+runTests' :: IO ()
+runTests' = do 
+    --mapM_ runTest goodTests
+    correct <- foldr runTest' (return 0) goodTests
+    putStrLn $ "Succesful tests " ++ show correct ++ "/" ++ show (length goodTests)
+    --return ()
+
+-- a = (FilePath,String), b = IO Int 
+runTest' :: (FilePath, String) -> IO Int -> IO Int
+runTest' (path, expectedValue) b = do 
     res <- run path
-    if show res == expectedValue then putStrLn $ "Test for " ++ show path ++ " successful!" ++ "\n" 
-    else putStrLn $ "Test for " ++ show path ++ " failed! Expected " ++ expectedValue ++ " but got " ++ show res ++ "\n"
-
+    acc <- b
+    if show res == expectedValue then do 
+        putStrLn $ "Test for " ++ show path ++ " successful!" ++ "\n" 
+        return $ acc + 1
+    else do 
+        putStrLn $ "Test for " ++ show path ++ " failed! Expected " ++ expectedValue ++ " but got " ++ show res ++ "\n"
+        return acc

@@ -44,7 +44,7 @@ type Ix = Int
 -- | Pointer to a qubit in QState.
 -- Represents the linking function in QLambda
 newtype QBit = Ptr { link :: Ix }
-    deriving Show
+    deriving (Show, Read)
 
 -- | The program state, a complex vector representation of
 -- the qubits in the system

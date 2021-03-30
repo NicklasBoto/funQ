@@ -22,7 +22,7 @@ run fileName = do
             -- putStrLn $ show err
             error "INTERPRETER ERROR"
         Right i -> do
-            -- putStrLn $ "Result " ++ show i
+            putStrLn $ "Result " ++ show i
             return i
 
 

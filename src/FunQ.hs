@@ -47,7 +47,7 @@ module FunQ
     ) where
 
 import Control.Monad ( replicateM, mapM )
-import Lib.QM ( QM, QBit, run, runDebug, io)
+import Lib.QM ( QM, QBit, run, runDebug, io, checkState)
 import Lib.Core
     ( Bit,
       new,
@@ -87,5 +87,14 @@ bellMeasure (x,y) = do
     hadamard x
     m_x <- measure x
     m_y <- measure y
-    return (m_x,m_y)
+    return (m_x, m_y)
 
+tuple :: Read a => [QBit] -> a
+tuple lst = read $ "(" ++ (init . tail . show) lst  ++ ")" 
+
+test :: QM ()
+test = do
+  q <- new 1
+  q' <- new 0
+  cnot $ tuple [q, q']
+  checkState

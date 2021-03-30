@@ -79,7 +79,7 @@ data Value
     | VQBit Q.QBit
     | VUnit
     | VTup [Value]
-    | VFunc [Value] A.Term 
+    | VFunc [Value] A.Term
 
 eval :: Ctx -> A.Term -> Eval Value
 eval ctx = \case
@@ -131,7 +131,9 @@ eval ctx = \case
 
     A.App e1 e2 -> do
         v2 <- eval ctx e2
+        -- (lift . Q.io . print) $ "v2: " ++ show v2
         VFunc v1 a <- eval ctx e1
+        -- (lift . Q.io . print) $ "a: " ++ show a
         eval ctx{ values = v2 : v1 ++ values ctx} a
 
     A.IfEl bit l r -> do
@@ -142,8 +144,7 @@ eval ctx = \case
          VTup [x1, x2] <- eval ctx eq
          eval ctx{ values = x2 : x1 : values ctx } inn
 
-    A.Abs e  -> do
-        return $ VFunc (values ctx) e
+    A.Abs e  -> return $ VFunc (values ctx) e
 
     A.Void   -> return VUnit
 
@@ -153,6 +154,9 @@ eval ctx = \case
 
     A.Meas   -> throwError $ NotApplied "Meas must be applied to something"
 
+
+tuple :: Read a => [Q.QBit] -> a
+tuple lst = read $ "(" ++ (init . tail . show) lst  ++ ")" 
 
 runGate :: (Q.QBit -> Q.QM Q.QBit) -> A.Term -> Ctx -> Eval Value
 runGate g q ctx = do
