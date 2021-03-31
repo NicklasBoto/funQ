@@ -34,8 +34,13 @@ dependencies:
 - numbers
 - array
 - containers
+- haskeline
+- turtle
 
 library:
+  when:
+    - condition: false
+      other-modules: Paths_pkg
   source-dirs: 
     - src
     - examples

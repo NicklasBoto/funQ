@@ -1,10 +1,8 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
---
--- hash: 979c377fc2acd1f454c61e45ae2314fa949baae61342201f84e8640366ba513d
 
 name:           qfunc
 version:        0.1.0.0
@@ -45,6 +43,8 @@ library
       Parser.Abs
       Parser.ErrM
       Parser.Lex
+      Parser.Lex
+      Parser.Par
       Parser.Par
       Parser.Print
       Parser.Skel
@@ -64,9 +64,11 @@ library
     , base >=4.7 && <5
     , bitvec
     , containers
+    , haskeline
     , hmatrix
     , mtl
     , numbers
+    , turtle
   default-language: Haskell2010
 
 executable qfunc-exe
@@ -82,10 +84,12 @@ executable qfunc-exe
     , base >=4.7 && <5
     , bitvec
     , containers
+    , haskeline
     , hmatrix
     , mtl
     , numbers
     , qfunc
+    , turtle
   default-language: Haskell2010
 
 test-suite qfunc-test
@@ -103,8 +107,10 @@ test-suite qfunc-test
     , base >=4.7 && <5
     , bitvec
     , containers
+    , haskeline
     , hmatrix
     , mtl
     , numbers
     , qfunc
+    , turtle
   default-language: Haskell2010

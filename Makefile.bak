@@ -10,8 +10,8 @@ all : Parser/Test
 
 # Rules for building the parser.
 
-Parser/ErrM.hs Parser/Lex.x Parser/Print.hs Parser/Par.y Parser/Test.hs : src/Parser/Parser.cf
-	bnfc --haskell -d src/Parser/Parser.cf
+Parser/ErrM.hs Parser/Lex.x Parser/Print.hs Parser/Par.y Parser/Test.hs : ./src/Parser/Parser.cf
+	bnfc --haskell -d ./src/Parser/Parser.cf
 
 %.hs : %.y
 	happy --ghc --coerce --array --info $<

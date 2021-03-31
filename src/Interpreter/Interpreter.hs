@@ -2,11 +2,9 @@
 
 module Interpreter.Interpreter where
 
-import System.IO ()
-
 import qualified Data.Map as M
 import Control.Monad.Except
-    ( MonadTrans(lift), ExceptT, MonadError(throwError), runExceptT )
+    ( MonadTrans(lift), ExceptT, MonadError(throwError) )
 import Control.Monad.Reader ()
 import Data.List ()
 import Control.Monad.Identity ()
@@ -14,8 +12,7 @@ import qualified FunQ as Q
 import Control.Monad.State ()
 import Parser.Abs as Abs
     ( Gate(GS, GH, GX, GY, GZ, GI, GT, GCNOT, GTOF, GSWP, GFRDK, GQFT),
-      Bit(BOne, BZero),
-      Program )
+      Bit(BOne, BZero) )
 import qualified AST.AST as A
 
 -- TODO:
@@ -27,6 +24,8 @@ import qualified AST.AST as A
 -- Nice to Have:
 -- let user define custom gates (needs syntax for gate definition, type checking of arbitrary gate and evaluation of it)
 
+-- typeclass runnable, ta in gate och a, spotta ut QM a
+-- kan definiera olika fel
 
 data Error
     = NotFunction String
@@ -34,11 +33,9 @@ data Error
     | NotApplied String
     | Fail String
     | IndexTooLarge String
-    | ShowX12 String
      deriving Show
 
 type Sig = M.Map String A.Term
-
 type Eval a = ExceptT Error Q.QM a
 
 data Env = Env {
@@ -53,15 +50,11 @@ instance Show Value where
     show VUnit       = "*"
     show (VFunc _ t) = "Function " ++ show t
 
--- Main function in interpreter (which we export)
+-- | Main function in interpreter (exported)
 interpret :: [A.Function] -> Eval Value
 interpret fs = do
-    -- Create environment 
     let env = createEnv fs
-    -- Eval main function
-    mainTerm <- getMainTerm env
-    -- Return the return value from main
-    eval env mainTerm
+    getMainTerm env >>= eval env 
 
 -- | Creates an environment from a list of functions. 
 createEnv :: [A.Function] -> Env
@@ -116,8 +109,7 @@ eval env = \case
         --  , crot
         --  , qft
 
-        -- typeclass runnable, ta in gate och a, spotta ut QM a
-        -- kan definiera olika fel
+        
 
     A.App A.New b -> do
         VBit b' <- eval env b
