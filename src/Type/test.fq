@@ -1,6 +1,3 @@
--- map : (Bit -o Bit) -o (Bit >< Bit) -o (Bit >< Bit)
--- map f xs = let (x,y) = xs in (f x, f y)
-
 plus : Bit -o Bit -o !Bit
 plus x y = if x 
     then (if y then 0 else 1)
@@ -9,17 +6,18 @@ plus x y = if x
 q : QBit
 q = (\x . x) (new 0)
 
-not : !Bit -o !Bit
-not x = if x then 0 else 1
+not : Bit -o !Bit
+not x = if x then x else x
 
-iff : Bit -o Bit -o Bit -o Bit
-iff b t f = if b then t else f
-
-testiff : !Bit -o Bit
-testiff x = iff x b b
+testqnot : QBit
+testqnot = qnot (new 0)
 
 fst : !(T >< T)
 fst = (*,*)
+
+idq : QBit -o !QBit
+idq x = x
+
 
 snd : (T >< Bit) -o T
 snd x = let (a,b) = x in a
@@ -27,20 +25,17 @@ snd x = let (a,b) = x in a
 gen : (Bit >< Bit)
 gen = (0, 0)
 
-b : !Bit
+b : Bit
 b = 0        
 
 qq : QBit
 qq = new 0
 
-prod : !(QBit >< QBit)
-prod = (new 0, new 0)
+clone : (Bit >< Bit) -o ((Bit >< Bit) >< (Bit >< Bit))
+clone a = (a,a)
 
--- (?a,?b) == !(a,b)
--- x : a för den används 1 gång
--- x appliceras på en funktion med typ : !a -> !(a, a)
--- x: a or !a   FlexTypeVar a
--- x: a
--- x: !a
+cloneF : (Bit >< Bit) >< (Bit >< Bit)
+cloneF = clone gen
 
--- G |- 
+idt : !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit)
+idt m = let (a,b) = m in let (b,c) = b in (a,b,c)

@@ -11,10 +11,6 @@ import Parser.Print
 import Data.List (nub, intercalate)
 import Debug.Trace
 
--- | Counter for creating fresh type variables
-type Counter = Int
-
-type TVar = String
 
 -- | Representations of free and bound variables in lambda abstractions
 data Named
@@ -23,19 +19,18 @@ data Named
     deriving (Eq, Ord, Show)
 
 -- | A scheme has a type, together with a list of (Forall) bound type variables.
-data Scheme = Forall [FlexVar] Type
+data Scheme = Forall [TVar] Type
 
--- | A FlexVar could either by a normal type variable "a",
---   or the more general type variable "?a".
-data FlexVar
-    = TVar String
+-- | A type variable (TVar) is either a normal linear type variable (LVar) "a", 
+--   or the more general flexible type variable (FVar) "?a".
+data TVar
+    = LVar String
     | FVar String
     deriving (Eq, Ord)
 
-
-instance Show FlexVar where
-    show (TVar a) = a
-    show (FVar a) = "?" ++ a
+instance Show TVar where
+    show (LVar a) = a
+    show (FVar a) = '?' : a
 
 instance Show Scheme where
     show (Forall [] t) = printTree (reverseType t)
@@ -45,9 +40,9 @@ instance Show Scheme where
 -- | Each variable in the TypeEnv has an associated type Scheme.
 newtype TypeEnv = TypeEnv (Map.Map Named Scheme) deriving Show
 
--- | A substitution is just a map from a type variable to the type it 
+-- | A substitution is a map from a type variable to the type it 
 --  should be substituted with. It could be another type variable.
-type Subst = Map.Map FlexVar Type
+type Subst = Map.Map TVar Type
 
 -- | The null substitution are the substitution where nothing are substituted.
 nullSubst :: Subst
@@ -57,10 +52,10 @@ nullSubst = Map.empty
 emptyEnv :: TypeEnv
 emptyEnv = TypeEnv Map.empty
 
--- | Type errors that can occur during type check
+-- | Type errors that can occur during type check.
 data TypeError
     = NotInScopeError Named
-    | InfiniteTypeError TVar Type
+    | InfiniteTypeError String Type
     | UnificationFailError Type Type
     | SubtypeFailError Type Type
     | ProductDuplicityError Type Type
@@ -91,26 +86,26 @@ instance Show TypeError where
     show (ProductDuplicityError l r) =
         "Linear product operands must have equal duplicity: " ++ show l ++ " ⊗  " ++ show r
 
+-- | Counter for creating fresh type variables
+type Counter = Int
+
+-- | The monad type inferrement occurs, it could have an exception
+--   if there is a type error. It keeps track of a counter for what
+--   the next fresh type variable should be.
 type Infer = ExceptT TypeError (State Counter)
 
 -- | Extend the type environment with a new bound variable together with its type scheme.
 extend :: TypeEnv -> (Named, Scheme) -> TypeEnv
 extend (TypeEnv env) (n,s) = TypeEnv $ Map.insert n s env
 
--- | Run the inferement code. The result is a type scheme or an exception.
-runInfer :: Infer (Subst, Type) -> Either TypeError Scheme
-runInfer m = case evalState (runExceptT m) 0 of
-        Left  err -> Left err
-        Right res -> Right $ closeOver res
-
--- | 
+-- | Apply final substitution and normalize the type variables 
 closeOver :: (Subst, Type) -> Scheme
 closeOver (sub, ty) = normalize sc
   where sc = generalize emptyEnv (apply sub ty)
 
 -- | 
 normalize :: Scheme -> Scheme
-normalize (Forall ts body) = Forall (fmap (TVar . snd) ord) (normtype body)
+normalize (Forall ts body) = Forall (fmap (LVar . snd) ord) (normtype body)
   where
     ord = zip (nub $ fv body) letters
     
@@ -133,28 +128,37 @@ normalize (Forall ts body) = Forall (fmap (TVar . snd) ord) (normtype body)
     normtype a = a
 
 -- | 
-compose :: Subst -> Map.Map FlexVar Type -> Map.Map FlexVar Type
+compose :: Subst -> Map.Map TVar Type -> Map.Map TVar Type
 compose s1 s2 = Map.map (apply s1) s2 `Map.union` s1
 
-(∘) :: Subst -> Map.Map FlexVar Type -> Map.Map FlexVar Type
+(∘) :: Subst -> Map.Map TVar Type -> Map.Map TVar Type
 (∘) = compose
 
-class Bangable a where
-    bang   :: a -> a
-    debang :: a -> a
+-- | Make a type duplicable
+bang :: Type -> Type
+bang = TypeDup
 
-instance Bangable Type where
-    bang = TypeDup
-    debang (TypeDup a) = a
-    debang          a  = a
+-- | Make type non-duplicable
+debang :: Type -> Type
+debang (TypeDup a) = a
+debang          a  = a
 
-instance Bangable Scheme where
-    bang (Forall a t) = Forall a $ bang t
-    debang (Forall a (TypeDup t)) = Forall a t
+-- | Converts a type variable to a type flex 
+flex :: Type -> Type
+flex (TypeVar a) = TypeFlex a
+flex          t  =          t
 
-instance Bangable TypeEnv where
-    bang (TypeEnv e) = TypeEnv $ Map.map bang e
-    debang (TypeEnv e) = TypeEnv $ Map.map debang e
+-- | Converts a type flex to a type variable
+deflex :: Type -> Type
+deflex (TypeFlex a) = TypeVar a
+deflex           t  =         t
+
+-- | Transforms all flex variables to normal linear type variables.
+deflexType :: Type -> Type
+deflexType (a :=> b) = deflexType a :=> deflexType b
+deflexType (a :>< b) = deflexType a :>< deflexType b
+deflexType (TypeDup a) = TypeDup $ deflexType a
+deflexType a = deflex a
 
 class Substitutable a where
     -- | Given a substitution and a type, if the type contains instances of type variables
@@ -162,7 +166,7 @@ class Substitutable a where
     --   ones in the map.
     apply :: Subst -> a -> a
     -- | Find all free type variables.
-    ftv   :: a -> Set.Set FlexVar
+    ftv   :: a -> Set.Set TVar
 
 instance Substitutable Type where
     -- | TypeVariables in the type are substituted if they exist in the substitution.
@@ -170,14 +174,14 @@ instance Substitutable Type where
     apply _ TypeQBit = TypeQBit
     apply _ TypeUnit = TypeUnit
     apply s (TypeDup d) = TypeDup $ apply s d
-    apply s t@(TypeVar v) = Map.findWithDefault t (TVar v) s
+    apply s t@(TypeVar v) = Map.findWithDefault t (LVar v) s
     apply s t@(TypeFlex v) = Map.findWithDefault t (FVar v) s 
     apply s (t1 :=> t2) = apply s t1 :=> apply s t2
     apply s (t1 :>< t2) = apply s t1 :>< apply s t2
 
     -- | The free type variables for a type are all type variables in the type,
     --   since no type variables are bound.
-    ftv (TypeVar v) = Set.singleton (TVar v)
+    ftv (TypeVar v) = Set.singleton (LVar v)
     ftv (TypeFlex v) = Set.singleton (FVar v)
     ftv (t1 :=> t2) = Set.union (ftv t1) (ftv t2)
     ftv _constant   = Set.empty
@@ -200,14 +204,13 @@ instance Substitutable TypeEnv where
     apply s (TypeEnv env) = TypeEnv $ Map.map (apply s) env
     ftv (TypeEnv env) = ftv $ Map.elems env
 
-occursCheck ::  Substitutable a => FlexVar -> a -> Bool
+occursCheck ::  Substitutable a => TVar -> a -> Bool
 occursCheck a t = a `Set.member` ftv t
 
 -- ?a ~  t : [?a/t]
 --  t ~ ?a : [?a/t]
 -- ?a ~ !t : [?a/!t]
 -- ?a ~ ?b : [a/b]
-
 
 -- | Tries to find common type for two input types
 unify :: Type -> Type -> Infer Subst
@@ -231,75 +234,19 @@ unify (l :>< r) (l' :>< r') = do
     s1 <- unify l l'
     s2 <- unify r r'
     return (compose s2 s1)
-unify (TypeFlex a) (TypeFlex b) = bind (TVar a) (TypeVar b)
+unify (TypeFlex a) (TypeFlex b) = bind (LVar a) (TypeVar b)
 unify (TypeFlex a) (TypeDup  b) = bind (FVar a) (TypeDup b)
 unify t (TypeFlex b) = bind (FVar b) t
 unify (TypeFlex a) t = bind (FVar a) t
-unify (TypeVar a) t =  bind (TVar a) t
-unify t (TypeVar a) = bind (TVar a) t
+unify (TypeVar a) t =  bind (LVar a) t
+unify t (TypeVar a) = bind (LVar a) t
 unify (TypeDup a) (TypeDup b) = unify a b
 unify t t' | t' <: t && isConstType t = return nullSubst
            | otherwise = throwError $ UnificationFailError t t'
 
-
-
--- !a ~ !Bit
--- [a/Bit]
--- [a/!Bit]
--- a Bit
-
--- Bit !~ !Bit
-
-
--- !(a >< a)
-
--- [a/!Bit] !a = !Bit
-
--- c ~ c : []
--- a ~ a : [] 
-
--- a notin ftv(t)
--- --------------
--- a ~ t : [a/t]
-
--- a notin ftv(t)
--- --------------
--- t ~ a : [a/t]
-
--- t1 ~ t1' : th1   [th1]t2 ~ [th1]t2' : th2
--- -----------------------------------------
---     t1t2 ~ t1't2' : th2 . th1
-
-
--- ?a ~  t : [?a/t]
---  t ~ ?a : [?a/t]
--- ?a ~ !t : [?a/!t]
--- ?a ~ ?b : [a/b]
--- 
-
-
-replaceSig :: Type -- ^ Inferred type
-           -> Type -- ^ Type signature
-           -> Infer Type
-replaceSig (il :=> ir) (tl :=> tr) = do
-    n <- replaceSig il tl
-    p <- replaceSig ir tr
-    return (n :=> p)
-replaceSig (il :>< ir) (tl :>< tr) = do
-    n <- replaceSig il tl
-    p <- replaceSig ir tr         
-    return (n :>< p)
-replaceSig a b | a <: b    = return b
-               | otherwise = throwError $ SubtypeFailError a b
--- replaceSig t@(TypeVar a) b | occursCheck a b = throwError $ InfiniteTypeError a b
---                            | b <: t          = return b
---                            | otherwise       = throwError $ UnificationFailError b t
-
--- check identity substitution
-
---Binds a flexVar with a type and creates a substitution
-bind :: FlexVar -> Type -> Infer Subst
-bind a'@(TVar a) t | t == TypeVar a   = return nullSubst
+-- | Binds a type variable with another type and returns a substitution.
+bind :: TVar -> Type -> Infer Subst
+bind a'@(LVar a) t | t == TypeVar a   = return nullSubst
                    | occursCheck a' t = throwError $ InfiniteTypeError a t
                    | otherwise        = return $ Map.singleton a' t
 bind a'@(FVar a) t | t == TypeFlex a  = return nullSubst
@@ -322,6 +269,7 @@ fresh = do
   put (s+1)
   return $ TypeVar $ letters !! s
 
+-- | Introduce a new flexible type variable.
 freshFlex :: Infer Type
 freshFlex = do
     s <- get
@@ -332,7 +280,7 @@ freshFlex = do
 letters :: [String]
 letters = [1..] >>= flip replicateM ['a'..'z']
 
--- | Renames all FlexVars in the scheme and applies it
+-- | Renames all TVars in the scheme and applies it
 --   to get a type with unique (and free) type variables.
 instantiate :: Scheme -> Infer Type
 instantiate (Forall as t) = do
@@ -340,9 +288,9 @@ instantiate (Forall as t) = do
     let s = Map.fromList $ zip as as' -- Map from old type variables to new names.
     return $ apply s t
 
-rename :: FlexVar -> Infer Type 
+rename :: TVar -> Infer Type 
 rename (FVar _) = freshFlex
-rename (TVar _) = fresh
+rename (LVar _) = fresh
 
 -- | 
 generalize :: TypeEnv -> Type -> Scheme
@@ -371,40 +319,18 @@ infer i env (IfEl b l r) = do
     (s1,t1) <- infer i env b
     (s2,t2) <- infer i env l
     (s3,t3) <- infer i env r
-    s4 <- unify TypeBit t1
+    s4 <- unify (TypeDup TypeBit) t1
     s5 <- unify t2 t3
     return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, apply s5 t2)
--- infer i env (Let eq inn) = do -- let (a1, a0) = eq in inn
---     (s1, t1) <- infer i env eq -- 
---     tv1 <- inferDuplicity (Abs inn) <$> fresh -- Create a typevar for a1 and set its duplicity
---     tv2 <- inferDuplicity      inn  <$> fresh -- Create a typevar for a0 and set its duplicity
---     prods <- trace ("t1:" ++ show t1 ++ " | tv1:" ++ show tv1 ++ " | tv2: " ++ show tv2) $ unify t1 (tv1 :>< tv2) -- The type of eq must be unified with (tv1 :>< tv2).
---     let env' = trace ("prods is " ++ show prods) $ env `extend` (Bound (i+1), prods `apply` Forall [] tv2) -- Add the bound variable types to env.
---                    `extend` (Bound i, prods `apply` Forall [] tv1)
---     (s2,t2) <- trace ("env is " ++ show env') $ infer (i+2) env' inn -- Infer the type of inn, which is the final type
---     _ <- return $  apply prods t1
---     return (s1 ∘ s2, apply prods t2)
-
-infer i env (Let eq inn) = do -- let (_:tv1, _:tv2) = eq:teq inn
-    -- Create typevars for the types of the bound variables
+infer i env (Let eq inn) = do
     tv1 <- inferDuplicity (Abs inn) <$> fresh 
     tv2 <- inferDuplicity inn <$> fresh
-
-    -- Infer the type of eq
     (seq, teq) <- infer i env eq 
     product <- unify teq (tv1 :>< tv2)
-
-    -- Add the typevars to the environment to be used when inferring the type of inn
     let env' = env `extend` (Bound (i+1), product `apply` Forall [] tv1) 
                    `extend` (Bound  i   , product `apply` Forall [] tv2)
-
-    -- Infer the type of inn
     (sinn, tinn) <- infer (i+2) env' inn
-
-    -- The type of this expression is the type of inn
-    return (seq ∘ product ∘ sinn, seq `compose` sinn `apply` tinn)
-    
-
+    return (seq ∘ product ∘ sinn, seq ∘ sinn `apply` tinn)
 infer i env (Abs body) = do
     tv <- inferDuplicity body <$> fresh
     let env' = env `extend` (Bound i, Forall [] tv)
@@ -428,7 +354,7 @@ tr x = trace (show x) (return ())
 
 -- | Infers type of a Gate
 inferGate :: Gate -> Type
-inferGate g = bang . gateType $ case g of
+inferGate g = gateType $ case g of
     GFRDK -> 3
     GTOF  -> 3
     GSWP  -> 2
@@ -443,7 +369,7 @@ subtypeCheck (a :=> _) b
     | b <: a    = return ()
     | otherwise = throwError $ SubtypeFailError a b
 
--- | Return ẃhether a type is a subtype of another type.
+-- | Return whether a type is a subtype of another type.
 (<:) :: Type -> Type -> Bool
 TypeDup  a  <: TypeDup  b   = TypeDup a <: b
 TypeDup  a  <: TypeFlex b   = True 
@@ -456,26 +382,6 @@ TypeFlex a  <:          b   = True
 a           <: TypeFlex b   = True
 a           <: TypeVar  b   = True
 a           <:          b   = a == b
-
-(~@) :: Type -> Type -> Type
-u ~@ TypeDup a = TypeDup $ u ~@ a
-(u :=> v) ~@ (a :=> b) = (u ~@ a) :=> (v ~@ b)
-(u :>< v) ~@ (a :>< b) = (u ~@ a) :>< (v ~@ b)
-u ~@ a = u
-
-elimExp :: Type -> Type
-elimExp (TypeDup a) = elimExp a
-elimExp (a :=> b) = elimExp a :=> elimExp b
-elimExp (a :>< b) = elimExp a :>< elimExp b
-elimExp a = a
-
-flex :: Type -> Type
-flex (TypeVar a) = TypeFlex a
-flex          t  =          t
-
-deflex :: Type -> Type
-deflex (TypeFlex a) = TypeVar a
-deflex           t  =         t
 
 -- Given a function (or let) body and a bodytype, if the variable bound is used many times
 --  it must be unlinear !t. If its used once or zero times it could have either
@@ -516,71 +422,54 @@ headCount = cO 0
             -- \x . let (a,b) = x in M
             e -> 0
 
--- f : !Bit -o !(Bit >< Bit)
--- f y = (\x . (x,x)) y
-
--- HM{\y . (\x . (x,x) y)} = a => (a * a)
--- a => (a*a) ~ !Bit -o !(Bit >< Bit) : [a/Bit]
--- LC{f_e, f_t}
-
--- \y : !a . (\x : !a. (x,x)) y
-
 typecheck :: Term -> Either TypeError Scheme
 typecheck e = runInfer (infer 0 emptyEnv e)
 
-typecheckProgram :: [Function] -> [Either TypeError Type]
+typecheckProgram :: [Function] -> [Either TypeError (String, Type)]
 typecheckProgram fs = map (checkFunc env) fs
     where env = genEnv fs
 
-showTypes :: [Either TypeError Type] -> IO ()
+showTypes :: [Either TypeError (String, Type)] -> IO ()
 showTypes = putStrLn . intercalate "\n\n" . map st
     where st (Left  err) = "*** Exception:\n" ++ show err
-          st (Right typ) = show typ
+          st (Right (name, typ)) = name ++ " : " ++ show typ
 
-runtc :: String -> [Either TypeError Type]
+runtc :: String -> [Either TypeError (String, Type)]
 runtc prog = typecheckProgram (run prog)
 
-runtcFile :: FilePath -> IO [Either TypeError Type]
+runtcFile :: FilePath -> IO [Either TypeError (String, Type)]
 runtcFile path = runtc <$> readFile path
 
-checkFunc :: TypeEnv -> Function -> Either TypeError Type
+-- | Run the inferement code. The result is a type scheme or an exception.
+runInfer :: Infer (Subst, Type) -> Either TypeError Scheme
+runInfer m = case evalState (runExceptT m) 0 of
+        Left  err -> Left err
+        Right res -> Right $ closeOver res
+
+checkFunc :: TypeEnv -> Function -> Either TypeError (String, Type)
 checkFunc env (Func name qtype term) = do
     Forall _ itype <- runInfer (infer 0 env term)
-    evalState (runExceptT (equal qtype itype)) 0
+    s <- evalState (runExceptT (equal qtype itype)) 0
+    return (name, s)
 
--- | Type, inferred type 
+
+-- | Gives the unified type of the type from the type signature
+--   and the inferred type.  
 equal :: Type -> Type -> Infer Type
 equal typ inf = do
-    -- tr ("signature : " ++ show typ)
-    -- tr ("inferred  : " ++ show inf)
     sub <- unify typ inf
     return $ apply sub typ
 
+-- | Generate environment with function signatures 
 genEnv :: [Function] -> TypeEnv
 genEnv = TypeEnv . Map.fromList . map f
-    where f (Func n t _) = (Free n, generalize emptyEnv (elimExp t))
+    where f (Func n t _) = (Free n, generalize emptyEnv t)
 
--- | Transforms all FlexVariables to normal linear TypeVariables.
-deflexType :: Type -> Type
-deflexType (a :=> b) = deflexType a :=> deflexType b
-deflexType (a :>< b) = deflexType a :>< deflexType b
-deflexType (TypeDup a) = TypeDup $ deflexType a
-deflexType a = deflex a
 
 
 inferExp :: String -> Either TypeError Type
 inferExp prog = do
     let [Func _ _ term] = run ("f : a f = " ++ prog)
     Forall _ type' <- runInfer (infer 0 emptyEnv term)
-    return $ deflexType type'
-
-uni :: Type -> Type -> Infer Scheme
-uni t1 t2 = do
-    s <- unify t1 t2
-    return $ generalize emptyEnv (apply s t1)
-
--- f : a
--- f = 0
-
--- f : Num a =>  a -> Int 
--- f x = 0
+    -- return $ deflexType type'
+    return type'

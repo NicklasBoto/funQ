@@ -184,7 +184,7 @@ typecheck = tc 0
                     TypeBit | tt == tf  -> return tt
                             | otherwise -> throwError $ Mismatch tt tf
                     _ -> throwError $ Mismatch TypeBit tb
-            
+
             Let eq inn -> do
                 teq <- tc i eq
                 case teq of
