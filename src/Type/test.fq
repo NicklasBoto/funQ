@@ -1,17 +1,46 @@
-map : (a -o b) -o (a >< a) -o (b >< b)
-map f xs = let (x,y) = xs in (f x, f y)
+-- map : (Bit -o Bit) -o (Bit >< Bit) -o (Bit >< Bit)
+-- map f xs = let (x,y) = xs in (f x, f y)
 
-plus : Bit -o Bit -o Bit
+plus : Bit -o Bit -o !Bit
 plus x y = if x 
     then (if y then 0 else 1)
     else (if y then 1 else 0)
 
-bits : Bit >< Bit
-bits = map (plus 1) (0,0)
+q : QBit
+q = (\x . x) (new 0)
 
-f : b -o b
-f = \x . x
+not : !Bit -o !Bit
+not x = if x then 0 else 1
 
-----
+iff : Bit -o Bit -o Bit -o Bit
+iff b t f = if b then t else f
 
-\x . x
+testiff : !Bit -o Bit
+testiff x = iff x b b
+
+fst : !(T >< T)
+fst = (*,*)
+
+snd : (T >< Bit) -o T
+snd x = let (a,b) = x in a
+
+gen : (Bit >< Bit)
+gen = (0, 0)
+
+b : !Bit
+b = 0        
+
+qq : QBit
+qq = new 0
+
+prod : !(QBit >< QBit)
+prod = (new 0, new 0)
+
+-- (?a,?b) == !(a,b)
+-- x : a för den används 1 gång
+-- x appliceras på en funktion med typ : !a -> !(a, a)
+-- x: a or !a   FlexTypeVar a
+-- x: a
+-- x: !a
+
+-- G |- 

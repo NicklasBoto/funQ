@@ -10,7 +10,7 @@ import Control.Monad.Except
 import Control.Monad.State
 import Data.Either
 import Prelude hiding (GT)
-
+{-
 (>=>), (><) :: Type -> Type -> Type
 (>=>) = (:=>)
 (><)  = (:><)
@@ -255,3 +255,4 @@ inferGate _g    = throwError NoSuchGateError
 shouldTypecheck1 = "id : Bit -o Bit id x = (\\y.x) 0"
 
 ast = run shouldTypecheck1
+-}

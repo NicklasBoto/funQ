@@ -58,6 +58,7 @@ data Term
     | New
     | Meas
     | Unit
+    deriving Eq
 
 instance Show Term where
     show = printTree . reverseImTerm 0
@@ -83,6 +84,7 @@ instance Show Term where
 
 data Type
     = TypeVar String
+    | TypeFlex String -- a or !a
     | TypeBit
     | TypeQBit
     | TypeUnit
@@ -110,6 +112,7 @@ convertType (P.TypeFunc l r)        = convertType l :=> convertType r
 -- | Converts from our type to Parser type .
 reverseType :: Type -> P.Type
 reverseType (TypeVar var) = P.TypeVar (P.Var var)
+reverseType (TypeFlex fx) = P.TypeVar (P.Var ('?':fx))
 reverseType TypeBit = P.TypeBit
 reverseType TypeQBit = P.TypeQbit
 reverseType TypeUnit = P.TypeVoid

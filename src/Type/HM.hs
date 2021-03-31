@@ -32,6 +32,7 @@ data FlexVar
     | FVar String
     deriving (Eq, Ord)
 
+
 instance Show FlexVar where
     show (TVar a) = a
     show (FVar a) = "?" ++ a
@@ -219,8 +220,12 @@ unify (l :=> r) (l' :=> r') = do
         s2 <- unify (apply s1 r) (apply s1 r')
         return (s2 ∘ s1)
 unify (TypeDup (l :>< r)) (l' :>< r') = do
-    s1 <- unify l' (TypeDup l)
-    s2 <- unify r' (TypeDup r)
+    s1 <- unify (TypeDup l) l'
+    s2 <- unify (TypeDup r) r'
+    return (compose s2 s1)
+unify (l :>< r) (TypeDup (l' :>< r')) = do
+    s1 <- unify l (TypeDup l')
+    s2 <- unify r (TypeDup r')
     return (compose s2 s1)
 unify (l :>< r) (l' :>< r') = do
     s1 <- unify l l'
@@ -229,8 +234,7 @@ unify (l :>< r) (l' :>< r') = do
 unify (TypeFlex a) (TypeFlex b) = bind (TVar a) (TypeVar b)
 unify (TypeFlex a) (TypeDup  b) = bind (FVar a) (TypeDup b)
 unify t (TypeFlex b) = bind (FVar b) t
--- unify (TypeFlex a) (b:><c) = error "ye"
-unify (TypeFlex a) t = trace ("Binding " ++ show a ++ "to" ++ show t) $ bind (FVar a) t
+unify (TypeFlex a) t = bind (FVar a) t
 unify (TypeVar a) t =  bind (TVar a) t
 unify t (TypeVar a) = bind (TVar a) t
 unify (TypeDup a) (TypeDup b) = unify a b
@@ -283,7 +287,7 @@ replaceSig (il :=> ir) (tl :=> tr) = do
     return (n :=> p)
 replaceSig (il :>< ir) (tl :>< tr) = do
     n <- replaceSig il tl
-    p <- replaceSig ir tr
+    p <- replaceSig ir tr         
     return (n :>< p)
 replaceSig a b | a <: b    = return b
                | otherwise = throwError $ SubtypeFailError a b
@@ -311,7 +315,7 @@ isConstType (TypeDup d) = isConstType d
 isConstType _type = False
 
 -- | Introduce a new type variable.
---   Also updateds the internal type variable counter to avoid collisions.
+--   Also updates the internal type variable counter to avoid collisions.
 fresh :: Infer Type
 fresh = do
   s <- get
@@ -367,7 +371,7 @@ infer i env (IfEl b l r) = do
     (s1,t1) <- infer i env b
     (s2,t2) <- infer i env l
     (s3,t3) <- infer i env r
-    s4 <- unify t1 TypeBit
+    s4 <- unify TypeBit t1
     s5 <- unify t2 t3
     return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, apply s5 t2)
 -- infer i env (Let eq inn) = do -- let (a1, a0) = eq in inn
@@ -391,16 +395,15 @@ infer i env (Let eq inn) = do -- let (_:tv1, _:tv2) = eq:teq inn
     product <- unify teq (tv1 :>< tv2)
 
     -- Add the typevars to the environment to be used when inferring the type of inn
-    let env' = env `extend` (Bound (i+1), Forall [] tv1) `extend` (Bound i, Forall [] tv2)
+    let env' = env `extend` (Bound (i+1), product `apply` Forall [] tv1) 
+                   `extend` (Bound  i   , product `apply` Forall [] tv2)
 
     -- Infer the type of inn
     (sinn, tinn) <- infer (i+2) env' inn
 
-    return (tinn)
+    -- The type of this expression is the type of inn
+    return (seq ∘ product ∘ sinn, seq `compose` sinn `apply` tinn)
     
-    -- let env' = env `extend` (Bound )
-
-    return undefined
 
 infer i env (Abs body) = do
     tv <- inferDuplicity body <$> fresh
@@ -408,8 +411,8 @@ infer i env (Abs body) = do
     (s1, t1) <- infer (i+1) env' body
     return (s1, apply s1 tv :=> t1)
 infer i env New  = return (nullSubst, TypeBit  :=> TypeQBit)
-infer i env Meas = return (nullSubst, TypeQBit :=> bang TypeBit)
-infer i env Unit = return (nullSubst, TypeUnit)
+infer i env Meas = return (nullSubst, TypeQBit :=> TypeDup TypeBit)
+infer i env Unit = return (nullSubst, TypeDup TypeUnit)
 
 productExponential :: Type -> Type -> Infer Type
 productExponential l r
@@ -440,10 +443,12 @@ subtypeCheck (a :=> _) b
     | b <: a    = return ()
     | otherwise = throwError $ SubtypeFailError a b
 
+-- | Return ẃhether a type is a subtype of another type.
 (<:) :: Type -> Type -> Bool
 TypeDup  a  <: TypeDup  b   = TypeDup a <: b
 TypeDup  a  <: TypeFlex b   = True 
 TypeDup  a  <:          b   = a  <: b
+(a1 :>< a2) <: (TypeDup (b1 :><  b2)) = a1 <: TypeDup b1 && a2 <: TypeDup b2
 (a1 :>< a2) <: (b1 :><  b2) = a1 <: b1 && a2 <: b2
 (a' :=>  b) <: (a :=>   b') = a  <: a' && b  <: b'
 TypeFlex a  <: TypeDup  b   = True 
@@ -507,7 +512,7 @@ headCount = cO 0
             App l r    -> cO i l + cO i r
             IfEl b t f -> cO i b + max (cO i t) (cO i f)
             Tup l r    -> cO i l + cO i r
-            Let _ e    -> cO (i+2) e -- FIXME
+            Let _ e    -> cO (i+2) e
             -- \x . let (a,b) = x in M
             e -> 0
 
@@ -541,13 +546,15 @@ runtcFile path = runtc <$> readFile path
 checkFunc :: TypeEnv -> Function -> Either TypeError Type
 checkFunc env (Func name qtype term) = do
     Forall _ itype <- runInfer (infer 0 env term)
-    -- Forall _ qtype' <- runInfer (equal qtype itype)
-    evalState (runExceptT (replaceSig itype qtype)) 0
+    evalState (runExceptT (equal qtype itype)) 0
 
-equal :: Type -> Type -> Infer (Subst, Type)
+-- | Type, inferred type 
+equal :: Type -> Type -> Infer Type
 equal typ inf = do
-    sub <- unify inf typ
-    return (sub, typ)
+    -- tr ("signature : " ++ show typ)
+    -- tr ("inferred  : " ++ show inf)
+    sub <- unify typ inf
+    return $ apply sub typ
 
 genEnv :: [Function] -> TypeEnv
 genEnv = TypeEnv . Map.fromList . map f
