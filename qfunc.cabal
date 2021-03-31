@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c82f9dc06bd2f768e52b9f7a24292ad78ade31f85d3d58e9091f6e82dff3b039
+-- hash: 659e8b9624036596ec5a79453eb46d87155640f2ca6267737ef1ecfd7ec8e926
 
 name:           qfunc
 version:        0.1.0.0
@@ -45,6 +45,7 @@ library
       Parser.Par
       Parser.Print
       Parser.Skel
+      Type.HM
       Type.STLC
       Type.TypeChecker
       CoinFlip
@@ -63,9 +64,9 @@ library
     , bitvec
     , containers
     , hmatrix
-    , parsec
     , mtl
     , numbers
+    , parsec
   default-language: Haskell2010
 
 executable qfunc-exe
@@ -82,9 +83,9 @@ executable qfunc-exe
     , bitvec
     , containers
     , hmatrix
-    , lens
     , mtl
     , numbers
+    , parsec
     , qfunc
   default-language: Haskell2010
 
@@ -92,6 +93,7 @@ test-suite qfunc-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      TypeCheckTests
       Paths_qfunc
   hs-source-dirs:
       test
@@ -104,8 +106,8 @@ test-suite qfunc-test
     , bitvec
     , containers
     , hmatrix
-    , lens
     , mtl
     , numbers
+    , parsec
     , qfunc
   default-language: Haskell2010
