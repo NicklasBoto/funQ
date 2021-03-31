@@ -13,14 +13,13 @@ import Control.Monad.Identity ()
 import qualified FunQ as Q
 import Control.Monad.State ()
 import Parser.Abs as Abs
-    ( Gate(GS, GH, GX, GY, GZ, GI, GT, GCNOT, GTOF, GSWP, GFRDK),
+    ( Gate(GS, GH, GX, GY, GZ, GI, GT, GCNOT, GTOF, GSWP, GFRDK, GQFT),
       Bit(BOne, BZero),
       Program )
 import qualified AST.AST as A
 
 -- TODO:
--- test suite; i princip klart, men borde skriva lite större testprogram (likt teleport)
--- generell run gate (för att få med quantum fourier, genom Runnable TypeClass ex)
+-- fredkin/toffoli
 
 -- När vi tycker interpreter är klar! 
 -- main driver: egen fil? turtle och haskelline? 
@@ -110,6 +109,7 @@ eval env = \case
          Abs.GTOF  -> run3Gate Q.toffoli q env
          Abs.GSWP  -> run2Gate Q.swap q env
          Abs.GFRDK -> run3Gate Q.fredkin q env
+         Abs.GQFT  -> runQFT   Q.qft q env
         -- GGate GateIdent
         --  , phasePi8
         --  , urot
@@ -159,6 +159,20 @@ printE = (lift . Q.io . putStrLn . show)
 
 tuple :: Read a => [Q.QBit] -> a
 tuple lst = read $ "(" ++ (init . tail . show) lst  ++ ")" 
+
+runQFT :: ([Q.QBit] -> Q.QM [Q.QBit]) -> A.Term -> Env -> Eval Value
+runQFT g q env = do 
+    res <- eval env q
+    case res of 
+        (VQBit q') ->  do
+            a <- lift (g [q']) 
+            return $ VTup (VQBit <$> a)
+        (VTup qs') -> do 
+            b <- lift $ (g (unValue qs'))
+            return $ VTup $ fmap VQBit b
+        where unValue [] = []
+              unValue (VQBit q:qss) = q : unValue qss
+                    
 
 runGate :: (Q.QBit -> Q.QM Q.QBit) -> A.Term -> Env -> Eval Value
 runGate g q env = do

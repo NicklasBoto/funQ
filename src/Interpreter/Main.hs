@@ -8,7 +8,7 @@ import qualified AST.AST as A
 import Parser.Par (pProgram, myLexer)
 import Control.Monad.Except
 import Interpreter.Interpreter
-
+--import System.Console.Haskeline
 
 -- Should be in a main pipeline file
 run :: String -> IO Value

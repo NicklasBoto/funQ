@@ -43,8 +43,11 @@ token GateIdent ((upper)+) ;
 token Lambda '\\' ;
 
 --- Type ---
-
-TypeVar  .a  ::= "!" Type2        ;
+TypeVar  . Type2  ::= Var              ;
+TypeBit  . Type2  ::= "Bit"            ;
+TypeQbit . Type2  ::= "QBit"           ;
+TypeVoid . Type2  ::= "T"              ;
+TypeDup  . Type2  ::= "!" Type2        ;
 TypeTens . Type1  ::= Type2 "><" Type1 ;
 TypeFunc . Type1  ::= Type2 "-o" Type1 ;
 coercions Type 2;
@@ -61,4 +64,5 @@ GCNOT . Gate ::= "CNOT"    ;
 GTOF  . Gate ::= "TOFFOLI" ;
 GSWP  . Gate ::= "SWAP"    ;
 GFRDK . Gate ::= "FREDKIN" ;
+GQFT  . Gate ::= "QFT"     ;
 GGate . Gate ::= GateIdent ; 

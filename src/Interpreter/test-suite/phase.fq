@@ -2,4 +2,6 @@ phase : QBit -o QBit
 phase q = S q
 
 main : Bit 
-main = meas (phase (new 1)) -- 1
+main = meas (phase (new 0)) -- 0 
+
+-- phase ger blandat utfall 1 och 0 (ca. 50 / 50) för qbit 1, alltid 0 för 0

@@ -19,7 +19,7 @@ $i = [$l $d _ ']     -- identifier character
 $u = [. \n]          -- universal: any character
 
 @rsyms =    -- symbols and non-identifier-like reserved words
-   \* | \= | \. | \( | \) | \, | "0" | "1" | \! | \> \< | \- "o"
+   \* | \( | \, | \) | \= | \. | "0" | "1" | \! | \> \< | \- "o"
 
 :-
 
@@ -32,7 +32,7 @@ $white+ ;
 $s ([\' \_]| ($d | $l)) * \  * \:
     { tok (\p s -> PT p (eitherResIdent T_FunVar s)) }
 $s ([\' \_]| ($d | $l)) *
-    { tok (\p s -> PT p (eitherResIdent T_Variable s)) }
+    { tok (\p s -> PT p (eitherResIdent T_Var s)) }
 $c +
     { tok (\p s -> PT p (eitherResIdent T_GateIdent s)) }
 \\
@@ -58,7 +58,7 @@ data Tok =
  | TD !String         -- double precision float literals
  | TC !String         -- character literals
  | T_FunVar !String
- | T_Variable !String
+ | T_Var !String
  | T_GateIdent !String
  | T_Lambda !String
 
@@ -99,7 +99,7 @@ tokenText t = case t of
   PT _ (TC s)   -> s
   Err _         -> "#error"
   PT _ (T_FunVar s) -> s
-  PT _ (T_Variable s) -> s
+  PT _ (T_Var s) -> s
   PT _ (T_GateIdent s) -> s
   PT _ (T_Lambda s) -> s
 

@@ -29,8 +29,9 @@ tests = [
     ("pauliX.fq",   "1"), 
     ("pauliY.fq",   "1"),     
     ("pauliZ.fq",   "0"),   
-    ("phase.fq",    "1"),  
+    ("phase.fq",    "0"),  
     ("plus.fq",     "0"),
+    ("qft.fq",      "0"),
     ("second-q.fq", "0"),
     ("second.fq",   "1"),
     ("seventh.fq",  "0"),
@@ -39,7 +40,7 @@ tests = [
     ("tdagger.fq",  "1"),
     ("teleport.fq", "1"),
     ("third.fq",    "1")
-    -- TODO ("toffoli-fq")
+    -- TODO ("toffoli.fq")
     ]
 
 runTests :: IO ()

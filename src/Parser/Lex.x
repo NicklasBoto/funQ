@@ -10,17 +10,14 @@ import Data.Word (Word8)
 import Data.Char (ord)
 }
 
-
 $c = [A-Z\192-\221] # [\215]  -- capital isolatin1 letter (215 = \times) FIXME
 $s = [a-z\222-\255] # [\247]  -- small   isolatin1 letter (247 = \div  ) FIXME
 $l = [$c $s]         -- letter
 $d = [0-9]           -- digit
 $i = [$l $d _ ']     -- identifier character
 $u = [. \n]          -- universal: any character
-
 @rsyms =    -- symbols and non-identifier-like reserved words
    \* | \( | \, | \) | \= | \. | "0" | "1" | \! | \> \< | \- "o"
-
 :-
 
 -- Line comments
@@ -28,18 +25,18 @@ $u = [. \n]          -- universal: any character
 
 $white+ ;
 @rsyms
-    { tok (\p s -> PT p (eitherResIdent TV s)) }
+    { tok (\p s -> PT p (eitherResIdent (TV . share) s)) }
 $s ([\' \_]| ($d | $l)) * \  * \:
-    { tok (\p s -> PT p (eitherResIdent T_FunVar s)) }
+    { tok (\p s -> PT p (eitherResIdent (T_FunVar . share) s)) }
 $s ([\' \_]| ($d | $l)) *
-    { tok (\p s -> PT p (eitherResIdent T_Var s)) }
+    { tok (\p s -> PT p (eitherResIdent (T_Var . share) s)) }
 $c +
-    { tok (\p s -> PT p (eitherResIdent T_GateIdent s)) }
+    { tok (\p s -> PT p (eitherResIdent (T_GateIdent . share) s)) }
 \\
-    { tok (\p s -> PT p (eitherResIdent T_Lambda s)) }
+    { tok (\p s -> PT p (eitherResIdent (T_Lambda . share) s)) }
 
 $l $i*
-    { tok (\p s -> PT p (eitherResIdent TV s)) }
+    { tok (\p s -> PT p (eitherResIdent (TV . share) s)) }
 
 
 
@@ -49,6 +46,9 @@ $l $i*
 
 tok :: (Posn -> String -> Token) -> (Posn -> String -> Token)
 tok f p s = f p s
+
+share :: String -> String
+share = id
 
 data Tok =
    TS !String !Int    -- reserved words and symbols
@@ -117,7 +117,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "H" 15 (b "0" 8 (b "*" 4 (b "(" 2 (b "!" 1 N N) (b ")" 3 N N)) (b "-o" 6 (b "," 5 N N) (b "." 7 N N))) (b "Bit" 12 (b "=" 10 (b "1" 9 N N) (b "><" 11 N N)) (b "FREDKIN" 14 (b "CNOT" 13 N N) N))) (b "Y" 23 (b "SWAP" 19 (b "QBit" 17 (b "I" 16 N N) (b "S" 18 N N)) (b "TOFFOLI" 21 (b "T" 20 N N) (b "X" 22 N N))) (b "in" 27 (b "else" 25 (b "Z" 24 N N) (b "if" 26 N N)) (b "then" 29 (b "let" 28 N N) N)))
+resWords = b "I" 16 (b "0" 8 (b "*" 4 (b "(" 2 (b "!" 1 N N) (b ")" 3 N N)) (b "-o" 6 (b "," 5 N N) (b "." 7 N N))) (b "Bit" 12 (b "=" 10 (b "1" 9 N N) (b "><" 11 N N)) (b "FREDKIN" 14 (b "CNOT" 13 N N) (b "H" 15 N N)))) (b "Y" 24 (b "SWAP" 20 (b "QFT" 18 (b "QBit" 17 N N) (b "S" 19 N N)) (b "TOFFOLI" 22 (b "T" 21 N N) (b "X" 23 N N))) (b "in" 28 (b "else" 26 (b "Z" 25 N N) (b "if" 27 N N)) (b "then" 30 (b "let" 29 N N) N)))
    where b s n = let bs = s
                  in  B bs (TS bs n)
 
