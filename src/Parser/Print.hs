@@ -38,7 +38,7 @@ render d = rend 0 (map ($ "") $ d []) "" where
     _            -> id
   new i     = showChar '\n' . replicateS (2*i) (showChar ' ') . dropWhile isSpace
   space t s =
-    case (all isSpace t', null spc, null rest) of
+    case (all isSpace t' || t' == "!", null spc, null rest) of
       (True , _   , True ) -> []              -- remove trailing space
       (False, _   , True ) -> t'              -- remove trailing space
       (False, True, False) -> t' ++ ' ' : s   -- add space if none
@@ -107,7 +107,7 @@ instance Print Parser.Abs.GateIdent where
   prt _ (Parser.Abs.GateIdent i) = doc $ showString $ i
 
 instance Print Parser.Abs.Lambda where
-  prt _ (Parser.Abs.Lambda i) = doc $ showString $ i
+  prt _ (Parser.Abs.Lambda i) = doc $ showString "λ"
 
 instance Print Parser.Abs.Program where
   prt i e = case e of
@@ -121,8 +121,8 @@ instance Print Parser.Abs.Term where
     Parser.Abs.TTup tup -> prPrec i 3 (concatD [prt 0 tup])
     Parser.Abs.TStar -> prPrec i 3 (concatD [doc (showString "*")])
     Parser.Abs.TApp term1 term2 -> prPrec i 2 (concatD [prt 2 term1, prt 3 term2])
-    Parser.Abs.TIfEl term1 term2 term3 -> prPrec i 1 (concatD [doc (showString "if"), prt 2 term1, doc (showString "then"), prt 2 term2, doc (showString "else"), prt 0 term3])
-    Parser.Abs.TLet var1 var2 term1 term2 -> prPrec i 1 (concatD [doc (showString "let"), doc (showString "("), prt 0 var1, doc (showString ","), prt 0 var2, doc (showString ")"), doc (showString "="), prt 2 term1, doc (showString "in"), prt 0 term2])
+    Parser.Abs.TIfEl term1 term2 term3 -> prPrec i 1 (concatD [doc (showString "if"), prt 2 term1, doc (showString "then"), prt 0 term2, doc (showString "else"), prt 0 term3])
+    Parser.Abs.TLet var1 var2 term1 term2 -> prPrec i 1 (concatD [doc (showString "let"), doc (showString "("), prt 0 var1, doc (showString ","), prt 0 var2, doc (showString ")"), doc (showString "="), prt 0 term1, doc (showString "in"), prt 0 term2])
     Parser.Abs.TLamb lambda var term -> prPrec i 1 (concatD [prt 0 lambda, prt 0 var, doc (showString "."), prt 0 term])
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
@@ -168,8 +168,8 @@ instance Print Parser.Abs.Type where
     Parser.Abs.TypeQbit -> prPrec i 2 (concatD [doc (showString "QBit")])
     Parser.Abs.TypeVoid -> prPrec i 2 (concatD [doc (showString "T")])
     Parser.Abs.TypeDup type_ -> prPrec i 2 (concatD [doc (showString "!"), prt 2 type_])
-    Parser.Abs.TypeTens type_1 type_2 -> prPrec i 1 (concatD [prt 2 type_1, doc (showString "><"), prt 1 type_2])
-    Parser.Abs.TypeFunc type_1 type_2 -> prPrec i 1 (concatD [prt 2 type_1, doc (showString "-o"), prt 1 type_2])
+    Parser.Abs.TypeTens type_1 type_2 -> prPrec i 1 (concatD [prt 2 type_1, doc (showString "⊗ "), prt 1 type_2])
+    Parser.Abs.TypeFunc type_1 type_2 -> prPrec i 1 (concatD [prt 2 type_1, doc (showString "⊸"), prt 1 type_2])
 
 instance Print Parser.Abs.Gate where
   prt i e = case e of
@@ -184,5 +184,6 @@ instance Print Parser.Abs.Gate where
     Parser.Abs.GTOF -> prPrec i 0 (concatD [doc (showString "TOFFOLI")])
     Parser.Abs.GSWP -> prPrec i 0 (concatD [doc (showString "SWAP")])
     Parser.Abs.GFRDK -> prPrec i 0 (concatD [doc (showString "FREDKIN")])
+    Parser.Abs.GQFT -> prPrec i 0 (concatD [doc (showString "QFT")])
     Parser.Abs.GGate gateident -> prPrec i 0 (concatD [prt 0 gateident])
 

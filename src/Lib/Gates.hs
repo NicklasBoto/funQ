@@ -129,8 +129,8 @@ pauliZ = runGate pZmat
 -- | Hadamard gate
 -- 
 -- \[ \text{X} = \frac1{\sqrt2} \begin{bmatrix}
---    0 & 1 \\
---    1 & 0
+--    1 & 1 \\
+--    1 & -1
 -- \end{bmatrix} \]
 --
 -- ![hadamard](images/h.PNG)

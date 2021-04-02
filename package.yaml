@@ -34,8 +34,14 @@ dependencies:
 - numbers
 - array
 - containers
+- haskeline
+- turtle
+- parsec
 
 library:
+  when:
+    - condition: false
+      other-modules: Paths_pkg
   source-dirs: 
     - src
     - examples

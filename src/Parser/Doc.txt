@@ -35,10 +35,10 @@ The set of reserved words is the set of terminals appearing in the grammar. Thos
 
 The reserved words used in Parser are the following:
   | ``Bit`` | ``CNOT`` | ``FREDKIN`` | ``H``
-  | ``I`` | ``QBit`` | ``S`` | ``SWAP``
-  | ``T`` | ``TOFFOLI`` | ``X`` | ``Y``
-  | ``Z`` | ``else`` | ``if`` | ``in``
-  | ``let`` | ``then`` |  |
+  | ``I`` | ``QBit`` | ``QFT`` | ``S``
+  | ``SWAP`` | ``T`` | ``TOFFOLI`` | ``X``
+  | ``Y`` | ``Z`` | ``else`` | ``if``
+  | ``in`` | ``let`` | ``then`` |
 
 The symbols used in Parser are the following:
   | * | ( | , | )
@@ -63,8 +63,8 @@ All other symbols are terminals.
   |  |  **|**  | ``(`` //Term// ``)``
   | //Term2// | -> | //Term2// //Term3//
   |  |  **|**  | //Term3//
-  | //Term1// | -> | ``if`` //Term2// ``then`` //Term2// ``else`` //Term//
-  |  |  **|**  | ``let`` ``(`` //Var// ``,`` //Var// ``)`` ``=`` //Term2// ``in`` //Term//
+  | //Term1// | -> | ``if`` //Term2// ``then`` //Term// ``else`` //Term//
+  |  |  **|**  | ``let`` ``(`` //Var// ``,`` //Var// ``)`` ``=`` //Term// ``in`` //Term//
   |  |  **|**  | //Lambda// //Var// ``.`` //Term//
   |  |  **|**  | //Term2//
   | //Term// | -> | //Term1//
@@ -101,6 +101,7 @@ All other symbols are terminals.
   |  |  **|**  | ``TOFFOLI``
   |  |  **|**  | ``SWAP``
   |  |  **|**  | ``FREDKIN``
+  |  |  **|**  | ``QFT``
   |  |  **|**  | //GateIdent//
 
 

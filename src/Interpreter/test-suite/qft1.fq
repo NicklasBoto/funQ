@@ -1,0 +1,2 @@
+main : Bit
+main = meas (QFT (new 0))

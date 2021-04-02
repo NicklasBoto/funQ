@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
-module Spec where
+module Main where
 
 import QStateTests ( runTests )
 import GatesTests ( runTests )

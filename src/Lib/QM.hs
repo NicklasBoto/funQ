@@ -44,7 +44,7 @@ type Ix = Int
 -- | Pointer to a qubit in QState.
 -- Represents the linking function in QLambda
 newtype QBit = Ptr { link :: Ix }
-    deriving Show
+    deriving (Show, Read)
 
 -- | The program state, a complex vector representation of
 -- the qubits in the system
@@ -89,6 +89,9 @@ instance Monad QM where
     m >>= k = QM \s -> do
         (a, s') <- runQM m s
         runQM (k a) s'
+
+instance MonadFail QM where 
+    fail s = error $ "Panic behavior!" ++ " " ++ s
 
 -- | Perform IO action inside the quantum monad
 io :: IO a -> QM a

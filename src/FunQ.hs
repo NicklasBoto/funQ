@@ -1,3 +1,5 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeFamilies #-}
 {-|
 Module      : FunQ
 Description : Main library
@@ -17,6 +19,7 @@ module FunQ
     , QBit
     , Bit
     , QM
+    , io
     
     -- * Gates
     , pauliX
@@ -46,7 +49,7 @@ module FunQ
     ) where
 
 import Control.Monad ( replicateM, mapM )
-import Lib.QM ( QM, QBit, run, runDebug )
+import Lib.QM ( QM, QBit, run, runDebug, io, checkState)
 import Lib.Core
     ( Bit,
       new,
@@ -86,5 +89,27 @@ bellMeasure (x,y) = do
     hadamard x
     m_x <- measure x
     m_y <- measure y
-    return (m_x,m_y)
+    return (m_x, m_y)
 
+data Gate a = H a | CNOT a a | TOFF a a a
+
+type family Tuple t :: * where
+  Tuple [a,a] = (a,a)
+  Tuple [a,a,a] = (a,a,a)
+  Tuple [a,a,a,a] = (a,a,a,a)
+
+-- class Runnable a where
+--   run :: a -> QM a
+
+-- tuple :: Tuple a -> QM (QBit, QBit)
+-- tuple = undefined
+
+-- tuple :: [QBit] -> Tuple t
+-- tuple lst = undefined
+
+-- test :: QM ()
+-- test = do
+--   q <- new 1
+--   q' <- new 0
+--   cnot $ tuple [q, q']
+--   checkState
