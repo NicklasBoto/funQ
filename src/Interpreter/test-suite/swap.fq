@@ -1,5 +1,0 @@
-swap : QBit -o QBit -o (QBit >< QBit)
-swap a b = SWAP (a,b)
-
-main : Bit 
-main = let (a, b) = swap (new 1) (new 0) in meas b -- 1

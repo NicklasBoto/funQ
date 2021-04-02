@@ -1,5 +1,0 @@
-third : Bit -o Bit -o Bit -o Bit
-third x y z = z 
-
-main : Bit 
-main = third 0 0 1 -- 1

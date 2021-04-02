@@ -1,5 +1,0 @@
-second : QBit -o QBit -o QBit
-second x y = y 
-
-main : Bit 
-main = meas (second (new 1) (new 0))

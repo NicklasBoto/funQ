@@ -1,5 +1,0 @@
-plus : Bit -o Bit -o Bit
-plus a b = if a then (if b then 0 else 1) else (if b then 1 else 0)
-
-main : Bit
-main = plus 0 0
