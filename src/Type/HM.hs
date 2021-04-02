@@ -1,4 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module Type.HM where
 
@@ -39,7 +40,7 @@ instance Show Scheme where
                       ++ printTree (reverseType t)
 
 -- | Each variable in the TypeEnv has an associated type Scheme.
-newtype TypeEnv = TypeEnv (Map.Map Named Scheme) deriving Show
+type TypeEnv = Map.Map Named Scheme
 
 -- | A substitution is a map from a type variable to the type it 
 --  should be substituted with. It could be another type variable.
@@ -51,7 +52,7 @@ nullSubst = Map.empty
 
 -- | The empty environment are the type environment where no variables exist.
 emptyEnv :: TypeEnv
-emptyEnv = TypeEnv Map.empty
+emptyEnv = Map.empty
 
 -- | Type errors that can occur during type check.
 data TypeError
@@ -61,6 +62,7 @@ data TypeError
     | SubtypeFailError Type Type
     | ProductDuplicityError Type Type
     | LinearityError Term
+    | TopLevelLinearFail String
     deriving Eq
 
 instance Show TypeError where
@@ -87,17 +89,43 @@ instance Show TypeError where
     show (ProductDuplicityError l r) =
         "Linear product operands must have equal duplicity: " ++ show l ++ " ⊗  " ++ show r
 
+    show (TopLevelLinearFail f) = "Linear function " ++ show f ++ " was used multiple times."
+
 -- | Counter for creating fresh type variables
 type Counter = Int
 
 -- | The monad type inferrement occurs, it could have an exception
 --   if there is a type error. It keeps track of a counter for what
 --   the next fresh type variable should be.
-type Infer = ExceptT TypeError (State Counter)
+type Infer = ExceptT TypeError (State InferState)
+
+data InferState 
+    = St { count  :: Counter
+         , linenv :: Set.Set String
+         , env    :: TypeEnv
+         , absl   :: Integer
+         }
+
+emptyState :: InferState
+emptyState = St 0 Set.empty Map.empty 0
 
 -- | Extend the type environment with a new bound variable together with its type scheme.
-extend :: TypeEnv -> (Named, Scheme) -> TypeEnv
-extend (TypeEnv env) (n,s) = TypeEnv $ Map.insert n s env
+extend :: (Named, Scheme) -> Infer ()
+extend (n,s) = do
+    env <- gets env
+    modify $ \st -> st{env = Map.insert n s env}
+
+extend' env (n,s) = Map.insert n s env
+
+addLin :: String -> Infer ()
+addLin name = do
+    linenv <- gets linenv
+    modify $ \st -> st{linenv = Set.insert name linenv}
+
+incAbsl :: Integer -> Infer ()
+incAbsl i = do
+    absl <- gets absl
+    modify $ \st -> st{absl = absl + i}
 
 -- | Apply final substitution and normalize the type variables 
 closeOver :: (Subst, Type) -> Scheme
@@ -130,7 +158,7 @@ normalize (Forall ts body) = Forall (fmap (LVar . snd) ord) (normtype body)
 
 -- | 
 compose :: Subst -> Map.Map TVar Type -> Map.Map TVar Type
-compose s1 s2 = Map.map (apply s1) s2 `Map.union` s1
+s2 `compose` s1 = Map.map (apply s2) s1 `Map.union` s2
 
 (∘) :: Subst -> Map.Map TVar Type -> Map.Map TVar Type
 (∘) = compose
@@ -202,8 +230,8 @@ instance Substitutable a => Substitutable [a] where
     ftv = foldr (Set.union . ftv) Set.empty
 
 instance Substitutable TypeEnv where
-    apply s (TypeEnv env) = TypeEnv $ Map.map (apply s) env
-    ftv (TypeEnv env) = ftv $ Map.elems env
+    apply s env =  Map.map (apply s) env
+    ftv env = ftv $ Map.elems env
 
 occursCheck ::  Substitutable a => TVar -> a -> Bool
 occursCheck a t = a `Set.member` ftv t
@@ -266,15 +294,15 @@ isConstType _type = False
 --   Also updates the internal type variable counter to avoid collisions.
 fresh :: Infer Type
 fresh = do
-  s <- get
-  put (s+1)
+  s <- gets count
+  modify $ \st ->  st{count = s+1}
   return $ TypeVar $ letters !! s
 
 -- | Introduce a new flexible type variable.
 freshFlex :: Infer Type
 freshFlex = do
-    s <- get
-    put (s+1)
+    s <- gets count 
+    modify $ \st ->  st{count = s+1}
     return $ TypeFlex $ letters !! s
 
 -- | Returns a list of strings used for fresh type variables.
@@ -299,47 +327,64 @@ generalize env t  = Forall as t
     where as = Set.toList $ ftv t `Set.difference` ftv env
 
 -- | Infers a substitution and a type from a Term
-infer :: Integer -> TypeEnv -> Term -> Infer (Subst, Type)
-infer i env (Idx j)      = lookupEnv env (Bound (i-j-1))
-infer i env (Fun var)   = lookupEnv env (NFun var)
-infer i env (Bit _)      = return (nullSubst, bang TypeBit)
-infer i env (Gate gate)  = return (nullSubst, inferGate gate)
-infer i env (Tup l r)  = do
-    (ls, lt) <- infer i env l
-    (rs, rt) <- infer i env r
+infer :: Term -> Infer (Subst, Type)
+infer (Idx j)      = do
+    i <- gets absl
+    lookupEnv (Bound (i-j-1)) 
+infer (Fun var)    = do
+    linEnv <- gets linenv
+    (s, typ) <- lookupEnv (NFun var)
+    case typ of
+        TypeDup _ -> return (s,typ)
+        _notdup   -> if Set.member var linEnv
+                        then throwError $ TopLevelLinearFail var
+                        else addLin var >> return (s,typ)
+infer (Bit _)      = return (nullSubst, bang TypeBit)
+infer (Gate gate)  = return (nullSubst, inferGate gate)
+infer (Tup l r)  = do
+    (ls, lt) <- infer l
+    (rs, rt) <- infer r
     t <- productExponential lt rt
     return (ls ∘ rs, t)
-infer i env (App l r) = do
+infer (App l r) = do
     tv <- fresh
-    (s1,t1) <- infer i env l
-    (s2,t2) <- infer i (apply s1 env) r
+    env <- gets env
+    (s1,t1) <- infer l
+    modify (\st -> st{env=apply s1 env})
+    (s2,t2) <- infer r
     subtypeCheck t1 t2
     s3      <- unify (apply s2 t1) (t2 :=> tv)
     return (s3 ∘ s2 ∘ s1, apply s3 tv)
-infer i env (IfEl b l r) = do
-    (s1,t1) <- infer i env b
-    (s2,t2) <- infer i env l
-    (s3,t3) <- infer i env r
+infer (IfEl b l r) = do
+    (s1,t1) <- infer b
+    (s2,t2) <- infer l
+    (s3,t3) <- infer r
     s4 <- unify (TypeDup TypeBit) t1
     s5 <- unify t2 t3
     return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, apply s5 t2)
-infer i env (Let eq inn) = do
-    tv1 <- inferDuplicity (Abs inn) <$> fresh 
+infer (Let eq inn) = do
+    tv1 <- inferDuplicity (Abs inn) <$> fresh  
     tv2 <- inferDuplicity inn <$> fresh
-    (seq, teq) <- infer i env eq 
+    (seq, teq) <- infer eq 
     product <- unify teq (tv1 :>< tv2)
-    let env' = env `extend` (Bound (i+1), product `apply` Forall [] tv1) 
-                   `extend` (Bound  i   , product `apply` Forall [] tv2)
-    (sinn, tinn) <- infer (i+2) env' inn
-    return (seq ∘ product ∘ sinn, seq ∘ sinn `apply` tinn)
-infer i env (Abs body) = do
+    i <- gets absl 
+    extend (Bound (i+1), product `apply` Forall [] tv1)
+    extend (Bound  i   , product `apply` Forall [] tv2)
+    incAbsl 2 
+    (sinn, tinn) <- infer inn
+    -- return (seq ∘ product ∘ sinn, seq ∘ sinn `apply` tinn)
+    return (sinn ∘ product ∘ seq, seq `apply` tinn)
+infer (Abs body) = do
     tv <- inferDuplicity body <$> fresh
-    let env' = env `extend` (Bound i, Forall [] tv)
-    (s1, t1) <- infer (i+1) env' body
+    i <- gets absl
+    env <- gets env
+    extend (Bound i, Forall [] tv)
+    incAbsl 1
+    (s1, t1) <- infer body
     return (s1, apply s1 tv :=> t1)
-infer i env New  = return (nullSubst, TypeBit  :=> TypeQBit)
-infer i env Meas = return (nullSubst, TypeQBit :=> TypeDup TypeBit)
-infer i env Unit = return (nullSubst, TypeDup TypeUnit)
+infer New  = return (nullSubst, TypeBit  :=> TypeQBit)
+infer Meas = return (nullSubst, TypeQBit :=> TypeDup TypeBit)
+infer Unit = return (nullSubst, TypeDup TypeUnit)
 
 productExponential :: Type -> Type -> Infer Type
 productExponential l r
@@ -366,9 +411,10 @@ inferGate g = gateType $ case g of
         gateType  n = gateType' n :=> gateType' n
 
 subtypeCheck :: Type -> Type -> Infer ()
-subtypeCheck (a :=> _) b 
-    | b <: a    = return ()
-    | otherwise = throwError $ SubtypeFailError a b
+subtypeCheck f b = case debang f of
+    (a :=> _) | b <: a    -> return ()
+              | otherwise -> throwError $ SubtypeFailError a b
+    t -> error "oh no" 
 
 -- | Return whether a type is a subtype of another type.
 (<:) :: Type -> Type -> Bool
@@ -396,8 +442,10 @@ inferDuplicity e t
 (!?) = inferDuplicity
 
 -- | Looks up a free or bound variable from the environment
-lookupEnv :: TypeEnv -> Named -> Infer (Subst, Type)
-lookupEnv (TypeEnv env) x = case Map.lookup x env of
+lookupEnv :: Named -> Infer (Subst, Type)
+lookupEnv x = do
+    env' <- gets env
+    case Map.lookup x env' of
         Nothing -> throwError $ NotInScopeError x
         Just  s -> do t <- instantiate s
                       return (nullSubst, t)
@@ -422,12 +470,13 @@ headCount = cO 0
             -- \x . let (a,b) = x in M
             e -> 0
 
+
 typecheckTerm :: Term -> Either TypeError Scheme
-typecheckTerm e = runInfer (infer 0 emptyEnv e)
+typecheckTerm e = runInfer (infer e)
 
 typecheckProgram :: [Function] -> [Either TypeError (String, Type)]
-typecheckProgram fs = map (checkFunc env) fs
-    where env = genEnv fs
+typecheckProgram fs = map (checkFunc state) fs
+    where state = St 0 Set.empty (genEnv fs) 0
 
 showTypes :: [Either TypeError (String, Type)] -> IO ()
 showTypes = putStrLn . intercalate "\n\n" . map st
@@ -442,14 +491,18 @@ runtcFile path = runtc <$> readFile path
 
 -- | Run the inferement code. The result is a type scheme or an exception.
 runInfer :: Infer (Subst, Type) -> Either TypeError Scheme
-runInfer m = case evalState (runExceptT m) 0 of
+runInfer = runInferWith emptyState
+
+runInferWith :: InferState -> Infer (Subst, Type) -> Either TypeError Scheme
+runInferWith inferState m = case evalState (runExceptT m) inferState of
         Left  err -> Left err
         Right res -> Right $ closeOver res
 
-checkFunc :: TypeEnv -> Function -> Either TypeError (String, Type)
-checkFunc env (Func name qtype term) = do
-    Forall _ itype <- runInfer (infer 0 env term)
-    s <- evalState (runExceptT (equal qtype itype)) 0
+checkFunc :: InferState -> Function -> Either TypeError (String, Type)
+checkFunc state (Func name qtype term) = do
+    -- let is = St 0 Set.empty env 0
+    Forall _ itype <- runInferWith state (infer term)
+    s <- evalState (runExceptT (equal qtype itype)) emptyState
     return (name, s)
 
 
@@ -461,17 +514,35 @@ equal typ inf = do
     return $ apply sub typ
 
 -- | Generate environment with function signatures 
-genEnv :: [Function] -> TypeEnv
-genEnv = TypeEnv . Map.fromList . map f
+genEnv :: [Function] -> TypeEnv 
+genEnv = Map.fromList . map f
     where f (Func n t _) = (NFun n, generalize emptyEnv t)
 
 inferExp :: String -> Either TypeError Type
 inferExp prog = do
     let [Func _ _ term] = run ("f : a f = " ++ prog)
-    Forall _ type' <- runInfer (infer 0 emptyEnv term)
+    Forall _ type' <- runInfer (infer term)
     -- return $ deflexType type'
     return type'
 
+
+-- tc fs = foldM (\(func, state) -> checkFunc state func) (St 0 Set.empty env 0) fs
+--     where env = genEnv fs
+
+tc :: [Function] -> Infer ()
+tc = mapM_ f
+    where f (Func _ qtype term) = 
+            do (s, itype) <- infer term
+               env <- gets env
+               linenv <- gets linenv
+               equal qtype itype
+               put $ St 0 linenv env 0
+
 -- | Run typechecker on program
 typecheck :: [Function] -> Either TypeError ()
-typecheck = mapM_ . checkFunc . genEnv <*> id
+typecheck funcs = void $ evalState (runExceptT (tc funcs)) state
+    where 
+        state = St 0 Set.empty (genEnv funcs) 0
+
+testTc :: String -> Either TypeError ()
+testTc = typecheck . run
