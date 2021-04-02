@@ -1,0 +1,5 @@
+pauliY : QBit -o QBit
+pauliY q = Y q
+
+main : Bit
+main = meas (pauliY (new 0)) -- 1

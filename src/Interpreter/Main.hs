@@ -6,7 +6,7 @@ import qualified FunQ as Q
 import qualified AST.AST as A
 import Parser.Par (pProgram, myLexer)
 import Control.Monad.Except
-    ( MonadIO(liftIO), ExceptT, MonadError(throwError), runExceptT )
+    ( MonadIO(liftIO), ExceptT, MonadError(throwError), runExceptT, lift )
 import Interpreter.Interpreter ( Value, interpret, ValueError )
 import System.Console.Haskeline
     ( defaultSettings, getInputLine, outputStrLn, runInputT, InputT )
@@ -57,21 +57,21 @@ run fileName = do
     res <- liftIO $ Q.run $ runExceptT $ interpret parsedPrg
     case res of
         Left err -> do
-            -- liftIO $ putStrLn "INTERPRETER ERROR"
+            liftIO $ putStrLn "INTERPRETER ERROR"
             throwError $ ValueError err
         Right i -> do
-            -- liftIO $ putStrLn $ "Result: " ++ show i
+            liftIO $ putStrLn $ "Result: " ++ show i
             return i
 
 
 parse :: String -> Run A.Program
 parse s = case pProgram (myLexer s) of
   Left err -> do
-    -- liftIO $ putStrLn "SYNTAX ERROR"
+    liftIO $ putStrLn "SYNTAX ERROR"
     throwError $ ParseError err 
   Right prg -> do
-    -- putStrLn $ show prg 
-    -- putStrLn $ show $ A.toIm prg
+  --  (lift . print) prg 
+    (lift . print) $ A.toIm prg
     return $ A.toIm prg
 
 -- [Function] -> Either TypeError ()

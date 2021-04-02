@@ -1,0 +1,5 @@
+t : QBit -o QBit 
+t q = T q 
+
+main : Bit
+main = meas (t (new 1)) -- 1

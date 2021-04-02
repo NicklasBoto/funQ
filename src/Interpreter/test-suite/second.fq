@@ -1,0 +1,5 @@
+second : Bit -o Bit -o Bit
+second x y = y 
+
+main : Bit 
+main = second 0 1
