@@ -13,7 +13,7 @@ testDupProd = inferExp "(0, 0)" == Right (TypeDup (TypeBit :>< TypeBit))
 -- | Expected (?a, ?b) -o ?a
 testFst = inferExp "\\x.let (a,b) = x in a" == Right ((TypeFlex "a" :>< TypeFlex "b") :=> TypeFlex "a")
 
--- | \x.x should have type ?Bit->?Bit, since it could be either linear or not linear.
+-- | \x.x should have type ?a->?a, since it could be either linear or not linear.
 testId = inferExp "\\x.x" == Right (TypeFlex "a" :=> TypeFlex "a")
 
 -- | Test nested let statements
@@ -38,3 +38,14 @@ testDupQbit = head $ lefts $ runtc "q : !QBit q = new 0"
 
 -- | Test that a linear bit cannot be used in a nonlinear function
 testLinBit = head $ lefts $ runtc "b : Bit b = 0 dup : !Bit >< !Bit dup = (b,b)"
+
+-- | Test that the output of a linear function cannot be made duplicable ??
+testLinFun = head $ lefts $ runtc $ "f : Bit -o Bit" ++
+                                    "f x = meas (new x)" ++
+                                    "g : !Bit" ++
+                                    "g = f 0"
+
+-- | Test linearity of single variable, should not be possible to have two references to a linear bit. (working now)
+testLinRef = lefts $ runtc $ "b1 : Bit b1 = 0" ++
+                             "b2 : Bit b2 = b1" ++ 
+                             "b3 : Bit b3 = b1"
