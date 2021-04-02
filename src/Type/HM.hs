@@ -9,6 +9,7 @@ import Control.Monad.State
 import Control.Monad.Except
 import Parser.Print
 import Data.List (nub, intercalate)
+import Data.Bifunctor (first)
 import Debug.Trace
 
 
@@ -396,8 +397,7 @@ inferDuplicity e t
 
 -- | Looks up a free or bound variable from the environment
 lookupEnv :: TypeEnv -> Named -> Infer (Subst, Type)
-lookupEnv (TypeEnv env) x = do
-    case Map.lookup x env of
+lookupEnv (TypeEnv env) x = case Map.lookup x env of
         Nothing -> throwError $ NotInScopeError x
         Just  s -> do t <- instantiate s
                       return (nullSubst, t)
@@ -422,8 +422,8 @@ headCount = cO 0
             -- \x . let (a,b) = x in M
             e -> 0
 
-typecheck :: Term -> Either TypeError Scheme
-typecheck e = runInfer (infer 0 emptyEnv e)
+typecheckTerm :: Term -> Either TypeError Scheme
+typecheckTerm e = runInfer (infer 0 emptyEnv e)
 
 typecheckProgram :: [Function] -> [Either TypeError (String, Type)]
 typecheckProgram fs = map (checkFunc env) fs
@@ -465,11 +465,13 @@ genEnv :: [Function] -> TypeEnv
 genEnv = TypeEnv . Map.fromList . map f
     where f (Func n t _) = (Free n, generalize emptyEnv t)
 
-
-
 inferExp :: String -> Either TypeError Type
 inferExp prog = do
     let [Func _ _ term] = run ("f : a f = " ++ prog)
     Forall _ type' <- runInfer (infer 0 emptyEnv term)
     -- return $ deflexType type'
     return type'
+
+-- | Run typechecker on program
+typecheck :: [Function] -> Either TypeError ()
+typecheck = mapM_ . checkFunc . genEnv <*> id
