@@ -31,7 +31,7 @@ tests = [
     ("pauliZ.fq",   "0"),   
     ("phase.fq",    "0"),  
     ("plus.fq",     "0"),
-    ("qft.fq",      "0"),
+    --("qft.fq",      "0"),
     ("second-q.fq", "0"),
     ("second.fq",   "1"),
     ("seventh.fq",  "0"),

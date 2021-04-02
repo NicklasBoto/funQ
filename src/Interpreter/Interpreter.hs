@@ -32,7 +32,6 @@ data Error
     | NoMainFunction String
     | NotApplied String
     | Fail String
-    | IndexTooLarge String
      deriving Show
 
 type Sig = M.Map String A.Term
@@ -75,11 +74,7 @@ data Value
 
 eval :: Env -> A.Term -> Eval Value
 eval env = \case
-    A.Idx j -> do
-        if fromIntegral j >= length (values env) then do
-            throwError $ IndexTooLarge $ "Index " ++ show j ++ " too large, Values=" ++ concat (map show (values env))
-         else do
-             return $ values env !! (fromIntegral j)
+    A.Idx j -> return $ values env !! (fromIntegral j)
 
     A.Fun s -> case M.lookup s (functions env) of
         Just t  -> eval env t
@@ -107,9 +102,6 @@ eval env = \case
         --  , phasePi8
         --  , urot
         --  , crot
-        --  , qft
-
-        
 
     A.App A.New b -> do
         VBit b' <- eval env b

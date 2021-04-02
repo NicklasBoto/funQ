@@ -69,6 +69,9 @@ library
     , mtl
     , numbers
     , turtle
+  if false
+    other-modules:
+        Paths_pkg
   default-language: Haskell2010
 
 executable qfunc-exe
