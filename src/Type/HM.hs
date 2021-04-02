@@ -15,7 +15,7 @@ import Debug.Trace
 
 -- | Representations of free and bound variables in lambda abstractions
 data Named
-    = Free String
+    = NFun String -- Named function
     | Bound Integer
     deriving (Eq, Ord, Show)
 
@@ -77,8 +77,8 @@ instance Show TypeError where
     show (NotInScopeError (Bound j)) =
         "The impossible happened, free deBruijn index"
 
-    show (NotInScopeError (Free v)) =
-        "Variable not in scope: " ++ v
+    show (NotInScopeError (NFun v)) =
+        "Function not in scope: " ++ v
 
     show (InfiniteTypeError v t) =
         "Occurs check: cannot construct the infinite type: " ++
@@ -301,7 +301,7 @@ generalize env t  = Forall as t
 -- | Infers a substitution and a type from a Term
 infer :: Integer -> TypeEnv -> Term -> Infer (Subst, Type)
 infer i env (Idx j)      = lookupEnv env (Bound (i-j-1))
-infer i env (Fun var)   = lookupEnv env (Free var)
+infer i env (Fun var)   = lookupEnv env (NFun var)
 infer i env (Bit _)      = return (nullSubst, bang TypeBit)
 infer i env (Gate gate)  = return (nullSubst, inferGate gate)
 infer i env (Tup l r)  = do
@@ -463,7 +463,7 @@ equal typ inf = do
 -- | Generate environment with function signatures 
 genEnv :: [Function] -> TypeEnv
 genEnv = TypeEnv . Map.fromList . map f
-    where f (Func n t _) = (Free n, generalize emptyEnv t)
+    where f (Func n t _) = (NFun n, generalize emptyEnv t)
 
 inferExp :: String -> Either TypeError Type
 inferExp prog = do

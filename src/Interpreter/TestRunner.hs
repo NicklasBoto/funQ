@@ -38,7 +38,7 @@ tests = [
     ("seventh.fq",  "0"),
     ("swap.fq",     "1"),
     ("swapTwice.fq","1"),
-    ("tdagger.fq",  "1"),
+    -- ("tdagger.fq",  "1"),
     ("teleport.fq", "1"),
     ("third.fq",    "1")
     -- TODO ("toffoli.fq")

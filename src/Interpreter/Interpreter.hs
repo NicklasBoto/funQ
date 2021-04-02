@@ -46,7 +46,7 @@ data Env = Env {
 
 instance Show Value where
     show (VBit b)    = show b
-    show (VTup bs)   = show bs
+    show (VTup a b)   = "(" ++ show a ++ ", " ++ show b ++ ")"
     show (VQBit q)   = show q
     show VUnit       = "*"
     show (VFunc _ t) = "Function " ++ show t
@@ -73,7 +73,7 @@ data Value
     = VBit Q.Bit
     | VQBit Q.QBit
     | VUnit
-    | VTup [Value]
+    | VTup Value Value
     | VFunc [Value] A.Term
 
 -- | Term evaluator
@@ -88,7 +88,10 @@ eval env = \case
     A.Bit BZero -> return $ VBit 0
     A.Bit BOne -> return $ VBit 1
 
-    A.Tup bs -> VTup <$> mapM (eval env) bs
+    A.Tup t1 t2 -> do 
+        v1 <- eval env t1
+        v2 <- eval env t2
+        return $ VTup v1 v2
 
     A.App e1 e2 -> case e1 of
         A.Gate g -> case g of
@@ -97,7 +100,7 @@ eval env = \case
             Abs.GY    -> runGate  Q.pauliY e2 env
             Abs.GZ    -> runGate  Q.pauliZ e2 env
             Abs.GI    -> runGate  Q.identity e2 env
-            Abs.GT    -> runGate  Q.tdagger e2 env
+            Abs.GT    -> runGate  Q.phasePi8 e2 env
             Abs.GS    -> runGate  Q.phase e2 env
             Abs.GCNOT -> run2Gate Q.cnot e2 env
             Abs.GTOF  -> run3Gate Q.toffoli e2 env
@@ -120,14 +123,21 @@ eval env = \case
         eval env $ if b == 1 then l else r
 
     A.Let eq inn -> do
-         VTup [x1, x2] <- eval env eq
+         VTup x1 x2 <- eval env eq
          eval env{ values = x2 : x1 : values env } inn
 
     A.Abs e  -> return $ VFunc (values env) e
-    A.Void   -> return VUnit
+    A.Unit   -> return VUnit
     A.Gate g -> throwError $ NotApplied $ "Gate " ++ show g ++ " must be applied to something"
     A.New    -> throwError $ NotApplied "New must be applied to something"
     A.Meas   -> throwError $ NotApplied "Meas must be applied to something"
+
+fromVTup :: Value -> [Value]
+fromVTup (VTup a b) = a : fromVTup b
+fromVTup         x  = [x]
+
+toVTup :: [Value] -> Value
+toVTup vs = foldr1 VTup vs
 
 -- | Eval monad print
 printE :: Show a => a -> Eval ()
@@ -140,9 +150,9 @@ runQFT g q env = do
     case res of
         (VQBit q') ->
             lift (g [q']) <&> VQBit . head
-        (VTup qs') -> do
-            b <- lift $ g (unValue qs')
-            return $ VTup (VQBit <$>  b)
+        vt@(VTup _ _) -> do
+            b <- lift $ g (unValue (fromVTup vt))
+            return $ toVTup $ map VQBit b
         where unValue []            = []
               unValue (VQBit q:qss) = q : unValue qss
 
@@ -155,13 +165,13 @@ runGate g q env = do
 -- | Run gate taking two qubits
 run2Gate :: ((Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit)) -> A.Term -> Env -> Eval Value
 run2Gate g q env = do
-    VTup [VQBit a, VQBit b] <- eval env q
-    lift (g (a,b)) <&> VTup . tupToList
-        where tupToList (a,b) = [VQBit a,VQBit b]
+    VTup (VQBit a) (VQBit b) <- eval env q
+    (p,q) <- lift (g (a,b)) 
+    return $ VTup (VQBit p) (VQBit q)
 
 -- | Run gate taking three qubits
 run3Gate :: ((Q.QBit, Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit, Q.QBit)) -> A.Term -> Env -> Eval Value
 run3Gate g q env = do
-    VTup [VQBit a, VQBit b, VQBit c] <- eval env q
-    lift (g (a,b,c)) <&> VTup . tupToList
+    [VQBit a, VQBit b, VQBit c] <- fromVTup <$> eval env q
+    toVTup . tupToList <$> lift (g (a,b,c))
         where tupToList (a,b,c) = [VQBit a, VQBit b, VQBit c]

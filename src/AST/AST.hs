@@ -7,6 +7,7 @@ module AST.AST
     , Gate(..)
 
      -- * Term functions
+    , toIm
 
      -- * Type functions
     , convertType
@@ -33,16 +34,11 @@ type Env = M.Map String Integer
 
 -- | Representation of functions 
 data Function = Func String Type Term
-    deriving Show
 
 type Program = [Function]
 
 name :: P.Var -> String
 name (P.Var v) = v
-
--- | Convert parsed tuple to list representation
-tupmap :: (P.Term -> b) -> P.Tup -> [b]
-tupmap f (P.Tuple a bs) = fmap f (a:bs)
 
 -- | A term in our intermediatary representation.
 data Term
@@ -58,7 +54,7 @@ data Term
     | New
     | Meas
     | Unit
-    deriving (Eq, Show)
+    deriving Eq
 
 instance Show Function where
     show (Func n t e) = "\n" ++ n ++ " : " ++ show t ++ "\n"
