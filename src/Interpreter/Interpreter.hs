@@ -10,6 +10,7 @@ import Data.List ()
 import Control.Monad.Identity ()
 import qualified FunQ as Q
 import Control.Monad.State ()
+import Data.Functor ( (<&>) )
 import Parser.Abs as Abs
     ( Gate(GS, GH, GX, GY, GZ, GI, GT, GCNOT, GTOF, GSWP, GFRDK, GQFT),
       Bit(BOne, BZero) )
@@ -37,6 +38,7 @@ data Error
 type Sig = M.Map String A.Term
 type Eval a = ExceptT Error Q.QM a
 
+-- | Environment type, stores bound variables & functions
 data Env = Env {
       values    :: [Value]
     , functions :: Sig
@@ -53,18 +55,20 @@ instance Show Value where
 interpret :: [A.Function] -> Eval Value
 interpret fs = do
     let env = createEnv fs
-    getMainTerm env >>= eval env 
+    getMainTerm env >>= eval env
 
 -- | Creates an environment from a list of functions. 
 createEnv :: [A.Function] -> Env
 createEnv fs = Env { functions = M.fromList [(s, t) | (A.Func s _ t) <- fs],
-                            values = []}
+                     values = []}
 
+-- | Fetches program main function
 getMainTerm :: Env -> Eval A.Term
 getMainTerm env = case M.lookup "main" (functions env) of
     Just term -> return term
     Nothing   -> throwError $ NoMainFunction "Main function not defined"
 
+-- | Return type
 data Value
     = VBit Q.Bit
     | VQBit Q.QBit
@@ -72,6 +76,7 @@ data Value
     | VTup [Value]
     | VFunc [Value] A.Term
 
+-- | Term evaluator
 eval :: Env -> A.Term -> Eval Value
 eval env = \case
     A.Idx j -> return $ values env !! (fromIntegral j)
@@ -85,40 +90,30 @@ eval env = \case
 
     A.Tup bs -> VTup <$> mapM (eval env) bs
 
-    A.App (A.Gate g) q -> case g of
-         Abs.GH    -> runGate  Q.hadamard q env
-         Abs.GX    -> runGate  Q.pauliX q env
-         Abs.GY    -> runGate  Q.pauliY q env
-         Abs.GZ    -> runGate  Q.pauliZ q env
-         Abs.GI    -> runGate  Q.identity q env
-         Abs.GT    -> runGate  Q.tdagger q env
-         Abs.GS    -> runGate  Q.phase q env
-         Abs.GCNOT -> run2Gate Q.cnot q env
-         Abs.GTOF  -> run3Gate Q.toffoli q env
-         Abs.GSWP  -> run2Gate Q.swap q env
-         Abs.GFRDK -> run3Gate Q.fredkin q env
-         Abs.GQFT  -> runQFT   Q.qft q env
-        -- GGate GateIdent
-        --  , phasePi8
-        --  , urot
-        --  , crot
-
-    A.App A.New b -> do
-        VBit b' <- eval env b
-        q <- lift $ Q.new b'
-        return $ VQBit q
-
-    A.App A.Meas q -> do
-        VQBit q' <- eval env q
-        b <- lift $ Q.measure q'
-        return $ VBit b
-
-    A.App e1 e2 -> do
-        v2 <- eval env e2
-        -- (lift . Q.io . print) $ "v2: " ++ show v2
-        VFunc v1 a <- eval env e1
-        -- (lift . Q.io . print) $ "a: " ++ show a
-        eval env{ values = v2 : v1 ++ values env} a
+    A.App e1 e2 -> case e1 of
+        A.Gate g -> case g of
+            Abs.GH    -> runGate  Q.hadamard e2 env
+            Abs.GX    -> runGate  Q.pauliX e2 env
+            Abs.GY    -> runGate  Q.pauliY e2 env
+            Abs.GZ    -> runGate  Q.pauliZ e2 env
+            Abs.GI    -> runGate  Q.identity e2 env
+            Abs.GT    -> runGate  Q.tdagger e2 env
+            Abs.GS    -> runGate  Q.phase e2 env
+            Abs.GCNOT -> run2Gate Q.cnot e2 env
+            Abs.GTOF  -> run3Gate Q.toffoli e2 env
+            Abs.GSWP  -> run2Gate Q.swap e2 env
+            Abs.GFRDK -> run3Gate Q.fredkin e2 env
+            Abs.GQFT  -> runQFT   Q.qft e2 env
+        A.New -> do
+            VBit b' <- eval env e2
+            lift $ Q.new b' <&> VQBit
+        A.Meas -> do
+            VQBit q' <- eval env e2
+            lift $ Q.measure q' <&> VBit
+        _ -> do
+            v2 <- eval env e2
+            VFunc v1 a <- eval env e1
+            eval env{ values = v2 : v1 ++ values env} a
 
     A.IfEl bit l r -> do
         VBit b <- eval env bit
@@ -129,52 +124,44 @@ eval env = \case
          eval env{ values = x2 : x1 : values env } inn
 
     A.Abs e  -> return $ VFunc (values env) e
-
     A.Void   -> return VUnit
-
     A.Gate g -> throwError $ NotApplied $ "Gate " ++ show g ++ " must be applied to something"
-
     A.New    -> throwError $ NotApplied "New must be applied to something"
-
     A.Meas   -> throwError $ NotApplied "Meas must be applied to something"
 
+-- | Eval monad print
 printE :: Show a => a -> Eval ()
-printE = (lift . Q.io . putStrLn . show)
+printE = lift . Q.io . print
 
-tuple :: Read a => [Q.QBit] -> a
-tuple lst = read $ "(" ++ (init . tail . show) lst  ++ ")" 
-
+-- | Run QFT gate
 runQFT :: ([Q.QBit] -> Q.QM [Q.QBit]) -> A.Term -> Env -> Eval Value
-runQFT g q env = do 
+runQFT g q env = do
     res <- eval env q
-    case res of 
-        (VQBit q') ->  do
-            a <- lift (g [q']) 
-            return $ VTup (VQBit <$> a)
-        (VTup qs') -> do 
-            b <- lift $ (g (unValue qs'))
-            return $ VTup $ fmap VQBit b
-        where unValue [] = []
+    case res of
+        (VQBit q') ->
+            lift (g [q']) <&> VQBit . head
+        (VTup qs') -> do
+            b <- lift $ g (unValue qs')
+            return $ VTup (VQBit <$>  b)
+        where unValue []            = []
               unValue (VQBit q:qss) = q : unValue qss
-                    
 
+-- | Run gate taking one qubit
 runGate :: (Q.QBit -> Q.QM Q.QBit) -> A.Term -> Env -> Eval Value
 runGate g q env = do
     VQBit q' <- eval env q
     VQBit <$> lift (g q')
 
+-- | Run gate taking two qubits
 run2Gate :: ((Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit)) -> A.Term -> Env -> Eval Value
 run2Gate g q env = do
     VTup [VQBit a, VQBit b] <- eval env q
-    res <- lift $ g (a,b)
-    return $ VTup (tupToList res)
+    lift (g (a,b)) <&> VTup . tupToList
         where tupToList (a,b) = [VQBit a,VQBit b]
 
+-- | Run gate taking three qubits
 run3Gate :: ((Q.QBit, Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit, Q.QBit)) -> A.Term -> Env -> Eval Value
 run3Gate g q env = do
     VTup [VQBit a, VQBit b, VQBit c] <- eval env q
-    res <- lift $ g (a,b,c)
-    return $ VTup (tupToList res)
+    lift (g (a,b,c)) <&> VTup . tupToList
         where tupToList (a,b,c) = [VQBit a, VQBit b, VQBit c]
-
-
