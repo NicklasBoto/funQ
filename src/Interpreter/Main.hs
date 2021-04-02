@@ -9,6 +9,8 @@ import Parser.Par (pProgram, myLexer)
 import Control.Monad.Except
 import Interpreter.Interpreter
 import System.Console.Haskeline
+import Control.Monad.Except
+import qualified Type.HM as HM
 
 -- TODO: 
 -- * köra fq utryck i cmd (utan att mata in en fil)
@@ -32,34 +34,50 @@ main = runInputT defaultSettings loop
             case head w of
               "run" -> do 
                 outputStrLn $ "runs " ++ (w !! 1)
-                liftIO $ run (w !! 1)
+                liftIO $ runExceptT $ run (w !! 1)
                 loop
               _ -> do outputStrLn $ "Input " ++ input ++ " corresponds to no action" 
                       loop
 
+type Run = ExceptT Error IO
+
+data Error
+  = ParseError String
+  | TypeError HM.TypeError
+  | ValueError ValueError
+  | NoSuchFile FilePath
+
 -- Should be in a main pipeline file
-run :: String -> IO Value
+run :: String -> Run Value
 run fileName = do
-    prg <- readFile fileName
-    program <- parse prg
-    res <- Q.run $ runExceptT $ interpret (A.toIm program)
+    prg <- liftIO $ readFile fileName
+    parsedPrg <- parse prg
+    typecheck parsedPrg
+    res <- liftIO $ Q.run $ runExceptT $ interpret parsedPrg
     case res of
         Left err -> do
-            putStrLn "INTERPRETER ERROR"
-            putStrLn $ show err
-            error "INTERPRETER ERROR"
+            liftIO $ putStrLn "INTERPRETER ERROR"
+            throwError $ ValueError err
         Right i -> do
-            putStrLn $ "Result: " ++ show i
+            liftIO $ putStrLn $ "Result: " ++ show i
             return i
 
-
-parse :: String -> IO Program
+parse :: String -> Run A.Program
 parse s = case pProgram (myLexer s) of
   Left err -> do
-    putStrLn "SYNTAX ERROR"
-    putStrLn err
-    error "SYNTAX ERROR"
+    liftIO $ putStrLn "SYNTAX ERROR"
+    throwError $ ParseError err 
   Right prg -> do
     -- putStrLn $ show prg 
     -- putStrLn $ show $ A.toIm prg
-    return prg
+    return $ A.toIm prg
+
+-- [Function] -> Either TypeError ()
+-- Func String Type Term
+typecheck :: A.Program -> Run ()
+typecheck p = case HM.typecheck p of
+  Left err -> do
+    liftIO $ putStrLn "TYPE ERROR"
+    throwError $ TypeError err
+  Right _ -> do
+    liftIO $ putStrLn "typecheck: ok!"

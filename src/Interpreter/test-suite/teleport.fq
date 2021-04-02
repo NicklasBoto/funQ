@@ -1,10 +1,10 @@
-bellMeasure : !(QBit -o QBit -o (QBit >< QBit))
+bellMeasure : QBit -o QBit -o (Bit >< Bit)
 bellMeasure q2 q1 = let (x,y) = CNOT (q1,q2) in (measure (H x), measure y)
 
 epr : T -o QBit >< QBit
 epr x = CNOT (H (new 0), new 0)
 
-correction : !(QBit -o ((Bit >< Bit) -o QBit))
+correction : QBit -o ((Bit >< Bit) -o QBit)
 correction q bits = let (x,y) = bits in
     if x then (if y then Z (X q) else Z q) 
          else (if y then X q     else I q)     

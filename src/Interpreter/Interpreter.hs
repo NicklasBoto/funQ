@@ -28,7 +28,7 @@ import qualified AST.AST as A
 -- typeclass runnable, ta in gate och a, spotta ut QM a
 -- kan definiera olika fel
 
-data Error
+data ValueError
     = NotFunction String
     | NoMainFunction String
     | NotApplied String
@@ -36,13 +36,13 @@ data Error
      deriving Show
 
 type Sig = M.Map String A.Term
-type Eval a = ExceptT Error Q.QM a
+type Eval a = ExceptT ValueError Q.QM a
 
 -- | Environment type, stores bound variables & functions
 data Env = Env {
       values    :: [Value]
     , functions :: Sig
-}
+} deriving Show
 
 instance Show Value where
     show (VBit b)    = show b
@@ -56,6 +56,7 @@ interpret :: [A.Function] -> Eval Value
 interpret fs = do
     let env = createEnv fs
     getMainTerm env >>= eval env
+    -- debugging below
 
 -- | Creates an environment from a list of functions. 
 createEnv :: [A.Function] -> Env
