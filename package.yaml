@@ -36,6 +36,7 @@ dependencies:
 - containers
 - haskeline
 - turtle
+- parsec
 
 library:
   when:

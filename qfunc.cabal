@@ -3,6 +3,8 @@ cabal-version: 1.12
 -- This file has been generated from package.yaml by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
+--
+-- hash: 659e8b9624036596ec5a79453eb46d87155640f2ca6267737ef1ecfd7ec8e926
 
 name:           qfunc
 version:        0.1.0.0
@@ -49,6 +51,9 @@ library
       Parser.Print
       Parser.Skel
       Parser.Test
+      Type.HM
+      Type.STLC
+      Type.TypeChecker
       CoinFlip
       Deutsch
       DeutschJozsa
@@ -69,6 +74,7 @@ library
     , mtl
     , numbers
     , turtle
+    , parsec
   if false
     other-modules:
         Paths_pkg
@@ -91,6 +97,7 @@ executable qfunc-exe
     , hmatrix
     , mtl
     , numbers
+    , parsec
     , qfunc
     , turtle
   default-language: Haskell2010
@@ -99,6 +106,7 @@ test-suite qfunc-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      TypeCheckTests
       Paths_qfunc
   hs-source-dirs:
       test
@@ -114,6 +122,7 @@ test-suite qfunc-test
     , hmatrix
     , mtl
     , numbers
+    , parsec
     , qfunc
     , turtle
   default-language: Haskell2010

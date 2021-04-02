@@ -38,7 +38,7 @@ render d = rend 0 (map ($ "") $ d []) "" where
     _            -> id
   new i     = showChar '\n' . replicateS (2*i) (showChar ' ') . dropWhile isSpace
   space t s =
-    case (all isSpace t', null spc, null rest) of
+    case (all isSpace t' || t' == "!", null spc, null rest) of
       (True , _   , True ) -> []              -- remove trailing space
       (False, _   , True ) -> t'              -- remove trailing space
       (False, True, False) -> t' ++ ' ' : s   -- add space if none
@@ -107,7 +107,7 @@ instance Print Parser.Abs.GateIdent where
   prt _ (Parser.Abs.GateIdent i) = doc $ showString $ i
 
 instance Print Parser.Abs.Lambda where
-  prt _ (Parser.Abs.Lambda i) = doc $ showString $ i
+  prt _ (Parser.Abs.Lambda i) = doc $ showString "λ"
 
 instance Print Parser.Abs.Program where
   prt i e = case e of
@@ -168,8 +168,8 @@ instance Print Parser.Abs.Type where
     Parser.Abs.TypeQbit -> prPrec i 2 (concatD [doc (showString "QBit")])
     Parser.Abs.TypeVoid -> prPrec i 2 (concatD [doc (showString "T")])
     Parser.Abs.TypeDup type_ -> prPrec i 2 (concatD [doc (showString "!"), prt 2 type_])
-    Parser.Abs.TypeTens type_1 type_2 -> prPrec i 1 (concatD [prt 2 type_1, doc (showString "><"), prt 1 type_2])
-    Parser.Abs.TypeFunc type_1 type_2 -> prPrec i 1 (concatD [prt 2 type_1, doc (showString "-o"), prt 1 type_2])
+    Parser.Abs.TypeTens type_1 type_2 -> prPrec i 1 (concatD [prt 2 type_1, doc (showString "⊗ "), prt 1 type_2])
+    Parser.Abs.TypeFunc type_1 type_2 -> prPrec i 1 (concatD [prt 2 type_1, doc (showString "⊸"), prt 1 type_2])
 
 instance Print Parser.Abs.Gate where
   prt i e = case e of
