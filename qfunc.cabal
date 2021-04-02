@@ -42,12 +42,9 @@ library
       Parser.Abs
       Parser.ErrM
       Parser.Lex
-      Parser.Lex
-      Parser.Par
       Parser.Par
       Parser.Print
       Parser.Skel
-      Parser.Test
       Type.HM
       Type.STLC
       Type.TypeChecker
