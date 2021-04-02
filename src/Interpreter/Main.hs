@@ -3,13 +3,13 @@
 module Interpreter.Main where
 
 import qualified FunQ as Q
-import Parser.Abs as Abs
 import qualified AST.AST as A
 import Parser.Par (pProgram, myLexer)
 import Control.Monad.Except
-import Interpreter.Interpreter
+    ( MonadIO(liftIO), ExceptT, MonadError(throwError), runExceptT )
+import Interpreter.Interpreter ( Value, interpret, ValueError )
 import System.Console.Haskeline
-import Control.Monad.Except
+    ( defaultSettings, getInputLine, outputStrLn, runInputT, InputT )
 import qualified Type.HM as HM
 
 -- TODO: 
