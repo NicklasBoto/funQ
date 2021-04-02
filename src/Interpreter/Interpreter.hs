@@ -117,12 +117,15 @@ eval env = \case
         _ -> do
             v2 <- eval env e2
             VFunc v1 a <- eval env e1
-            eval env{ values = v2 : v1 ++ values env} a
-
+            b <- eval env{ values = v2 : v1 ++ values env } a
+            -- lift $ Q.io (putStrLn $ show b)
+            -- printE b
+            return b
+            
     A.IfEl bit l r -> do
         VBit b <- eval env bit
         eval env $ if b == 1 then l else r
-
+        
     A.Let eq inn -> do
          VTup x1 x2 <- eval env eq
          eval env{ values = x2 : x1 : values env } inn
@@ -142,7 +145,7 @@ toVTup vs = foldr1 VTup vs
 
 -- | Eval monad print
 printE :: Show a => a -> Eval ()
-printE = lift . Q.io . print
+printE = lift . Q.io . putStrLn . show
 
 -- | Run QFT gate
 runQFT :: ([Q.QBit] -> Q.QM [Q.QBit]) -> A.Term -> Env -> Eval Value

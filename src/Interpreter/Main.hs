@@ -39,7 +39,7 @@ main = runInputT defaultSettings loop
               _ -> do outputStrLn $ "Input " ++ input ++ " corresponds to no action" 
                       loop
 
-type Run = ExceptT Error IO
+type Run a = ExceptT Error IO a
 
 data Error
   = ParseError String
@@ -57,17 +57,17 @@ run fileName = do
     res <- liftIO $ Q.run $ runExceptT $ interpret parsedPrg
     case res of
         Left err -> do
-            liftIO $ putStrLn "INTERPRETER ERROR"
+            -- liftIO $ putStrLn "INTERPRETER ERROR"
             throwError $ ValueError err
         Right i -> do
-            liftIO $ putStrLn $ "Result: " ++ show i
+            -- liftIO $ putStrLn $ "Result: " ++ show i
             return i
 
 
 parse :: String -> Run A.Program
 parse s = case pProgram (myLexer s) of
   Left err -> do
-    liftIO $ putStrLn "SYNTAX ERROR"
+    -- liftIO $ putStrLn "SYNTAX ERROR"
     throwError $ ParseError err 
   Right prg -> do
     -- putStrLn $ show prg 
@@ -81,5 +81,4 @@ typecheck p = case HM.typecheck p of
   Left err -> do
     liftIO $ putStrLn "TYPE ERROR"
     throwError $ TypeError err
-  Right _ -> do
-    liftIO $ putStrLn "typecheck: ok!"
+  Right _ -> return ()
