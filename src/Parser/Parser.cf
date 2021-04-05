@@ -1,16 +1,19 @@
 PDef.  Program ::= [FunDec] ;
 
 --- Terms ---
-TVar  . Term3 ::= Var                                                 ;
-TBit  . Term3 ::= Bit                                                 ;
-TGate . Term3 ::= Gate                                                ;
-TTup  . Term3 ::= Tup                                                 ; 
-TStar . Term3 ::= "*"                                                 ;
-TApp  . Term2 ::= Term2 Term3                                         ; 
-TIfEl . Term1 ::= "if" Term2 "then" Term "else" Term                  ; 
-TLet  . Term1 ::= "let" "(" Var "," Var ")" "=" Term "in" Term        ;
-TLamb . Term1 ::= Lambda Var "." Term                                 ; 
+TVar  . Term3 ::= Var                                                    ;
+TBit  . Term3 ::= Bit                                                    ;
+TGate . Term3 ::= Gate                                                   ;
+TTup  . Term3 ::= Tup                                                    ; 
+TStar . Term3 ::= "*"                                                    ;
+TApp  . Term2 ::= Term2 Term3                                            ; 
+TIfEl . Term1 ::= "if" Term2 "then" Term "else" Term                     ; 
+TLet  . Term1 ::= "let" "(" LetVar "," [LetVar] ")" "=" Term "in" Term   ;
+TLamb . Term1 ::= Lambda Var "." Term                                    ; 
 coercions Term 3;
+
+LVar . LetVar ::= Var;
+separator nonempty LetVar ",";
 
 Tuple. Tup ::= "(" Term "," [Term] ")" ;
 separator nonempty Term ",";

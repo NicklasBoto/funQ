@@ -64,10 +64,13 @@ All other symbols are terminals.
   | //Term2// | -> | //Term2// //Term3//
   |  |  **|**  | //Term3//
   | //Term1// | -> | ``if`` //Term2// ``then`` //Term// ``else`` //Term//
-  |  |  **|**  | ``let`` ``(`` //Var// ``,`` //Var// ``)`` ``=`` //Term// ``in`` //Term//
+  |  |  **|**  | ``let`` ``(`` //LetVar// ``,`` //[LetVar]// ``)`` ``=`` //Term// ``in`` //Term//
   |  |  **|**  | //Lambda// //Var// ``.`` //Term//
   |  |  **|**  | //Term2//
   | //Term// | -> | //Term1//
+  | //LetVar// | -> | //Var//
+  | //[LetVar]// | -> | //LetVar//
+  |  |  **|**  | //LetVar// ``,`` //[LetVar]//
   | //Tup// | -> | ``(`` //Term// ``,`` //[Term]// ``)``
   | //[Term]// | -> | //Term//
   |  |  **|**  | //Term// ``,`` //[Term]//

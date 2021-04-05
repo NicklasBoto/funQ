@@ -11,6 +11,8 @@ import Parser.Lex
 %name pTerm2 Term2
 %name pTerm1 Term1
 %name pTerm Term
+%name pLetVar LetVar
+%name pListLetVar ListLetVar
 %name pTup Tup
 %name pListTerm ListTerm
 %name pBit Bit
@@ -92,12 +94,19 @@ Term2 : Term2 Term3 { Parser.Abs.TApp $1 $2 } | Term3 { $1 }
 
 Term1 :: { Parser.Abs.Term }
 Term1 : 'if' Term2 'then' Term 'else' Term { Parser.Abs.TIfEl $2 $4 $6 }
-      | 'let' '(' Var ',' Var ')' '=' Term 'in' Term { Parser.Abs.TLet $3 $5 $8 $10 }
+      | 'let' '(' LetVar ',' ListLetVar ')' '=' Term 'in' Term { Parser.Abs.TLet $3 $5 $8 $10 }
       | Lambda Var '.' Term { Parser.Abs.TLamb $1 $2 $4 }
       | Term2 { $1 }
 
 Term :: { Parser.Abs.Term }
 Term : Term1 { $1 }
+
+LetVar :: { Parser.Abs.LetVar }
+LetVar : Var { Parser.Abs.LVar $1 }
+
+ListLetVar :: { [Parser.Abs.LetVar] }
+ListLetVar : LetVar { (:[]) $1 }
+           | LetVar ',' ListLetVar { (:) $1 $3 }
 
 Tup :: { Parser.Abs.Tup }
 Tup : '(' Term ',' ListTerm ')' { Parser.Abs.Tuple $2 $4 }

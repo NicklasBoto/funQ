@@ -23,10 +23,16 @@ import qualified AST.AST as A
 -- main driver: egen fil? turtle och haskelline? 
 
 -- Nice to Have:
+-- evaluera uttryck utan fil.
 -- let user define custom gates (needs syntax for gate definition, type checking of arbitrary gate and evaluation of it)
+-- flera let defs irad (istälelt för behöva flera lets) ()
+-- explicita tuples i funktionsargumentet, á la f (x,y) = cnot (x,y) (typ pattern matching)
 
+-- Tidigare förslag:
 -- typeclass runnable, ta in gate och a, spotta ut QM a
 -- kan definiera olika fel
+
+
 
 data ValueError
     = NotFunction String
@@ -46,7 +52,7 @@ data Env = Env {
 
 instance Show Value where
     show (VBit b)    = show b
-    show (VTup a b)   = "(" ++ show a ++ ", " ++ show b ++ ")"
+    show (VTup a b)   = "(" ++ show a ++ "," ++ show b ++ ")"
     show (VQBit q)   = show q
     show VUnit       = "*"
     show (VFunc _ t) = "Function " ++ show t
@@ -124,13 +130,13 @@ eval env = \case
 
     A.Let eq inn -> do
          VTup x1 x2 <- eval env eq
-         eval env{ values = x2 : x1 : values env } inn
+         eval env{ values = x1 : x2 : values env } inn
 
     A.Abs e  -> return $ VFunc (values env) e
     A.Unit   -> return VUnit
-    A.Gate g -> throwError $ NotApplied $ "Gate " ++ show g ++ " must be applied to something"
-    A.New    -> throwError $ NotApplied "New must be applied to something"
-    A.Meas   -> throwError $ NotApplied "Meas must be applied to something"
+    A.Gate g -> return $ VFunc (values env) (A.App (A.Gate g) (A.Idx 0))
+    A.New    -> return $ VFunc (values env) (A.App A.New (A.Idx 0))
+    A.Meas   -> return $ VFunc (values env) (A.App A.Meas (A.Idx 0))
 
 fromVTup :: Value -> [Value]
 fromVTup (VTup a b) = a : fromVTup b

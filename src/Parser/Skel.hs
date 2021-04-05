@@ -34,8 +34,11 @@ transTerm x = case x of
   Parser.Abs.TStar -> failure x
   Parser.Abs.TApp term1 term2 -> failure x
   Parser.Abs.TIfEl term1 term2 term3 -> failure x
-  Parser.Abs.TLet var1 var2 term1 term2 -> failure x
+  Parser.Abs.TLet letvar letvars term1 term2 -> failure x
   Parser.Abs.TLamb lambda var term -> failure x
+transLetVar :: Parser.Abs.LetVar -> Result
+transLetVar x = case x of
+  Parser.Abs.LVar var -> failure x
 transTup :: Parser.Abs.Tup -> Result
 transTup x = case x of
   Parser.Abs.Tuple term terms -> failure x

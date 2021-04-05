@@ -32,8 +32,11 @@ data Term
     | TStar
     | TApp Term Term
     | TIfEl Term Term Term
-    | TLet Var Var Term Term
+    | TLet LetVar [LetVar] Term Term
     | TLamb Lambda Var Term
+  deriving (C.Eq, C.Ord, C.Show, C.Read)
+
+data LetVar = LVar Var
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data Tup = Tuple Term [Term]
