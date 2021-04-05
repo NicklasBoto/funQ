@@ -5,11 +5,17 @@ module Interpreter.Main where
 import qualified FunQ as Q
 import qualified AST.AST as A
 import Parser.Par (pProgram, myLexer)
-import Control.Monad.Except
-    ( MonadIO(liftIO), ExceptT, MonadError(throwError), runExceptT, lift )
-import Interpreter.Interpreter ( Value, interpret, ValueError )
+import qualified Interpreter.Interpreter as I
 import System.Console.Haskeline
-    ( defaultSettings, getInputLine, outputStrLn, runInputT, InputT )
+import Control.Monad.Except
+    ( MonadIO(liftIO),
+      MonadError(throwError),
+      ExceptT(..),
+      mapExceptT,
+      runExceptT,
+      withExceptT )
+import Data.Bifunctor ( Bifunctor(bimap) )
+import Control.Exception (try)
 import qualified Type.HM as HM
 
 -- TODO: 
@@ -34,7 +40,7 @@ main = runInputT defaultSettings loop
             case head w of
               "run" -> do 
                 outputStrLn $ "runs " ++ (w !! 1)
-                liftIO $ runExceptT $ run (w !! 1)
+                liftIO $ runIO (w !! 1)
                 loop
               _ -> do outputStrLn $ "Input " ++ input ++ " corresponds to no action" 
                       loop
@@ -44,41 +50,46 @@ type Run a = ExceptT Error IO a
 data Error
   = ParseError String
   | TypeError HM.TypeError
-  | ValueError ValueError
+  | ValueError I.ValueError
   | NoSuchFile FilePath
-    deriving Show
 
--- Should be in a main pipeline file
-run :: String -> Run Value
-run fileName = do
-    prg <- liftIO $ readFile fileName
-    parsedPrg <- parse prg
-    typecheck parsedPrg
-    res <- liftIO $ Q.run $ runExceptT $ interpret parsedPrg
-    case res of
-        Left err -> do
-            liftIO $ putStrLn "INTERPRETER ERROR"
-            throwError $ ValueError err
-        Right i -> do
-            liftIO $ putStrLn $ "Result: " ++ show i
-            return i
+instance Exception Error
 
+instance Show Error where
+  show (ParseError e) =
+    "syntax error:\n" ++ e
 
-parse :: String -> Run A.Program
-parse s = case pProgram (myLexer s) of
-  Left err -> do
-    liftIO $ putStrLn "SYNTAX ERROR"
-    throwError $ ParseError err 
-  Right prg -> do
-  --  (lift . print) prg 
-    (lift . print) $ A.toIm prg
-    return $ A.toIm prg
+  show (TypeError e) =
+    "type error:\n" ++ show e
 
--- [Function] -> Either TypeError ()
--- Func String Type Term
-typecheck :: A.Program -> Run ()
-typecheck p = case HM.typecheck p of
-  Left err -> do
-    liftIO $ putStrLn "TYPE ERROR"
-    throwError $ TypeError err
-  Right _ -> return ()
+  show (ValueError e) =
+    "value error:\n" ++ show e
+
+  show (NoSuchFile f) =
+    "file not found: " ++ f
+
+runIO :: FilePath -> IO ()
+runIO path = runExceptT (run path) >>= \case
+  Left  err -> putStrLn $ "*** Exception, " ++ show err
+  Right val -> print val
+
+toErr :: (i -> Either e v) -> (e -> Error) -> (v -> o) -> i -> Run o
+toErr f l r = ExceptT . return . bimap l r . f
+
+run :: FilePath -> Run I.Value
+run path = readfile path >>= parse >>= typecheck >>= eval
+
+readfile :: FilePath -> Run String
+readfile path = do
+  e <- liftIO (try (readFile path) :: IO (Either IOError String))
+  case e of
+    Left  _ -> throwError $ NoSuchFile path
+    Right s -> return s
+
+parse = toErr (pProgram . myLexer) ParseError A.toIm
+
+typecheck :: A.Program -> Run A.Program
+typecheck = toErr HM.typecheck TypeError . const <*> id
+
+eval :: A.Program -> Run I.Value
+eval = withExceptT ValueError . mapExceptT Q.run . I.interpret
