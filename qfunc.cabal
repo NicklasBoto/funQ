@@ -3,8 +3,6 @@ cabal-version: 1.12
 -- This file has been generated from package.yaml by hpack version 0.34.2.
 --
 -- see: https://github.com/sol/hpack
---
--- hash: 659e8b9624036596ec5a79453eb46d87155640f2ca6267737ef1ecfd7ec8e926
 
 name:           qfunc
 version:        0.1.0.0
@@ -36,7 +34,6 @@ library
       FunQ
       Interpreter.Interpreter
       Interpreter.Main
-      Interpreter.TestRunner
       Lib.Core
       Lib.Gates
       Lib.Internal.Core
@@ -70,8 +67,8 @@ library
     , hmatrix
     , mtl
     , numbers
-    , turtle
     , parsec
+    , turtle
   if false
     other-modules:
         Paths_pkg
@@ -103,11 +100,12 @@ test-suite qfunc-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      GatesTests
+      InterpreterTests
+      QStateTests
       TestCore
       TypeCheckTests
       Paths_qfunc
-      GatesTests
-      QStateTests
   hs-source-dirs:
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N

@@ -45,7 +45,7 @@ main = runInputT defaultSettings loop
               _ -> do outputStrLn $ "Input " ++ input ++ " corresponds to no action" 
                       loop
 
-type Run = ExceptT Error IO
+type Run a = ExceptT Error IO a
 
 data Error
   = ParseError String
@@ -86,7 +86,6 @@ readfile path = do
     Left  _ -> throwError $ NoSuchFile path
     Right s -> return s
 
-parse :: String -> Run A.Program
 parse = toErr (pProgram . myLexer) ParseError A.toIm
 
 typecheck :: A.Program -> Run A.Program

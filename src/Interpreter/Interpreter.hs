@@ -55,8 +55,7 @@ instance Show Value where
 interpret :: [A.Function] -> Eval Value
 interpret fs = do
     let env = createEnv fs
-    getMainTerm env >>= eval env
-    -- debugging below
+    eval env =<< getMainTerm env
 
 -- | Creates an environment from a list of functions. 
 createEnv :: [A.Function] -> Env
@@ -80,7 +79,7 @@ data Value
 -- | Term evaluator
 eval :: Env -> A.Term -> Eval Value
 eval env = \case
-    A.Idx j -> return $ values env !! (fromIntegral j)
+    A.Idx j -> return $ values env !! fromIntegral j
 
     A.Fun s -> case M.lookup s (functions env) of
         Just t  -> eval env t
@@ -89,7 +88,7 @@ eval env = \case
     A.Bit BZero -> return $ VBit 0
     A.Bit BOne -> return $ VBit 1
 
-    A.Tup t1 t2 -> do 
+    A.Tup t1 t2 -> do
         v1 <- eval env t1
         v2 <- eval env t2
         return $ VTup v1 v2
@@ -117,7 +116,7 @@ eval env = \case
         _ -> do
             v2 <- eval env e2
             VFunc v1 a <- eval env e1
-            eval env{ values = v2 : v1 ++ values env} a
+            eval env{ values = v2 : v1 ++ values env } a
 
     A.IfEl bit l r -> do
         VBit b <- eval env bit
@@ -138,7 +137,7 @@ fromVTup (VTup a b) = a : fromVTup b
 fromVTup         x  = [x]
 
 toVTup :: [Value] -> Value
-toVTup vs = foldr1 VTup vs
+toVTup = foldr1 VTup
 
 -- | Eval monad print
 printE :: Show a => a -> Eval ()
@@ -167,7 +166,7 @@ runGate g q env = do
 run2Gate :: ((Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit)) -> A.Term -> Env -> Eval Value
 run2Gate g q env = do
     VTup (VQBit a) (VQBit b) <- eval env q
-    (p,q) <- lift (g (a,b)) 
+    (p,q) <- lift (g (a,b))
     return $ VTup (VQBit p) (VQBit q)
 
 -- | Run gate taking three qubits
