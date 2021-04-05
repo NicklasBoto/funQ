@@ -121,30 +121,18 @@ makeImTerm env (P.TVar var) = case M.lookup (name var) env of
     Nothing  -> Fun (name var)
 makeImTerm env (P.TIfEl cond true false) = 
     IfEl (makeImTerm env cond) (makeImTerm env true) (makeImTerm env false)
-makeImTerm env (P.TLet x (y:ys) eq inn) = Let (makeImTerm env eq) (makeImTerm env' (P.TLet y ys (toTerm y) inn)) -- (makeImTerm env' inn)
-    where env' = M.insert (nameL y) 1 $ M.insert (nameL x) 0 (M.map (succ . succ) env) -- insertLets env (x:y)
-    -- let (a,b,c) = M in N
-    -- blir
-    -- let (a,b) = M in let (b,c) = b in N
-    -- Let (makeImTerm env eq) (makeImTerm env' )
-
-    -- (P.TLet a [b,c] M N) -> Let (makeImTerm env M) (makeImTerm env' (P.TLet b [c] b N))
-    -- -> Let (makeImTerm env M) (makeImTerm env' (Let (makeImTerm env' b) (makeImTerm env'' N)))
-
-    -- (P.TLet a [b,c,d] M N) -> Let (makeImTerm env M) (makeImTerm env' (P.TLet b [c,d] b N))
+makeImTerm env (P.TLet x [y] eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv x y env) inn)
+makeImTerm env (P.TLet x (y:ys) eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv x y env) (P.TLet y ys (toTerm y) inn)) 
 makeImTerm env (P.TTup (P.Tuple t ts)) = foldr1 Tup $ map (makeImTerm env) (t:ts)
 makeImTerm _env (P.TBit b) = Bit b
 makeImTerm _env (P.TGate g) = Gate g
 makeImTerm _env P.TStar = Unit
 
+letEnv :: P.LetVar -> P.LetVar -> Env -> Env
+letEnv x y env = M.insert (nameL y) 1 $ M.insert (nameL x) 0 (M.map (succ . succ) env)
+
 toTerm :: P.LetVar -> P.Term
 toTerm (P.LVar v) = P.TVar v
-
-
--- insertLets :: Env -> [P.LetVar] -> Env
--- insertLets env xs = newEnv xs env
---     where newEnv [] env = env
---           newEnv xs env = newEnv (init xs) $ M.insert (nameL (last xs)) 0 (M.map succ env)
 
 -- | Convert a function to intermediate abstract syntax (lambdaized, with de Bruijn indices)
 makeImFunction :: P.FunDec -> Function

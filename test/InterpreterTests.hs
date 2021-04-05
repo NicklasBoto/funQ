@@ -59,7 +59,7 @@ tests =
     ("swapTwice.fq", "1"),
     ("third.fq", "1"),
     ("teleport.fq", "1"),
-    ("nested-let.fq", "1")
+    ("nested-let.fq", "0")
     -- TODO ("toffoli.fq")
     -- TODO ("fredkin.fq",  "0"),
     -- ("qft1.fq",     "0"),
