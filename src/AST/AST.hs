@@ -41,7 +41,7 @@ name :: P.Var -> String
 name (P.Var v) = v
 
 nameL :: P.LetVar -> String
-nameL (P.LVar v) = name v 
+nameL (P.LVar v) = name v
 
 -- | A term in our intermediatary representation.
 data Term
@@ -119,10 +119,10 @@ makeImTerm env (P.TVar (P.Var "measure")) = Meas
 makeImTerm env (P.TVar var) = case M.lookup (name var) env of
     Just idx -> Idx idx
     Nothing  -> Fun (name var)
-makeImTerm env (P.TIfEl cond true false) = 
+makeImTerm env (P.TIfEl cond true false) =
     IfEl (makeImTerm env cond) (makeImTerm env true) (makeImTerm env false)
 makeImTerm env (P.TLet x [y] eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv x y env) inn)
-makeImTerm env (P.TLet x (y:ys) eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv x y env) (P.TLet y ys (toTerm y) inn)) 
+makeImTerm env (P.TLet x (y:ys) eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv x y env) (P.TLet y ys (toTerm y) inn))
 makeImTerm env (P.TTup (P.Tuple t ts)) = foldr1 Tup $ map (makeImTerm env) (t:ts)
 makeImTerm _env (P.TBit b) = Bit b
 makeImTerm _env (P.TGate g) = Gate g
@@ -163,12 +163,12 @@ reverseImFunction (Func name t term) = P.FDecl (P.FunVar (name++" :")) (reverseT
 reverseImTerm :: Integer -> Term -> P.Term
 reverseImTerm env (Idx idx)    = P.TVar $ P.Var $ 'x' : show (env - idx - 1)
 reverseImTerm env (Fun s)      = P.TVar $ P.Var s
-reverseImTerm env (Bit b)      = P.TBit b 
+reverseImTerm env (Bit b)      = P.TBit b
 reverseImTerm env (Gate g)     = P.TGate g
 reverseImTerm env (Tup l r)    = P.TTup $ P.Tuple (reverseImTerm env l) [reverseImTerm env r] -- FIXME
 reverseImTerm env (App  t1 t2) = P.TApp (reverseImTerm env t1) (reverseImTerm env t2)
 reverseImTerm env (IfEl c t e) = P.TIfEl (reverseImTerm env c) (reverseImTerm env t) (reverseImTerm env e)
-reverseImTerm env (Let eq inn) = P.TStar -- TEMP!!! P.TLet (P.LVar ('x' : show (env + 1))) (P.LVar ('x' : show env)) (reverseImTerm env eq) (reverseImTerm (env + 2) inn)
+reverseImTerm env (Let eq inn) = P.TLet ((P.LVar . P.Var) $ 'y' : show (env + 1)) [(P.LVar . P.Var) $ 'x' : show env] (reverseImTerm env eq) (reverseImTerm (env + 2) inn)
 reverseImTerm env (Abs  term)  = P.TLamb (P.Lambda "\\") (P.Var ('x' : show env)) (reverseImTerm (env+1) term)
 reverseImTerm env New          = P.TVar (P.Var "new")
 reverseImTerm env Meas         = P.TVar (P.Var "meas")

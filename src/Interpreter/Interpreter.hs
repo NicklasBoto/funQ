@@ -23,10 +23,16 @@ import qualified AST.AST as A
 -- main driver: egen fil? turtle och haskelline? 
 
 -- Nice to Have:
+-- evaluera uttryck utan fil.
 -- let user define custom gates (needs syntax for gate definition, type checking of arbitrary gate and evaluation of it)
+-- flera let defs irad (istälelt för behöva flera lets) ()
+-- explicita tuples i funktionsargumentet, á la f (x,y) = cnot (x,y) (typ pattern matching)
 
+-- Tidigare förslag:
 -- typeclass runnable, ta in gate och a, spotta ut QM a
 -- kan definiera olika fel
+
+
 
 data ValueError
     = NotFunction String

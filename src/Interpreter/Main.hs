@@ -40,14 +40,14 @@ main = runInputT defaultSettings loop
           Just "quit" -> return ()
           Just input -> do
             let w = words input 
-            outputStrLn $ "w: " ++ show w
             case head w of
               "run" -> do 
                 outputStrLn $ "runs " ++ (w !! 1)
                 liftIO $ runIO (w !! 1)
                 loop
-              _ -> do outputStrLn $ "Input " ++ input ++ " corresponds to no action" 
-                      loop
+              _ -> do 
+                liftIO $ runTerminalIO $ "main : a main = " ++ input
+                loop
 
 type Run a = ExceptT Error IO a
 
@@ -82,6 +82,14 @@ toErr f l r = ExceptT . return . bimap l r . f
 
 run :: FilePath -> Run I.Value
 run path = readfile path >>= parse >>= typecheck >>= eval
+
+runTerminalIO :: String -> IO ()
+runTerminalIO s = runExceptT (runTerminal s) >>= \case
+  Left  err -> putStrLn $ "*** Exception, " ++ show err
+  Right val -> putStrLn $ "Output: " ++ show val
+
+runTerminal :: String -> Run I.Value
+runTerminal s = parse s >>= typecheck >>= eval
 
 readfile :: FilePath -> Run String
 readfile path = do

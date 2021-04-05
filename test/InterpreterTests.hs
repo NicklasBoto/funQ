@@ -34,6 +34,8 @@ testPath testName = "test/interpreter-test-suite/" ++ testName
 -- fixa bättre show-instans för tuples (nu visas nestade tuples)
 -- runTestsDebug: printa mer saker
 -- kolla över errors vi får när vi build:ar/kompilerar
+-- 3-qbit-gates
+-- fixa syntax highlighting
 tests :: [(FilePath, String)]
 tests =
   [ 
@@ -43,10 +45,10 @@ tests =
     ("id.fq", "1"),
     ("let-tup-q.fq", "0"),
     ("let-tup.fq", "0"),
-    ("partial-app-cnot.fq",     "1"),
-    ("partial-app-comp.fq",     "0"),
-    ("partial-app-new.fq",      "1"),
-    ("partial-app-meas.fq",     "0"),
+    ("partial-app-cnot.fq", "1"),
+    ("partial-app-comp.fq", "0"),
+    ("partial-app-new.fq",  "1"),
+    ("partial-app-meas.fq", "0"),
     ("pauliX.fq", "1"),
     ("pauliY.fq", "1"),
     ("pauliZ.fq", "0"),
@@ -59,7 +61,8 @@ tests =
     ("swapTwice.fq", "1"),
     ("third.fq", "1"),
     ("teleport.fq", "1"),
-    ("nested-let.fq", "0")
+    ("nested-let.fq", "0"),
+    ("deutsch.fq", "1")
     -- TODO ("toffoli.fq")
     -- TODO ("fredkin.fq",  "0"),
     -- ("qft1.fq",     "0"),
