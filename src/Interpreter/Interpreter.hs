@@ -55,9 +55,7 @@ instance Show Value where
 interpret :: [A.Function] -> Eval Value
 interpret fs = do
     let env = createEnv fs
-    a <- eval env =<< getMainTerm env
-    printE $ values env
-    return a
+    eval env =<< getMainTerm env
 
 -- | Creates an environment from a list of functions. 
 createEnv :: [A.Function] -> Env
@@ -118,9 +116,7 @@ eval env = \case
         _ -> do
             v2 <- eval env e2
             VFunc v1 a <- eval env e1
-            b <- eval env{ values = v2 : v1 ++ values env } a
-            printE b
-            return b
+            eval env{ values = v2 : v1 ++ values env } a
 
     A.IfEl bit l r -> do
         VBit b <- eval env bit
@@ -128,9 +124,7 @@ eval env = \case
 
     A.Let eq inn -> do
          VTup x1 x2 <- eval env eq
-         b <- eval env{ values = x2 : x1 : values env } inn
-         printE b
-         return b
+         eval env{ values = x2 : x1 : values env } inn
 
     A.Abs e  -> return $ VFunc (values env) e
     A.Unit   -> return VUnit
