@@ -91,6 +91,24 @@ runTerminalIO s = runExceptT (runTerminal s) >>= \case
 runTerminal :: String -> Run I.Value
 runTerminal s = parse s >>= typecheck >>= eval
 
+runDebug :: String -> Run I.Value
+runDebug s = do
+  ss <- readfile s
+  liftIO $ putStrLn ss
+  prg <- parseDebug ss
+  eval prg
+
+
+parseDebug :: String -> Run A.Program
+parseDebug s = do 
+  case pProgram (myLexer s) of
+    Left err -> do
+      liftIO $ putStrLn "SYNTAX ERROR"
+      throwError $ ParseError err 
+    Right prg -> do
+      (liftIO . print) $ A.toIm prg
+      return $ A.toIm prg
+
 readfile :: FilePath -> Run String
 readfile path = do
   e <- liftIO (try (readFile path) :: IO (Either IOError String))

@@ -1,15 +1,10 @@
-{-# language LambdaCase #-}
-
 module Interpreter.Interpreter where
 
 import qualified Data.Map as M
 import Control.Monad.Except
-    ( MonadTrans(lift), ExceptT, MonadError(throwError) )
-import Control.Monad.Reader ()
-import Data.List ()
-import Control.Monad.Identity ()
+    ( MonadTrans(lift), ExceptT, MonadError(throwError), join )
 import qualified FunQ as Q
-import Control.Monad.State ()
+import Control.Monad.State (StateT, MonadState (get, put), evalStateT, modify)
 import Data.Functor ( (<&>) )
 import Parser.Abs as Abs
     ( Gate(GS, GH, GX, GY, GZ, GI, GT, GCNOT, GTOF, GSWP, GFRDK, GQFT),
@@ -42,12 +37,13 @@ data ValueError
      deriving Show
 
 type Sig = M.Map String A.Term
-type Eval a = ExceptT ValueError Q.QM a
+type Eval a = StateT Env (ExceptT ValueError Q.QM) a
 
 -- | Environment type, stores bound variables & functions
 data Env = Env {
       values    :: [Value]
     , functions :: Sig
+    , count     :: Int
 } deriving Show
 
 instance Show Value where
@@ -58,18 +54,20 @@ instance Show Value where
     show (VFunc _ t) = "Function " ++ show t
 
 -- | Main function in interpreter (exported)
-interpret :: [A.Function] -> Eval Value
+interpret :: [A.Function] -> ExceptT ValueError Q.QM Value
 interpret fs = do
     let env = createEnv fs
-    eval env =<< getMainTerm env
+    m <- getMainTerm env
+    evalStateT (eval m) env
 
 -- | Creates an environment from a list of functions. 
 createEnv :: [A.Function] -> Env
 createEnv fs = Env { functions = M.fromList [(s, t) | (A.Func s _ t) <- fs],
-                     values = []}
+                     values    = [],
+                     count     = 0 }
 
 -- | Fetches program main function
-getMainTerm :: Env -> Eval A.Term
+getMainTerm :: Env -> ExceptT ValueError Q.QM A.Term
 getMainTerm env = case M.lookup "main" (functions env) of
     Just term -> return term
     Nothing   -> throwError $ NoMainFunction "Main function not defined"
@@ -80,63 +78,129 @@ data Value
     | VQBit Q.QBit
     | VUnit
     | VTup Value Value
-    | VFunc [Value] A.Term
+    | VFunc [Value] A.Term 
+
+inc :: Eval ()
+inc = do
+    modify (\env -> env{count = 1})
+zero :: Eval ()
+zero = modify (\env -> env{count = 0})
+removeN :: Eval ()
+removeN = do
+    modify (\env -> env{values = take (length (values env) - count env) (values env)})
+    env <- get
+    printE $ "removed: " ++ show (count env)
+
+
 
 -- | Term evaluator
-eval :: Env -> A.Term -> Eval Value
-eval env = \case
-    A.Idx j -> return $ values env !! fromIntegral j
+eval :: A.Term -> Eval Value
+eval t = do
+    case t of
+        A.Idx j -> do
+            env <- get
+            printE $ "values_idx: " ++ show (values env)
+            let val = values env !! fromIntegral j
+            removeN
+            zero
+            return val
+            -- return $ values env !! fromIntegral j
+            -- let vals = values env
+            -- let val = values env !! fromIntegral j
+            -- pickOut vals j
 
-    A.Fun s -> case M.lookup s (functions env) of
-        Just t  -> eval env t
-        Nothing -> throwError $ NotFunction $ "Function " ++ show s ++ " is not defined"
+        A.Fun s -> do
+            env <- get
+            case M.lookup s (functions env) of
+                Just t  -> eval t
+                Nothing -> throwError $ NotFunction $ "Function " ++ show s ++ " is not defined"
 
-    A.Bit BZero -> return $ VBit 0
-    A.Bit BOne -> return $ VBit 1
+        A.Bit BZero -> do
+            env <- get
+            printE $ "values_bzero: " ++ show (values env)
+            removeN
+            zero
+            return $ VBit 0
+        A.Bit BOne -> do
+            env <- get
+            printE $ "values_bone: " ++ show (values env)
+            removeN
+            zero
+            return $ VBit 1
 
-    A.Tup t1 t2 -> do
-        v1 <- eval env t1
-        v2 <- eval env t2
-        return $ VTup v1 v2
+        A.Tup t1 t2 -> do
+            env <- get
+            v1 <- eval t1
+            v2 <- eval t2
+            printE $ "values_tup: " ++ show (values env)
+            removeN
+            zero
+            return $ VTup v1 v2
 
-    A.App e1 e2 -> case e1 of
-        A.Gate g -> case g of
-            Abs.GH    -> runGate  Q.hadamard e2 env
-            Abs.GX    -> runGate  Q.pauliX e2 env
-            Abs.GY    -> runGate  Q.pauliY e2 env
-            Abs.GZ    -> runGate  Q.pauliZ e2 env
-            Abs.GI    -> runGate  Q.identity e2 env
-            Abs.GT    -> runGate  Q.phasePi8 e2 env
-            Abs.GS    -> runGate  Q.phase e2 env
-            Abs.GCNOT -> run2Gate Q.cnot e2 env
-            Abs.GTOF  -> run3Gate Q.toffoli e2 env
-            Abs.GSWP  -> run2Gate Q.swap e2 env
-            Abs.GFRDK -> run3Gate Q.fredkin e2 env
-            Abs.GQFT  -> runQFT   Q.qft e2 env
-        A.New -> do
-            VBit b' <- eval env e2
-            lift $ Q.new b' <&> VQBit
-        A.Meas -> do
-            VQBit q' <- eval env e2
-            lift $ Q.measure q' <&> VBit
-        _ -> do
-            v2 <- eval env e2
-            VFunc v1 a <- eval env e1
-            eval env{ values = v2 : v1 ++ values env } a
+        A.App e1 e2 -> case e1 of
+            A.Gate g -> do
+                -- printE $ "e2: " ++ show e2
+                case g of
+                    Abs.GH    -> runGate  Q.hadamard e2
+                    Abs.GX    -> runGate  Q.pauliX e2
+                    Abs.GY    -> runGate  Q.pauliY e2
+                    Abs.GZ    -> runGate  Q.pauliZ e2
+                    Abs.GI    -> runGate  Q.identity e2
+                    Abs.GT    -> runGate  Q.phasePi8 e2
+                    Abs.GS    -> runGate  Q.phase e2
+                    Abs.GCNOT -> run2Gate Q.cnot e2
+                    Abs.GTOF  -> run3Gate Q.toffoli e2
+                    Abs.GSWP  -> run2Gate Q.swap e2
+                    Abs.GFRDK -> run3Gate Q.fredkin e2
+                    Abs.GQFT  -> runQFT   Q.qft e2
+            A.New -> do
+                VBit b' <- eval e2
+                removeN
+                zero
+                liftT $ Q.new b' <&> VQBit
+            A.Meas -> do
+                VQBit q' <- eval e2
+                removeN
+                zero
+                liftT $ Q.measure q' <&> VBit
+            _ -> do
+                env <- get
+                v2 <- eval e2
+                VFunc v1 a <- eval e1
+                put env { values = v2 : v1 ++ values env }
+                -- insertVal v1
+                -- insertVal [v2]
+                -- printE $ "values: " ++ show (values env)
+                eval a
 
-    A.IfEl bit l r -> do
-        VBit b <- eval env bit
-        eval env $ if b == 1 then l else r
+        A.IfEl bit l r -> do
+            VBit b <- eval bit
+            eval $ if b == 1 then l else r
 
-    A.Let eq inn -> do
-         VTup x1 x2 <- eval env eq
-         eval env{ values = x1 : x2 : values env } inn
+        A.Let eq inn -> do
+            env <- get
+            VTup x1 x2 <- eval eq
+            put env {values = x1 : x2 : values env}
+            -- insertVal [x2]
+            -- insertVal [x1]
+            eval inn
 
-    A.Abs e  -> return $ VFunc (values env) e
-    A.Unit   -> return VUnit
-    A.Gate g -> return $ VFunc (values env) (A.App (A.Gate g) (A.Idx 0))
-    A.New    -> return $ VFunc (values env) (A.App A.New (A.Idx 0))
-    A.Meas   -> return $ VFunc (values env) (A.App A.Meas (A.Idx 0))
+        A.Abs e  -> do
+            env <- get
+            printE $ "counter: " ++ show (count env)
+            put env{count = count env + 1}
+            printE $ "counter: " ++ show (count env)
+            return $ VFunc (values env) e
+        A.Unit   -> return VUnit
+        A.Gate g -> do
+            env <- get
+            return $ VFunc (values env) (A.App (A.Gate g) (A.Idx 0))
+        A.New    -> do
+            env <- get
+            return $ VFunc (values env) (A.App A.New (A.Idx 0))
+        A.Meas   -> do
+            env <- get
+            return $ VFunc (values env) (A.App A.Meas (A.Idx 0))
 
 fromVTup :: Value -> [Value]
 fromVTup (VTup a b) = a : fromVTup b
@@ -147,37 +211,48 @@ toVTup = foldr1 VTup
 
 -- | Eval monad print
 printE :: Show a => a -> Eval ()
-printE = lift . Q.io . print
+printE = liftT . Q.io . print
+
+liftT :: Q.QM a -> Eval a
+liftT = lift . lift
 
 -- | Run QFT gate
-runQFT :: ([Q.QBit] -> Q.QM [Q.QBit]) -> A.Term -> Env -> Eval Value
-runQFT g q env = do
-    res <- eval env q
+runQFT :: ([Q.QBit] -> Q.QM [Q.QBit]) -> A.Term -> Eval Value
+runQFT g q = do
+    res <- eval q
     case res of
         (VQBit q') ->
-            lift (g [q']) <&> VQBit . head
+            liftT (g [q']) <&> VQBit . head
         vt@(VTup _ _) -> do
-            b <- lift $ g (unValue (fromVTup vt))
+            b <- liftT $ g (unValue (fromVTup vt))
             return $ toVTup $ map VQBit b
         where unValue []            = []
               unValue (VQBit q:qss) = q : unValue qss
 
 -- | Run gate taking one qubit
-runGate :: (Q.QBit -> Q.QM Q.QBit) -> A.Term -> Env -> Eval Value
-runGate g q env = do
-    VQBit q' <- eval env q
-    VQBit <$> lift (g q')
+runGate :: (Q.QBit -> Q.QM Q.QBit) -> A.Term -> Eval Value
+runGate g q = do
+    env <- get
+    VQBit q' <- eval q
+    printE $ "values_runG: " ++ show (values env)
+    removeN
+    zero
+    VQBit <$> liftT (g q')
 
 -- | Run gate taking two qubits
-run2Gate :: ((Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit)) -> A.Term -> Env -> Eval Value
-run2Gate g q env = do
-    VTup (VQBit a) (VQBit b) <- eval env q
-    (p,q) <- lift (g (a,b))
+run2Gate :: ((Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit)) -> A.Term -> Eval Value
+run2Gate g q = do
+    env <- get
+    VTup (VQBit a) (VQBit b) <- eval q
+    (p,q) <- liftT (g (a,b))
+    printE $ "values_run2G: " ++ show (values env)
+    removeN
+    zero
     return $ VTup (VQBit p) (VQBit q)
 
 -- | Run gate taking three qubits
-run3Gate :: ((Q.QBit, Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit, Q.QBit)) -> A.Term -> Env -> Eval Value
-run3Gate g q env = do
-    [VQBit a, VQBit b, VQBit c] <- fromVTup <$> eval env q
-    toVTup . tupToList <$> lift (g (a,b,c))
+run3Gate :: ((Q.QBit, Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit, Q.QBit)) -> A.Term -> Eval Value
+run3Gate g q = do
+    [VQBit a, VQBit b, VQBit c] <- fromVTup <$> eval q
+    toVTup . tupToList <$> liftT (g (a,b,c))
         where tupToList (a,b,c) = [VQBit a, VQBit b, VQBit c]
