@@ -5,10 +5,13 @@
 {-# OPTIONS_GHC -w #-}
 module Parser.Lex where
 
+
+
 import qualified Data.Bits
 import Data.Word (Word8)
 import Data.Char (ord)
 }
+
 
 $c = [A-Z\192-\221] # [\215]  -- capital isolatin1 letter (215 = \times) FIXME
 $s = [a-z\222-\255] # [\247]  -- small   isolatin1 letter (247 = \div  ) FIXME
@@ -16,19 +19,19 @@ $l = [$c $s]         -- letter
 $d = [0-9]           -- digit
 $i = [$l $d _ ']     -- identifier character
 $u = [. \n]          -- universal: any character
-@rsyms =    -- symbols and non-identifier-like reserved words
-   \* | \( | \, | \) | \= | \. | "0" | "1" | \! | \> \< | \- "o"
-:-
 
--- Line comments
-"--" [.]* ;
+@rsyms =    -- symbols and non-identifier-like reserved words
+   \* | \( | \, | \) | \= | \. | "0" | "1" | \  | \! | \> \< | \- "o"
+
+:-
+"--" [.]* ; -- Toss single line comments
 
 $white+ ;
 @rsyms
     { tok (\p s -> PT p (eitherResIdent (TV . share) s)) }
-$s ([\' \_]| ($d | $l)) * \  * \:
+$s ($l | $d | \_ | \')* \  * \:
     { tok (\p s -> PT p (eitherResIdent (T_FunVar . share) s)) }
-$s ([\' \_]| ($d | $l)) *
+$s ($l | $d | \_ | \')*
     { tok (\p s -> PT p (eitherResIdent (T_Var . share) s)) }
 $c +
     { tok (\p s -> PT p (eitherResIdent (T_GateIdent . share) s)) }
@@ -87,10 +90,10 @@ posLineCol :: Posn -> (Int, Int)
 posLineCol (Pn _ l c) = (l,c)
 
 mkPosToken :: Token -> ((Int, Int), String)
-mkPosToken t@(PT p _) = (posLineCol p, tokenText t)
+mkPosToken t@(PT p _) = (posLineCol p, prToken t)
 
-tokenText :: Token -> String
-tokenText t = case t of
+prToken :: Token -> String
+prToken t = case t of
   PT _ (TS s _) -> s
   PT _ (TL s)   -> show s
   PT _ (TI s)   -> s
@@ -103,8 +106,6 @@ tokenText t = case t of
   PT _ (T_GateIdent s) -> s
   PT _ (T_Lambda s) -> s
 
-prToken :: Token -> String
-prToken t = tokenText t
 
 data BTree = N | B String Tok BTree BTree deriving (Show)
 
@@ -117,13 +118,12 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "I" 16 (b "0" 8 (b "*" 4 (b "(" 2 (b "!" 1 N N) (b ")" 3 N N)) (b "-o" 6 (b "," 5 N N) (b "." 7 N N))) (b "Bit" 12 (b "=" 10 (b "1" 9 N N) (b "><" 11 N N)) (b "FREDKIN" 14 (b "CNOT" 13 N N) (b "H" 15 N N)))) (b "Y" 24 (b "SWAP" 20 (b "QFT" 18 (b "QBit" 17 N N) (b "S" 19 N N)) (b "TOFFOLI" 22 (b "T" 21 N N) (b "X" 23 N N))) (b "in" 28 (b "else" 26 (b "Z" 25 N N) (b "if" 27 N N)) (b "then" 30 (b "let" 29 N N) N)))
-   where b s n = let bs = s
-                 in  B bs (TS bs n)
+resWords = b "H" 16 (b "." 8 (b ")" 4 (b "!" 2 (b " " 1 N N) (b "(" 3 N N)) (b "," 6 (b "*" 5 N N) (b "-o" 7 N N))) (b "><" 12 (b "1" 10 (b "0" 9 N N) (b "=" 11 N N)) (b "CNOT" 14 (b "Bit" 13 N N) (b "FREDKIN" 15 N N)))) (b "X" 24 (b "S" 20 (b "QBit" 18 (b "I" 17 N N) (b "QFT" 19 N N)) (b "T" 22 (b "SWAP" 21 N N) (b "TOFFOLI" 23 N N))) (b "if" 28 (b "Z" 26 (b "Y" 25 N N) (b "else" 27 N N)) (b "let" 30 (b "in" 29 N N) (b "then" 31 N N))))
+   where b s n = let bs = id s
+                  in B bs (TS bs n)
 
 unescapeInitTail :: String -> String
-unescapeInitTail = id . unesc . tail . id
-  where
+unescapeInitTail = id . unesc . tail . id where
   unesc s = case s of
     '\\':c:cs | elem c ['\"', '\\', '\''] -> c : unesc cs
     '\\':'n':cs  -> '\n' : unesc cs
@@ -171,7 +171,7 @@ tokens str = go (alexStartPos, '\n', [], str)
 alexGetByte :: AlexInput -> Maybe (Byte,AlexInput)
 alexGetByte (p, c, (b:bs), s) = Just (b, (p, c, bs, s))
 alexGetByte (p, _, [], s) =
-  case s of
+  case  s of
     []  -> Nothing
     (c:s) ->
              let p'     = alexMove p c

@@ -2,10 +2,8 @@
 {
 {-# OPTIONS_GHC -fno-warn-incomplete-patterns -fno-warn-overlapping-patterns #-}
 module Parser.Par where
-import Parser.Abs
+import qualified Parser.Abs
 import Parser.Lex
-import Parser.ErrM
-
 }
 
 %name pProgram Program
@@ -28,40 +26,39 @@ import Parser.ErrM
 %name pType Type
 %name pGate Gate
 -- no lexer declaration
-%monad { Err } { thenM } { returnM }
+%monad { Either String } { (>>=) } { return }
 %tokentype {Token}
 %token
-  ' ' { PT _ (TS _ 1) }
-  '!' { PT _ (TS _ 2) }
-  '(' { PT _ (TS _ 3) }
-  ')' { PT _ (TS _ 4) }
-  '*' { PT _ (TS _ 5) }
-  ',' { PT _ (TS _ 6) }
-  '-o' { PT _ (TS _ 7) }
-  '.' { PT _ (TS _ 8) }
-  '0' { PT _ (TS _ 9) }
-  '1' { PT _ (TS _ 10) }
-  '=' { PT _ (TS _ 11) }
-  '><' { PT _ (TS _ 12) }
-  'Bit' { PT _ (TS _ 13) }
-  'CNOT' { PT _ (TS _ 14) }
-  'FREDKIN' { PT _ (TS _ 15) }
-  'H' { PT _ (TS _ 16) }
-  'I' { PT _ (TS _ 17) }
-  'QBit' { PT _ (TS _ 18) }
-  'QFT' { PT _ (TS _ 19) }
-  'S' { PT _ (TS _ 20) }
-  'SWAP' { PT _ (TS _ 21) }
-  'T' { PT _ (TS _ 22) }
-  'TOFFOLI' { PT _ (TS _ 23) }
-  'X' { PT _ (TS _ 24) }
-  'Y' { PT _ (TS _ 25) }
-  'Z' { PT _ (TS _ 26) }
-  'else' { PT _ (TS _ 27) }
-  'if' { PT _ (TS _ 28) }
-  'in' { PT _ (TS _ 29) }
-  'let' { PT _ (TS _ 30) }
-  'then' { PT _ (TS _ 31) }
+  '!' { PT _ (TS _ 1) }
+  '(' { PT _ (TS _ 2) }
+  ')' { PT _ (TS _ 3) }
+  '*' { PT _ (TS _ 4) }
+  ',' { PT _ (TS _ 5) }
+  '-o' { PT _ (TS _ 6) }
+  '.' { PT _ (TS _ 7) }
+  '0' { PT _ (TS _ 8) }
+  '1' { PT _ (TS _ 9) }
+  '=' { PT _ (TS _ 10) }
+  '><' { PT _ (TS _ 11) }
+  'Bit' { PT _ (TS _ 12) }
+  'CNOT' { PT _ (TS _ 13) }
+  'FREDKIN' { PT _ (TS _ 14) }
+  'H' { PT _ (TS _ 15) }
+  'I' { PT _ (TS _ 16) }
+  'QBit' { PT _ (TS _ 17) }
+  'QFT' { PT _ (TS _ 18) }
+  'S' { PT _ (TS _ 19) }
+  'SWAP' { PT _ (TS _ 20) }
+  'T' { PT _ (TS _ 21) }
+  'TOFFOLI' { PT _ (TS _ 22) }
+  'X' { PT _ (TS _ 23) }
+  'Y' { PT _ (TS _ 24) }
+  'Z' { PT _ (TS _ 25) }
+  'else' { PT _ (TS _ 26) }
+  'if' { PT _ (TS _ 27) }
+  'in' { PT _ (TS _ 28) }
+  'let' { PT _ (TS _ 29) }
+  'then' { PT _ (TS _ 30) }
   L_FunVar { PT _ (T_FunVar $$) }
   L_Var { PT _ (T_Var $$) }
   L_GateIdent { PT _ (T_GateIdent $$) }
@@ -69,74 +66,89 @@ import Parser.ErrM
 
 %%
 
-FunVar :: { FunVar}
-FunVar  : L_FunVar { FunVar ($1)}
+FunVar :: { Parser.Abs.FunVar}
+FunVar  : L_FunVar { Parser.Abs.FunVar $1 }
 
-Var :: { Var}
-Var  : L_Var { Var ($1)}
+Var :: { Parser.Abs.Var}
+Var  : L_Var { Parser.Abs.Var $1 }
 
-GateIdent :: { GateIdent}
-GateIdent  : L_GateIdent { GateIdent ($1)}
+GateIdent :: { Parser.Abs.GateIdent}
+GateIdent  : L_GateIdent { Parser.Abs.GateIdent $1 }
 
-Lambda :: { Lambda}
-Lambda  : L_Lambda { Lambda ($1)}
+Lambda :: { Parser.Abs.Lambda}
+Lambda  : L_Lambda { Parser.Abs.Lambda $1 }
 
-Program :: { Program }
-Program : ListFunDec { Parser.Abs.PDef (reverse $1) }
-Term3 :: { Term }
+Program :: { Parser.Abs.Program }
+Program : ListFunDec { Parser.Abs.PDef $1 }
+
+Term3 :: { Parser.Abs.Term }
 Term3 : Var { Parser.Abs.TVar $1 }
       | Bit { Parser.Abs.TBit $1 }
       | Gate { Parser.Abs.TGate $1 }
       | Tup { Parser.Abs.TTup $1 }
       | '*' { Parser.Abs.TStar }
       | '(' Term ')' { $2 }
-Term2 :: { Term }
+
+Term2 :: { Parser.Abs.Term }
 Term2 : Term2 Term3 { Parser.Abs.TApp $1 $2 } | Term3 { $1 }
-Term1 :: { Term }
+
+Term1 :: { Parser.Abs.Term }
 Term1 : 'if' Term2 'then' Term 'else' Term { Parser.Abs.TIfEl $2 $4 $6 }
       | 'let' '(' LetVar ',' ListLetVar ')' '=' Term 'in' Term { Parser.Abs.TLet $3 $5 $8 $10 }
       | Lambda Var '.' Term { Parser.Abs.TLamb $1 $2 $4 }
       | Term2 { $1 }
-Term :: { Term }
+
+Term :: { Parser.Abs.Term }
 Term : Term1 { $1 }
-LetVar :: { LetVar }
+
+LetVar :: { Parser.Abs.LetVar }
 LetVar : Var { Parser.Abs.LVar $1 }
-ListLetVar :: { [LetVar] }
+
+ListLetVar :: { [Parser.Abs.LetVar] }
 ListLetVar : LetVar { (:[]) $1 }
            | LetVar ',' ListLetVar { (:) $1 $3 }
-Tup :: { Tup }
+
+Tup :: { Parser.Abs.Tup }
 Tup : '(' Term ',' ListTerm ')' { Parser.Abs.Tuple $2 $4 }
-ListTerm :: { [Term] }
+
+ListTerm :: { [Parser.Abs.Term] }
 ListTerm : Term { (:[]) $1 } | Term ',' ListTerm { (:) $1 $3 }
-Bit :: { Bit }
+
+Bit :: { Parser.Abs.Bit }
 Bit : '0' { Parser.Abs.BZero } | '1' { Parser.Abs.BOne }
-FunDec :: { FunDec }
+
+FunDec :: { Parser.Abs.FunDec }
 FunDec : FunVar Type Function { Parser.Abs.FDecl $1 $2 $3 }
-ListFunDec :: { [FunDec] }
-ListFunDec : {- empty -} { [] }
-           | ListFunDec FunDec { flip (:) $1 $2 }
-Function :: { Function }
+
+ListFunDec :: { [Parser.Abs.FunDec] }
+ListFunDec : {- empty -} { [] } | FunDec ListFunDec { (:) $1 $2 }
+
+Function :: { Parser.Abs.Function }
 Function : Var ListArg '=' Term { Parser.Abs.FDef $1 $2 $4 }
-Arg :: { Arg }
+
+Arg :: { Parser.Abs.Arg }
 Arg : Var { Parser.Abs.FArg $1 }
-ListArg :: { [Arg] }
-ListArg : {- empty -} { [] }
-        | Arg { (:[]) $1 }
-        | Arg ' ' ListArg { (:) $1 $3 }
-Type2 :: { Type }
+
+ListArg :: { [Parser.Abs.Arg] }
+ListArg : {- empty -} { [] } | Arg ListArg { (:) $1 $2 }
+
+Type2 :: { Parser.Abs.Type }
 Type2 : Var { Parser.Abs.TypeVar $1 }
       | 'Bit' { Parser.Abs.TypeBit }
       | 'QBit' { Parser.Abs.TypeQbit }
       | 'T' { Parser.Abs.TypeVoid }
       | '!' Type2 { Parser.Abs.TypeDup $2 }
       | '(' Type ')' { $2 }
-Type1 :: { Type }
+
+Type1 :: { Parser.Abs.Type }
 Type1 : Type2 '><' Type1 { Parser.Abs.TypeTens $1 $3 }
       | Type2 '-o' Type1 { Parser.Abs.TypeFunc $1 $3 }
       | Type2 { $1 }
-Type :: { Type }
+
+Type :: { Parser.Abs.Type }
 Type : Type1 { $1 }
-Gate :: { Gate }
+
+Gate :: { Parser.Abs.Gate }
 Gate : 'H' { Parser.Abs.GH }
      | 'X' { Parser.Abs.GX }
      | 'Y' { Parser.Abs.GY }
@@ -152,19 +164,13 @@ Gate : 'H' { Parser.Abs.GH }
      | GateIdent { Parser.Abs.GGate $1 }
 {
 
-returnM :: a -> Err a
-returnM = return
-
-thenM :: Err a -> (a -> Err b) -> Err b
-thenM = (>>=)
-
-happyError :: [Token] -> Err a
-happyError ts =
-  Bad $ "syntax error at " ++ tokenPos ts ++
+happyError :: [Token] -> Either String a
+happyError ts = Left $
+  "syntax error at " ++ tokenPos ts ++
   case ts of
     []      -> []
     [Err _] -> " due to lexer error"
-    t:_     -> " before `" ++ id(prToken t) ++ "'"
+    t:_     -> " before `" ++ (prToken t) ++ "'"
 
 myLexer = tokens
 }

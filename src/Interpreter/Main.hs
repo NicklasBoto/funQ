@@ -18,6 +18,10 @@ import Data.Bifunctor ( Bifunctor(bimap) )
 import Control.Exception (try)
 import qualified Type.HM as HM
 
+-- TODO:
+-- * fixa partial application
+-- * sugar for multiple arguments 
+
 -- TODO: 
 -- * köra fq utryck i cmd (utan att mata in en fil)
 -- * flytta ut till direkt under src

@@ -31,12 +31,21 @@ render d = rend 0 (map ($ "") $ d []) "" where
     "{"      :ts -> showChar '{' . new (i+1) . rend (i+1) ts
     "}" : ";":ts -> new (i-1) . space "}" . showChar ';' . new (i-1) . rend (i-1) ts
     "}"      :ts -> new (i-1) . showChar '}' . new (i-1) . rend (i-1) ts
+    [";"]        -> showChar ';'
     ";"      :ts -> showChar ';' . new i . rend i ts
     t  : ts@(p:_) | closingOrPunctuation p -> showString t . rend i ts
     t        :ts -> space t . rend i ts
     _            -> id
-  new i   = showChar '\n' . replicateS (2*i) (showChar ' ') . dropWhile isSpace
-  space t = showString t . (\s -> if null s then "" else ' ':s)
+  new i     = showChar '\n' . replicateS (2*i) (showChar ' ') . dropWhile isSpace
+  space t s =
+    case (all isSpace t', null spc, null rest) of
+      (True , _   , True ) -> []              -- remove trailing space
+      (False, _   , True ) -> t'              -- remove trailing space
+      (False, True, False) -> t' ++ ' ' : s   -- add space if none
+      _                    -> t' ++ s
+    where
+      t'          = showString t []
+      (spc, rest) = span isSpace s
 
   closingOrPunctuation :: String -> Bool
   closingOrPunctuation [c] = c `elem` closerOrPunct
@@ -89,16 +98,16 @@ instance Print Double where
   prt _ x = doc (shows x)
 
 instance Print Parser.Abs.FunVar where
-  prt _ (Parser.Abs.FunVar i) = doc (showString i)
+  prt _ (Parser.Abs.FunVar i) = doc $ showString $ i
 
 instance Print Parser.Abs.Var where
-  prt _ (Parser.Abs.Var i) = doc (showString i)
+  prt _ (Parser.Abs.Var i) = doc $ showString $ i
 
 instance Print Parser.Abs.GateIdent where
-  prt _ (Parser.Abs.GateIdent i) = doc (showString i)
+  prt _ (Parser.Abs.GateIdent i) = doc $ showString $ i
 
 instance Print Parser.Abs.Lambda where
-  prt _ (Parser.Abs.Lambda i) = doc (showString i)
+  prt _ (Parser.Abs.Lambda i) = doc $ showString $ i
 
 instance Print Parser.Abs.Program where
   prt i e = case e of
@@ -156,7 +165,6 @@ instance Print Parser.Abs.Arg where
   prt i e = case e of
     Parser.Abs.FArg var -> prPrec i 0 (concatD [prt 0 var])
   prtList _ [] = concatD []
-  prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString " "), prt 0 xs]
 
 instance Print [Parser.Abs.Arg] where
