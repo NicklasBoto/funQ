@@ -39,3 +39,9 @@ cloneF = clone gen
 
 idt : !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit)
 idt m = let (a,b) = m in let (b,c) = b in (a,b,c)
+
+qmap : (QBit -o QBit) -o (QBit >< QBit) -o (QBit >< QBit)
+qmap f a = let (x,y) = a in (f x, y)
+
+-- main : Bit 
+-- main = let (a,b) = qmap X (new 1, new 1) in (meas a) -- 0

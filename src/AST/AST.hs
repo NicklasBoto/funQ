@@ -64,9 +64,9 @@ instance Show Term where
     show = printTree . reverseImTerm 0
 
 data Type
-    = TypeVar String
-    | TypeFlex String -- a or !a
-    | TypeBit
+    = TypeVar String -- "?a, a", FVar a, TVar a
+    | TypeFlex Type -- a or !a
+    | TypeBit                      
     | TypeQBit
     | TypeUnit
     | TypeDup Type
@@ -93,7 +93,7 @@ convertType (P.TypeFunc l r)        = convertType l :=> convertType r
 -- | Converts from our type to Parser type .
 reverseType :: Type -> P.Type
 reverseType (TypeVar var) = P.TypeVar (P.Var var)
-reverseType (TypeFlex fx) = P.TypeVar (P.Var ('?':fx))
+reverseType (TypeFlex fx) = P.TypeVar (P.Var ('?': show (reverseType fx)))
 reverseType TypeBit = P.TypeBit
 reverseType TypeQBit = P.TypeQbit
 reverseType TypeUnit = P.TypeVoid
