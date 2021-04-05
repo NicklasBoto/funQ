@@ -80,19 +80,6 @@ data Value
     | VTup Value Value
     | VFunc [Value] A.Term 
 
-inc :: Eval ()
-inc = do
-    modify (\env -> env{count = 1})
-zero :: Eval ()
-zero = modify (\env -> env{count = 0})
-removeN :: Eval ()
-removeN = do
-    modify (\env -> env{values = take (length (values env) - count env) (values env)})
-    env <- get
-    printE $ "removed: " ++ show (count env)
-
-
-
 -- | Term evaluator
 eval :: A.Term -> Eval Value
 eval t = do
@@ -101,8 +88,8 @@ eval t = do
             env <- get
             printE $ "values_idx: " ++ show (values env)
             let val = values env !! fromIntegral j
-            removeN
-            zero
+            
+            
             return val
             -- return $ values env !! fromIntegral j
             -- let vals = values env
@@ -117,15 +104,15 @@ eval t = do
 
         A.Bit BZero -> do
             env <- get
-            printE $ "values_bzero: " ++ show (values env)
-            removeN
-            zero
+            printE $ "values_b: " ++ show (values env)
+            
+            
             return $ VBit 0
         A.Bit BOne -> do
             env <- get
             printE $ "values_bone: " ++ show (values env)
-            removeN
-            zero
+            
+            
             return $ VBit 1
 
         A.Tup t1 t2 -> do
@@ -133,8 +120,8 @@ eval t = do
             v1 <- eval t1
             v2 <- eval t2
             printE $ "values_tup: " ++ show (values env)
-            removeN
-            zero
+            
+            
             return $ VTup v1 v2
 
         A.App e1 e2 -> case e1 of
@@ -155,13 +142,13 @@ eval t = do
                     Abs.GQFT  -> runQFT   Q.qft e2
             A.New -> do
                 VBit b' <- eval e2
-                removeN
-                zero
+                
+                
                 liftT $ Q.new b' <&> VQBit
             A.Meas -> do
                 VQBit q' <- eval e2
-                removeN
-                zero
+                
+                
                 liftT $ Q.measure q' <&> VBit
             _ -> do
                 env <- get
@@ -235,8 +222,8 @@ runGate g q = do
     env <- get
     VQBit q' <- eval q
     printE $ "values_runG: " ++ show (values env)
-    removeN
-    zero
+    
+    
     VQBit <$> liftT (g q')
 
 -- | Run gate taking two qubits
@@ -246,8 +233,8 @@ run2Gate g q = do
     VTup (VQBit a) (VQBit b) <- eval q
     (p,q) <- liftT (g (a,b))
     printE $ "values_run2G: " ++ show (values env)
-    removeN
-    zero
+    
+    
     return $ VTup (VQBit p) (VQBit q)
 
 -- | Run gate taking three qubits
