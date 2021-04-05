@@ -46,7 +46,7 @@ data Env = Env {
 
 instance Show Value where
     show (VBit b)    = show b
-    show (VTup a b)   = "(" ++ show a ++ ", " ++ show b ++ ")"
+    show (VTup a b)   = "(" ++ show a ++ "," ++ show b ++ ")"
     show (VQBit q)   = show q
     show VUnit       = "*"
     show (VFunc _ t) = "Function " ++ show t
@@ -124,13 +124,13 @@ eval env = \case
 
     A.Let eq inn -> do
          VTup x1 x2 <- eval env eq
-         eval env{ values = x2 : x1 : values env } inn
+         eval env{ values = x1 : x2 : values env } inn
 
     A.Abs e  -> return $ VFunc (values env) e
     A.Unit   -> return VUnit
     A.Gate g -> return $ VFunc (values env) (A.App (A.Gate g) (A.Idx 0))
-    A.New    -> return $ VFunc (values env) (A.App (A.New) (A.Idx 0))
-    A.Meas   -> return $ VFunc (values env) (A.App (A.Meas) (A.Idx 0))
+    A.New    -> return $ VFunc (values env) (A.App A.New (A.Idx 0))
+    A.Meas   -> return $ VFunc (values env) (A.App A.Meas (A.Idx 0))
 
 fromVTup :: Value -> [Value]
 fromVTup (VTup a b) = a : fromVTup b

@@ -71,7 +71,7 @@ transGate x = case x of
   GZ -> failure x
   GI -> failure x
   GS -> failure x
-  Parser.Abs.GT -> failure x
+  GT -> failure x
   GCNOT -> failure x
   GTOF -> failure x
   GSWP -> failure x

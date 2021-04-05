@@ -1,0 +1,8 @@
+qmap : (QBit -o QBit) -o (QBit >< QBit) -o (QBit >< QBit)
+qmap f a = let (x,y) = a in (f x, y)
+
+measureFst : (QBit >< QBit) -o Bit
+measureFst q = let (a,b) = q in meas a 
+
+main : Bit
+main = measureFirst (qmap X (new 1, new 1)) -- 0

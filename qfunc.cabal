@@ -1,8 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.2.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
+--
+-- hash: 4d52549074a4ab1d8bb1ee03a5b3818df2ea04f19900d6b4ea6d1360753191df
 
 name:           qfunc
 version:        0.1.0.0
@@ -42,12 +44,9 @@ library
       Parser.Abs
       Parser.ErrM
       Parser.Lex
-      Parser.Lex
-      Parser.Par
       Parser.Par
       Parser.Print
       Parser.Skel
-      Parser.Test
       Type.HM
       Type.STLC
       Type.TypeChecker

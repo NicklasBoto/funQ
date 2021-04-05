@@ -313,8 +313,9 @@ infer i env (App l r) = do
     tv <- fresh
     (s1,t1) <- infer i env l
     (s2,t2) <- infer i (apply s1 env) r
-    subtypeCheck t1 t2
+    -- subtypeCheck t1 t2
     s3      <- unify (apply s2 t1) (t2 :=> tv)
+    subtypeCheck (apply (s3 `compose` s2) t1) (apply s3 t2)
     return (s3 ∘ s2 ∘ s1, apply s3 tv)
 infer i env (IfEl b l r) = do
     (s1,t1) <- infer i env b

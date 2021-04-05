@@ -1,5 +1,5 @@
 newP : Bit -o QBit
 newP = new
 
-main : QBit
-main = newP 1
+main : Bit
+main = meas (newP 1)

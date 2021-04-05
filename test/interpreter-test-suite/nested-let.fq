@@ -1,0 +1,13 @@
+-- let (a,b,c) = M in N
+-- blir
+-- let (a,b) = M in let (b,c) = b in N
+-- 1) interpreter kan hantera nästlade let 
+-- 2) få let (a,b,c) att funka
+
+main : Bit 
+main = let (a,b,c) = m in meas c
+
+-- let (a,b) = m in let (c,d) = b in meas d
+
+m : (QBit >< QBit >< QBit)
+m = (new 0, new 0, new 1)

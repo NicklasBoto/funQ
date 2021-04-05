@@ -40,6 +40,9 @@ type Program = [Function]
 name :: P.Var -> String
 name (P.Var v) = v
 
+nameL :: P.LetVar -> String
+nameL (P.LVar v) = name v 
+
 -- | A term in our intermediatary representation.
 data Term
     = Idx  Integer      -- bound
@@ -118,12 +121,30 @@ makeImTerm env (P.TVar var) = case M.lookup (name var) env of
     Nothing  -> Fun (name var)
 makeImTerm env (P.TIfEl cond true false) = 
     IfEl (makeImTerm env cond) (makeImTerm env true) (makeImTerm env false)
-makeImTerm env (P.TLet x y eq inn) = Let (makeImTerm env eq) (makeImTerm env' inn)
-    where env' = M.insert (name y) 0 $ M.insert (name x) 1 (M.map (succ . succ) env)
+makeImTerm env (P.TLet x (y:ys) eq inn) = Let (makeImTerm env eq) (makeImTerm env' (P.TLet y ys (toTerm y) inn)) -- (makeImTerm env' inn)
+    where env' = M.insert (nameL y) 1 $ M.insert (nameL x) 0 (M.map (succ . succ) env) -- insertLets env (x:y)
+    -- let (a,b,c) = M in N
+    -- blir
+    -- let (a,b) = M in let (b,c) = b in N
+    -- Let (makeImTerm env eq) (makeImTerm env' )
+
+    -- (P.TLet a [b,c] M N) -> Let (makeImTerm env M) (makeImTerm env' (P.TLet b [c] b N))
+    -- -> Let (makeImTerm env M) (makeImTerm env' (Let (makeImTerm env' b) (makeImTerm env'' N)))
+
+    -- (P.TLet a [b,c,d] M N) -> Let (makeImTerm env M) (makeImTerm env' (P.TLet b [c,d] b N))
 makeImTerm env (P.TTup (P.Tuple t ts)) = foldr1 Tup $ map (makeImTerm env) (t:ts)
 makeImTerm _env (P.TBit b) = Bit b
 makeImTerm _env (P.TGate g) = Gate g
 makeImTerm _env P.TStar = Unit
+
+toTerm :: P.LetVar -> P.Term
+toTerm (P.LVar v) = P.TVar v
+
+
+-- insertLets :: Env -> [P.LetVar] -> Env
+-- insertLets env xs = newEnv xs env
+--     where newEnv [] env = env
+--           newEnv xs env = newEnv (init xs) $ M.insert (nameL (last xs)) 0 (M.map succ env)
 
 -- | Convert a function to intermediate abstract syntax (lambdaized, with de Bruijn indices)
 makeImFunction :: P.FunDec -> Function
@@ -153,13 +174,13 @@ reverseImFunction (Func name t term) = P.FDecl (P.FunVar (name++" :")) (reverseT
 -- | imTerm in reverse. From the intermediate term to the parser term.
 reverseImTerm :: Integer -> Term -> P.Term
 reverseImTerm env (Idx idx)    = P.TVar $ P.Var $ 'x' : show (env - idx - 1)
-reverseImTerm env (Fun s)     = P.TVar $ P.Var s
+reverseImTerm env (Fun s)      = P.TVar $ P.Var s
 reverseImTerm env (Bit b)      = P.TBit b 
 reverseImTerm env (Gate g)     = P.TGate g
 reverseImTerm env (Tup l r)    = P.TTup $ P.Tuple (reverseImTerm env l) [reverseImTerm env r] -- FIXME
 reverseImTerm env (App  t1 t2) = P.TApp (reverseImTerm env t1) (reverseImTerm env t2)
 reverseImTerm env (IfEl c t e) = P.TIfEl (reverseImTerm env c) (reverseImTerm env t) (reverseImTerm env e)
-reverseImTerm env (Let eq inn) = P.TLet (P.Var ('x' : show (env + 1))) (P.Var ('x' : show env)) (reverseImTerm env eq) (reverseImTerm (env + 2) inn)
+reverseImTerm env (Let eq inn) = P.TStar -- TEMP!!! P.TLet (P.LVar ('x' : show (env + 1))) (P.LVar ('x' : show env)) (reverseImTerm env eq) (reverseImTerm (env + 2) inn)
 reverseImTerm env (Abs  term)  = P.TLamb (P.Lambda "\\") (P.Var ('x' : show env)) (reverseImTerm (env+1) term)
 reverseImTerm env New          = P.TVar (P.Var "new")
 reverseImTerm env Meas         = P.TVar (P.Var "meas")

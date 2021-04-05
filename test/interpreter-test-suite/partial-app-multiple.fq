@@ -1,0 +1,23 @@
+qmap : (QBit -o QBit) -o (QBit >< QBit) -o (QBit >< QBit)
+qmap f a = let (x,y) = a in (f x, y)
+
+-- fmap : (a -o b) -o (a >< c) -o (b >< c)
+-- fmap g qs = let (x,y) = qs in (g x, y)
+
+main : Bit 
+main = measureFst (multiple (new 1, new 1)) -- 0 -- measureSnd (multiple (new 1, new 1))  -- measureFirst (multiple (new 1, new 1)) -- 0 -- measureFirst (id (qmap X (new 1, new 1))) -- 0
+
+comp : (b -o c) -o (a -o b) -o (a -o c)
+comp f g = \x . f (g x)
+
+multiple : a -o a
+multiple = comp SWAP CNOT
+
+measureFst : (QBit >< QBit) -o Bit
+measureFst q = let (a,b) = q in meas a 
+
+measureSnd : (QBit >< QBit) -o Bit
+measureSnd q = let (a,b) = q in meas b
+
+id : QBit -o QBit 
+id = I

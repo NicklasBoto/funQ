@@ -1,0 +1,11 @@
+appFst : (QBit -o QBit) -o (QBit >< QBit) -o (QBit >< QBit)
+appFst f a = let (x,y) = a in (f x, y)
+
+measureFst : (QBit >< QBit) -o Bit
+measureFst q = let (a,b) = q in meas a 
+
+measureBoth : (QBit >< QBit) -o (Bit >< Bit)
+measureBoth q = let (a, b) = q in (meas a, meas b)
+
+main : (Bit >< Bit)
+main = measureBoth (appFst X (new 1, new 1)) -- (0,1)
