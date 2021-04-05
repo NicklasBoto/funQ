@@ -270,8 +270,10 @@ unify (TypeFlex a) t = bind (FVar a) t
 unify (TypeVar a) t =  bind (LVar a) t
 unify t (TypeVar a) = bind (LVar a) t
 unify (TypeDup a) (TypeDup b) = unify a b
-unify t t' | t' <: t && isConstType t = return nullSubst
+-- unify (TypeDup TypeVar ()) (TypeVar b) = unify a b
+unify t t' | (t' <: t || t <: t') && isConstType t && isConstType t' = return nullSubst
            | otherwise = throwError $ UnificationFailError t t'
+-- Bit, !Bit
 
 -- | Binds a type variable with another type and returns a substitution.
 bind :: TVar -> Type -> Infer Subst
@@ -326,6 +328,43 @@ generalize :: TypeEnv -> Type -> Scheme
 generalize env t  = Forall as t
     where as = Set.toList $ ftv t `Set.difference` ftv env
 
+-- Unify with subtypes allowed
+coerce :: Type -> Type -> Infer Subst
+coerce (TypeDup (l :=> r)) (l' :=> r') = do
+        s1 <- coerce l l'
+        s2 <- coerce (apply s1 r) (apply s1 r')
+        return (s2 ∘ s1)
+coerce (l :=> r) (l' :=> r') = do
+        s1 <- coerce l l'
+        s2 <- coerce (apply s1 r) (apply s1 r')
+        return (s2 ∘ s1)
+coerce (TypeDup (l :>< r)) (l' :>< r') = do
+    s1 <- coerce (TypeDup l) l'
+    s2 <- coerce (TypeDup r) r'
+    return (compose s2 s1)
+coerce (l :>< r) (TypeDup (l' :>< r')) = do
+    s1 <- coerce l (TypeDup l')
+    s2 <- coerce r (TypeDup r')
+    return (compose s2 s1)
+coerce (l :>< r) (l' :>< r') = do
+    s1 <- coerce l l'
+    s2 <- coerce r r'
+    return (compose s2 s1)
+coerce (TypeFlex a) (TypeFlex b) = bind (LVar a) (TypeVar b)
+coerce (TypeFlex a) (TypeDup  b) = bind (FVar a) (TypeDup b)
+coerce t (TypeFlex b) = bind (FVar b) t
+coerce (TypeFlex a) t = bind (FVar a) t
+coerce (TypeVar a) t =  bind (LVar a) t
+coerce t (TypeVar a) = bind (LVar a) t
+coerce (TypeDup a) (TypeDup b) = coerce a b
+-- coerce (TypeDup TypeVar ()) (TypeVar b) = coerce a b
+coerce t t' | (t' <: t || t <: t') && isConstType t' = return nullSubst
+           | otherwise = throwError $ UnificationFailError t t'
+-- if b:!Bit then 0 else 1
+-- ->
+-- if (linB b):Bit then 0 else 1
+-- linB : !Bit -> Bit
+
 -- | Infers a substitution and a type from a Term
 infer :: Term -> Infer (Subst, Type)
 infer (Idx j)      = do
@@ -352,15 +391,16 @@ infer (App l r) = do
     (s1,t1) <- infer l
     modify (\st -> st{env=apply s1 env})
     (s2,t2) <- infer r
-    subtypeCheck t1 t2
     s3      <- unify (apply s2 t1) (t2 :=> tv)
+    subtypeCheck (apply (s3 `compose` s2) t1) (apply s3 t2)
     return (s3 ∘ s2 ∘ s1, apply s3 tv)
 infer (IfEl b l r) = do
     (s1,t1) <- infer b
     (s2,t2) <- infer l
     (s3,t3) <- infer r
-    s4 <- unify (TypeDup TypeBit) t1
-    s5 <- unify t2 t3
+    s4 <- coerce t1 TypeBit
+    -- s4 <- unify TypeBit t1
+    s5 <- unify t2 t3 
     return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, apply s5 t2)
 infer (Let eq inn) = do
     tv1 <- inferDuplicity (Abs inn) <$> fresh  
@@ -511,7 +551,10 @@ checkFunc state (Func name qtype term) = do
 equal :: Type -> Type -> Infer Type
 equal typ inf = do
     sub <- unify typ inf
-    return $ apply sub typ
+    let t = apply sub inf
+    if t <: typ
+        then return typ
+        else throwError $ SubtypeFailError t typ
 
 -- | Generate environment with function signatures 
 genEnv :: [Function] -> TypeEnv 

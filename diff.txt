@@ -1,0 +1,234 @@
+diff --git a/src/Type/HM.hs b/src/Type/HM.hs
+index b397916..16658de 100644
+--- a/src/Type/HM.hs
++++ b/src/Type/HM.hs
+@@ -132,28 +132,28 @@ closeOver :: (Subst, Type) -> Scheme
+ closeOver (sub, ty) = normalize sc
+   where sc = generalize emptyEnv (apply sub ty)
+ 
+--- | Normalizes a polymorphic type to simple type variable names.
++-- | 
+ normalize :: Scheme -> Scheme
+ normalize (Forall ts body) = Forall (fmap (LVar . snd) ord) (normtype body)
+   where
+-    -- | Maps each free variable in the body to 
+     ord = zip (nub $ fv body) letters
+     
+     fv (TypeVar  a) = [a]
+-    fv (TypeFlex a) = fv a
+-    fv (TypeDup  a) = fv a
++    fv (TypeFlex a) = [a]
+     fv (a :=> b)    = fv a ++ fv b
+     fv (a :>< b)    = fv a ++ fv b
+     fv _            = []
+ 
+     normtype (a :=> b) = normtype a :=> normtype b
+     normtype (a :>< b) = normtype a :>< normtype b
+-    normtype (TypeFlex a)  = normtype a
+-    normtype (TypeDup a)   = TypeDup $ normtype a
+     normtype (TypeVar a)   =
+       case lookup a ord of
+         Just x -> TypeVar x
+         Nothing -> error "type variable not in signature"
++    normtype (TypeFlex a) =
++        case lookup a ord of
++            Just x -> TypeFlex x
++            Nothing -> error "type flexible not in signature"
+     normtype a = a
+ 
+ -- | 
+@@ -174,41 +174,13 @@ debang          a  = a
+ 
+ -- | Converts a type variable to a type flex 
+ flex :: Type -> Type
+-flex (TypeVar a) = TypeFlex (TypeVar a)
+-flex          t  = t
++flex (TypeVar a) = TypeFlex a
++flex          t  =          t
+ 
+ -- | Converts a type flex to a type variable
+ deflex :: Type -> Type
+-deflex (TypeFlex a) = a
+-deflex           t  = t
+-
+--- myIf : Bit -> a -> b
+--- condition:Bit, !Bit 
+-
+--- f : !Bit -o a
+--- f = \x . if x then a else b : !Bit -o a
+-
+--- \x:!Bit. new x
+--- HM{\x . new x} : ?Bit -o QBit
+--- x till ?a
+--- ?a -> Bit
+-
+--- / !(TypeVar a)
+--- !Term Term ?Term
+--- Sub ?Sub
+--- [?a -> xxx]
+--- [a/Bit] ?a --> ?Bit
+--- [?a/Bit] ?a --> Bit 
+--- [a/Bit] !a --> !Bit
+--- [?a/Bit] !a --> !Bit -- ERR : ?a och a matchar inte
+--- [a/!Bit] ?a --> 
+---   [TVar a / !Bit] TypeFlex (TypeVar a) -> TypeFlex (!Bit)  -- !Bit     
+---                                           TypeFlex (TypeDup e) = TypeDup e
+-
+---simplifyFlexes :: Type -> Type
+---simplifyFlexes 
+-
+-
++deflex (TypeFlex a) = TypeVar a
++deflex           t  =         t
+ 
+ -- | Transforms all flex variables to normal linear type variables.
+ deflexType :: Type -> Type
+@@ -231,18 +203,17 @@ instance Substitutable Type where
+     apply _ TypeQBit = TypeQBit
+     apply _ TypeUnit = TypeUnit
+     apply s (TypeDup d) = TypeDup $ apply s d
+-    apply s (TypeFlex f) = apply s f
+     apply s t@(TypeVar v) = Map.findWithDefault t (LVar v) s
++    apply s t@(TypeFlex v) = Map.findWithDefault t (FVar v) s 
+     apply s (t1 :=> t2) = apply s t1 :=> apply s t2
+     apply s (t1 :>< t2) = apply s t1 :>< apply s t2
+ 
+     -- | The free type variables for a type are all type variables in the type,
+     --   since no type variables are bound.
+-    ftv (TypeVar v)  = Set.singleton (LVar v)
+-    ftv (TypeFlex v) = ftv v
+-    ftv (t1 :=> t2)  = Set.union (ftv t1) (ftv t2)
+-    ftv (t1 :>< t2)  = Set.union (ftv t1) (ftv t2)
+-    ftv _constant    = Set.empty
++    ftv (TypeVar v) = Set.singleton (LVar v)
++    ftv (TypeFlex v) = Set.singleton (FVar v)
++    ftv (t1 :=> t2) = Set.union (ftv t1) (ftv t2)
++    ftv _constant   = Set.empty
+ 
+ instance Substitutable Scheme where
+     -- | The type inside the scheme are applied to the substitution,
+@@ -270,30 +241,7 @@ occursCheck a t = a `Set.member` ftv t
+ -- ?a ~ !t : [?a/!t]
+ -- ?a ~ ?b : [a/b]
+ 
+--- [a/b] TypeFlex (TypeVar a) --> TypeFlex (TypeVar b)
+-
+--- ?a ~ ?b : [?a/?b]
+-
+--- ?(a >< b) ~ ?(Bit >< QBit) = (a >< b) ~ (Bit >< QBit) : [a/Bit, b/QBit]
+--- TypeFlex a ~ TypeFlex b =  unify a b 
+--- TypeFlex e1 ~ e2 = ?????
+--- TypeFlex e1 ~ (TypeVar "?a") = 
+--- 
+--- TypeFlex (TypeVar a) ~ TypeBit = TypeBit
+--- TypeFlex (TypeVar a) ~ TypeDup TypeBit = TypeDup TypeBit  [?a/TypeDup TypeBit]
+--- [FVar a -> TypeBit] TypeFlex (TypeVar a) -> TypeBit
+--- TypeFlex (TypeDup TypeBit) = TypeDup TypeBit?
+--- ?!Bit = !Bit
+--- if ?Bit then a else a
+---    FVar 
+--- TypeFlex (TypeVar a) ~ TypeFlex (TypeVar b) = TypeFlex (TypeVar a (or b))
+--- 
+-
+--- | Given two types, creates a substitution that when applied to the types
+---   would make them 
+-unify2 :: Type -> Type -> Infer Subst
+-unify2 = undefined
+-
++-- | Tries to find common type for two input types
+ unify :: Type -> Type -> Infer Subst
+ unify (TypeDup (l :=> r)) (l' :=> r') = do
+         s1 <- unify l l'
+@@ -315,31 +263,23 @@ unify (l :>< r) (l' :>< r') = do
+     s1 <- unify l l'
+     s2 <- unify r r'
+     return (compose s2 s1)
+--- ?"a" ~ ?"b" = ["a"/"b"]
+-unify (TypeFlex (TypeVar a)) (TypeFlex (TypeVar b)) = bind (LVar a) (TypeVar b) -- vrf LVar?
+--- ?a ~ ?b : [a/b]
+--- [a/b] ?a --> ?b
+--- [?a/?b] ?a --> ?b
+--- ?"a" ~ !"b" = []
+-unify (TypeFlex (TypeVar a)) (TypeDup  b) = bind (FVar a) (TypeDup b)
+-unify t (TypeFlex (TypeVar b)) = bind (FVar b) t
+-unify (TypeFlex (TypeVar a)) t = bind (FVar a) t
++unify (TypeFlex a) (TypeFlex b) = bind (LVar a) (TypeVar b)
++unify (TypeFlex a) (TypeDup  b) = bind (FVar a) (TypeDup b)
++unify t (TypeFlex b) = bind (FVar b) t
++unify (TypeFlex a) t = bind (FVar a) t
+ unify (TypeVar a) t =  bind (LVar a) t
+ unify t (TypeVar a) = bind (LVar a) t
+ unify (TypeDup a) (TypeDup b) = unify a b
+-unify (TypeFlex t1) t2 = error "Unimplementable" --unify t1 t2 
+-unify t1 (TypeFlex t2) = error "urk!"
++-- unify (TypeDup TypeVar ()) (TypeVar b) = unify a b
+ unify t t' | (t' <: t || t <: t') && isConstType t && isConstType t' = return nullSubst
+            | otherwise = throwError $ UnificationFailError t t'
+ 
+--- unify (TCon a) (TCon b) | a == b = return nullSubst
+-
+ -- | Binds a type variable with another type and returns a substitution.
+ bind :: TVar -> Type -> Infer Subst
+ bind a'@(LVar a) t | t == TypeVar a   = return nullSubst
+                    | occursCheck a' t = throwError $ InfiniteTypeError a t
+                    | otherwise        = return $ Map.singleton a' t
+-bind a'@(FVar a) t | t == TypeFlex (TypeVar a)  = return nullSubst
++bind a'@(FVar a) t | t == TypeFlex a  = return nullSubst
+                    | occursCheck a' t = throwError $ InfiniteTypeError a t
+                    | otherwise        = return $ Map.singleton a' t
+ 
+@@ -364,7 +304,7 @@ freshFlex :: Infer Type
+ freshFlex = do
+     s <- gets count 
+     modify $ \st ->  st{count = s+1}
+-    return $ TypeFlex $ TypeVar $ letters !! s
++    return $ TypeFlex $ letters !! s
+ 
+ -- | Returns a list of strings used for fresh type variables.
+ letters :: [String]
+@@ -408,19 +348,19 @@ infer (Tup l r)  = do
+     t <- productExponential lt rt
+     return (ls ∘ rs, t)
+ infer (App l r) = do
+-    tv <- freshFlex
++    tv <- fresh
+     env <- gets env
+-    (s1,t1) <- infer l 
++    (s1,t1) <- infer l
+     modify (\st -> st{env=apply s1 env})
+     (s2,t2) <- infer r
+     s3      <- unify (apply s2 t1) (t2 :=> tv)
+-    subtypeCheck (apply (s3 `compose` s2) t1) (apply s3 t2) -- t2 <: 
++    subtypeCheck t1 t2
+     return (s3 ∘ s2 ∘ s1, apply s3 tv)
+ infer (IfEl b l r) = do
+     (s1,t1) <- infer b
+     (s2,t2) <- infer l
+     (s3,t3) <- infer r
+-    s4 <- unify TypeBit t1
++    s4 <- unify (TypeBit) t1
+     s5 <- unify t2 t3
+     return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, apply s5 t2)
+ infer (Let eq inn) = do
+@@ -443,8 +383,8 @@ infer (Abs body) = do
+     incAbsl 1
+     (s1, t1) <- infer body
+     return (s1, apply s1 tv :=> t1)
+-infer New  = return (nullSubst, TypeDup (TypeBit  :=> TypeQBit))
+-infer Meas = return (nullSubst, TypeDup (TypeQBit :=> TypeDup TypeBit))
++infer New  = return (nullSubst, TypeBit  :=> TypeQBit)
++infer Meas = return (nullSubst, TypeQBit :=> TypeDup TypeBit)
+ infer Unit = return (nullSubst, TypeDup TypeUnit)
+ 
+ productExponential :: Type -> Type -> Infer Type
+@@ -571,8 +511,8 @@ checkFunc state (Func name qtype term) = do
+ --   and the inferred type.  
+ equal :: Type -> Type -> Infer Type
+ equal typ inf = do
+-    sub <- unify typ inf -- Try to unify signature with inferred type
+-    let t = apply sub inf -- 
++    sub <- unify typ inf
++    let t = apply sub inf
+     if t <: typ
+         then return typ
+         else throwError $ SubtypeFailError t typ
