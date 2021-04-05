@@ -1,0 +1,5 @@
+newP : Bit -o QBit
+newP = new
+
+main : QBit
+main = newP 1

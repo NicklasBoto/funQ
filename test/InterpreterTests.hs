@@ -46,12 +46,15 @@ tests =
     -- ("second.fq", "1"),
     -- ("seventh.fq", "0"),
     -- ("swap.fq", "1"),
-    ("swapTwice.fq", "1")
+    -- ("swapTwice.fq", "1")
     -- ("third.fq", "1"),
     -- ("teleport.fq", "1")
     -- ("tdagger.fq",  "1"),
     -- ("qft1.fq",     "0"),
     -- ("qft2.fq",     "0"),
+    ("partial-app-new.fq",     "0"),
+    ("partial-app-meas.fq",     "0"),
+    ("partial-app-cnot.fq",     "0")
     -- TODO ("toffoli.fq")
     -- TODO ("fredkin.fq",  "0"),
   ]

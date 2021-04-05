@@ -1,0 +1,5 @@
+measP : QBit -o Bit
+measP = meas
+
+main : Bit
+main = measP (new 0)

@@ -128,9 +128,9 @@ eval env = \case
 
     A.Abs e  -> return $ VFunc (values env) e
     A.Unit   -> return VUnit
-    A.Gate g -> throwError $ NotApplied $ "Gate " ++ show g ++ " must be applied to something"
-    A.New    -> throwError $ NotApplied "New must be applied to something"
-    A.Meas   -> throwError $ NotApplied "Meas must be applied to something"
+    A.Gate g -> return $ VFunc (values env) (A.App (A.Gate g) (A.Idx 0))
+    A.New    -> return $ VFunc (values env) (A.App (A.New) (A.Idx 0))
+    A.Meas   -> return $ VFunc (values env) (A.App (A.Meas) (A.Idx 0))
 
 fromVTup :: Value -> [Value]
 fromVTup (VTup a b) = a : fromVTup b
