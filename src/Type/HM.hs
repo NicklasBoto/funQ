@@ -103,11 +103,10 @@ data InferState
     = St { count  :: Counter
          , linenv :: Set.Set String
          , env    :: TypeEnv
-         , absl   :: Integer
          }
 
 emptyState :: InferState
-emptyState = St 0 Set.empty Map.empty 0
+emptyState = St 0 Set.empty Map.empty
 
 -- | Extend the type environment with a new bound variable together with its type scheme.
 extend :: (Named, Scheme) -> Infer ()
@@ -121,11 +120,6 @@ addLin :: String -> Infer ()
 addLin name = do
     linenv <- gets linenv
     modify $ \st -> st{linenv = Set.insert name linenv}
-
-incAbsl :: Integer -> Infer ()
-incAbsl i = do
-    absl <- gets absl
-    modify $ \st -> st{absl = absl + i}
 
 -- | Apply final substitution and normalize the type variables 
 closeOver :: (Subst, Type) -> Scheme
@@ -294,6 +288,54 @@ occursCheck a t = a `Set.member` ftv t
 unify2 :: Type -> Type -> Infer Subst
 unify2 = undefined
 
+-- unify :: Type -> Type -> Infer Subst
+-- unify (TypeDup (l :=> r)) (l' :=> r') = do
+--         s1 <- unify l l'
+--         s2 <- unify (apply s1 r) (apply s1 r')
+--         return (s2 ∘ s1)
+-- unify (l :=> r) (l' :=> r') = do
+--         s1 <- unify l l'
+--         s2 <- unify (apply s1 r) (apply s1 r')
+--         return (s2 ∘ s1)
+-- unify (TypeDup (l :>< r)) (l' :>< r') = do
+--     s1 <- unify (TypeDup l) l'
+--     s2 <- unify (TypeDup r) r'
+--     return (compose s2 s1)
+-- unify (l :>< r) (TypeDup (l' :>< r')) = do
+--     s1 <- unify l (TypeDup l')
+--     s2 <- unify r (TypeDup r')
+--     return (compose s2 s1)
+-- unify (l :>< r) (l' :>< r') = do
+--     s1 <- unify l l'
+--     s2 <- unify r r'
+--     return (compose s2 s1)
+-- -- ?"a" ~ ?"b" = ["a"/"b"]
+-- unify (TypeFlex (TypeVar a)) (TypeFlex (TypeVar b)) = bind (LVar a) (TypeVar b) -- vrf LVar?
+-- -- ?a ~ ?b : [a/b]
+-- -- [a/b] ?a --> ?b
+-- -- [?a/?b] ?a --> ?b
+-- -- ?"a" ~ !"b" = []
+-- unify (TypeFlex (TypeVar a)) (TypeDup  b) = bind (FVar a) (TypeDup b)
+-- unify t (TypeFlex (TypeVar b)) = bind (FVar b) t
+-- 
+-- unify (TypeFlex (TypeVar a)) t = bind (FVar a) t   -- : ?a ~ t = [?a/t]
+-- 
+-- unify (TypeVar a) t =  bind (LVar a) t
+-- unify t (TypeVar a) = bind (LVar a) t
+-- unify (TypeDup a) (TypeDup b) = unify a b
+-- -- TypeFlex t1 ~ TypeVar a = [a/!t1]
+-- -- TypeFlex t1 ~ TypeDup (TypeVar b) = [b/t1]
+-- -- ?Bit ~ !a = Bit ~ !a, går ej
+-- --unify (TypeFlex t1) (TypeVar b) = bind (LVar b) (TypeDup t1)
+-- -- ?a ~ ?Bit
+-- unify (TypeFlex a) (TypeDup b) = unify a b -- : ?a ~ !b = a ~ b  
+-- unify (TypeDup a) (TypeFlex b) = unify a b -- : !a ~ ?b = a ~ b  
+-- 
+-- unify t1 (TypeFlex t2) = error $ "urk! " ++ show t1 ++ show "?" ++ show t2 
+-- unify t t' | (t' <: t || t <: t') && isConstType t && isConstType t' = return nullSubst
+--           | otherwise = throwError $ UnificationFailError t t'
+
+
 unify :: Type -> Type -> Infer Subst
 unify (TypeDup (l :=> r)) (l' :=> r') = do
         s1 <- unify l l'
@@ -321,18 +363,20 @@ unify (TypeFlex (TypeVar a)) (TypeFlex (TypeVar b)) = bind (LVar a) (TypeVar b) 
 -- [a/b] ?a --> ?b
 -- [?a/?b] ?a --> ?b
 -- ?"a" ~ !"b" = []
-unify (TypeFlex (TypeVar a)) (TypeDup  b) = bind (FVar a) (TypeDup b)
-unify t (TypeFlex (TypeVar b)) = bind (FVar b) t
-unify (TypeFlex (TypeVar a)) t = bind (FVar a) t
+unify (TypeFlex (TypeVar a)) (TypeDup  b) = bind (LVar a) (TypeDup b)
+unify t (TypeFlex (TypeVar b)) = bind (LVar b) t
+unify (TypeFlex (TypeVar a)) t = bind (LVar a) t
 unify (TypeVar a) t =  bind (LVar a) t
 unify t (TypeVar a) = bind (LVar a) t
 unify (TypeDup a) (TypeDup b) = unify a b
-unify (TypeFlex t1) t2 = error "Unimplementable" --unify t1 t2 
-unify t1 (TypeFlex t2) = error "urk!"
+unify (TypeFlex a) (TypeDup b) = unify a b 
+unify (TypeDup a) (TypeFlex b) = unify a b 
+unify (TypeFlex t1) t2 = error $ "Unimplementable" ++ " ?" ++ show t1 ++ show t2 
+unify t1 (TypeFlex t2) = error $ "urk!" ++ " ?" ++ show t1 ++ " ?" ++ show t2
 unify t t' | (t' <: t || t <: t') && isConstType t && isConstType t' = return nullSubst
-           | otherwise = throwError $ UnificationFailError t t'
+           | otherwise =  throwError $ UnificationFailError t t'
 
--- unify (TCon a) (TCon b) | a == b = return nullSubst
+--unify (TCon a) (TCon b) | a == b = return nullSubst
 
 -- | Binds a type variable with another type and returns a substitution.
 bind :: TVar -> Type -> Infer Subst
@@ -388,11 +432,9 @@ generalize env t  = Forall as t
     where as = Set.toList $ ftv t `Set.difference` ftv env
 
 -- | Infers a substitution and a type from a Term
-infer :: Term -> Infer (Subst, Type)
-infer (Idx j)      = do
-    i <- gets absl
-    lookupEnv (Bound (i-j-1)) 
-infer (Fun var)    = do
+infer :: Integer -> Term -> Infer (Subst, Type)
+infer i (Idx j)      = lookupEnv (Bound (i-j-1)) 
+infer i (Fun var)    = do
     linEnv <- gets linenv
     (s, typ) <- lookupEnv (NFun var)
     case typ of
@@ -400,52 +442,48 @@ infer (Fun var)    = do
         _notdup   -> if Set.member var linEnv
                         then throwError $ TopLevelLinearFail var
                         else addLin var >> return (s,typ)
-infer (Bit _)      = return (nullSubst, bang TypeBit)
-infer (Gate gate)  = return (nullSubst, inferGate gate)
-infer (Tup l r)  = do
-    (ls, lt) <- infer l
-    (rs, rt) <- infer r
+infer i (Bit _)      = return (nullSubst, bang TypeBit)
+infer i (Gate gate)  = return (nullSubst, inferGate gate)
+infer i (Tup l r)  = do
+    (ls, lt) <- infer i l
+    (rs, rt) <- infer i r
     t <- productExponential lt rt
     return (ls ∘ rs, t)
-infer (App l r) = do
+infer i (App l r) = do
     tv <- freshFlex
     env <- gets env
-    (s1,t1) <- infer l 
+    (s1,t1) <- infer i l 
     modify (\st -> st{env=apply s1 env})
-    (s2,t2) <- infer r
+    (s2,t2) <- infer i r
     s3      <- unify (apply s2 t1) (t2 :=> tv)
     subtypeCheck (apply (s3 `compose` s2) t1) (apply s3 t2) -- t2 <: 
     return (s3 ∘ s2 ∘ s1, apply s3 tv)
-infer (IfEl b l r) = do
-    (s1,t1) <- infer b
-    (s2,t2) <- infer l
-    (s3,t3) <- infer r
-    s4 <- unify TypeBit t1
+infer i (IfEl b l r) = do
+    (s1,t1) <- infer i b
+    (s2,t2) <- infer i l
+    (s3,t3) <- infer i r
+    s4 <- unify (TypeFlex TypeBit) t1
     s5 <- unify t2 t3
     return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, apply s5 t2)
-infer (Let eq inn) = do
+infer i (Let eq inn) = do
     tv1 <- inferDuplicity (Abs inn) <$> fresh  
     tv2 <- inferDuplicity inn <$> fresh
-    (seq, teq) <- infer eq 
+    (seq, teq) <- infer i eq 
     product <- unify teq (tv1 :>< tv2)
-    i <- gets absl 
     extend (Bound (i+1), product `apply` Forall [] tv1)
     extend (Bound  i   , product `apply` Forall [] tv2)
-    incAbsl 2 
-    (sinn, tinn) <- infer inn
+    (sinn, tinn) <- infer (i+2) inn
     -- return (seq ∘ product ∘ sinn, seq ∘ sinn `apply` tinn)
     return (sinn ∘ product ∘ seq, seq `apply` tinn)
-infer (Abs body) = do
+infer i (Abs body) = do
     tv <- inferDuplicity body <$> fresh
-    i <- gets absl
     env <- gets env
     extend (Bound i, Forall [] tv)
-    incAbsl 1
-    (s1, t1) <- infer body
+    (s1, t1) <- infer (i+1) body
     return (s1, apply s1 tv :=> t1)
-infer New  = return (nullSubst, TypeDup (TypeBit  :=> TypeQBit))
-infer Meas = return (nullSubst, TypeDup (TypeQBit :=> TypeDup TypeBit))
-infer Unit = return (nullSubst, TypeDup TypeUnit)
+infer i New  = return (nullSubst, TypeDup (TypeBit  :=> TypeQBit))
+infer i Meas = return (nullSubst, TypeDup (TypeQBit :=> TypeDup TypeBit))
+infer i Unit = return (nullSubst, TypeDup TypeUnit)
 
 productExponential :: Type -> Type -> Infer Type
 productExponential l r
@@ -461,7 +499,7 @@ tr x = trace (show x) (return ())
 
 -- | Infers type of a Gate
 inferGate :: Gate -> Type
-inferGate g = gateType $ case g of
+inferGate g = TypeDup $ gateType $ case g of
     GFRDK -> 3
     GTOF  -> 3
     GSWP  -> 2
@@ -474,20 +512,20 @@ inferGate g = gateType $ case g of
 subtypeCheck :: Type -> Type -> Infer ()
 subtypeCheck f b = case debang f of
     (a :=> _) | b <: a    -> return ()
-              | otherwise -> throwError $ SubtypeFailError a b
-    t -> error "oh no" 
+              | otherwise -> throwError $ SubtypeFailError b a
+    t -> error "urk: subtype check" 
 
 -- | Return whether a type is a subtype of another type.
 (<:) :: Type -> Type -> Bool
 TypeDup  a  <: TypeDup  b   = TypeDup a <: b
-TypeDup  a  <: TypeFlex b   = True 
-TypeDup  a  <:          b   = a  <: b
+TypeDup  a  <: TypeFlex b   = a <: b 
+TypeDup  a  <:          b   = a <: b
 (a1 :>< a2) <: (TypeDup (b1 :><  b2)) = a1 <: TypeDup b1 && a2 <: TypeDup b2
 (a1 :>< a2) <: (b1 :><  b2) = a1 <: b1 && a2 <: b2
 (a' :=>  b) <: (a :=>   b') = a  <: a' && b  <: b'
 TypeFlex a  <: TypeDup  b   = True 
-TypeFlex a  <:          b   = True
-a           <: TypeFlex b   = True
+TypeFlex a  <:          b   = a <: b 
+a           <: TypeFlex b   = a <: b
 a           <: TypeVar  b   = True
 a           <:          b   = a == b
 
@@ -533,11 +571,11 @@ headCount = cO 0
 
 
 typecheckTerm :: Term -> Either TypeError Scheme
-typecheckTerm e = runInfer (infer e)
+typecheckTerm e = runInfer (infer 0 e)
 
 typecheckProgram :: [Function] -> [Either TypeError (String, Type)]
 typecheckProgram fs = map (checkFunc state) fs
-    where state = St 0 Set.empty (genEnv fs) 0
+    where state = St 0 Set.empty (genEnv fs)
 
 showTypes :: [Either TypeError (String, Type)] -> IO ()
 showTypes = putStrLn . intercalate "\n\n" . map st
@@ -554,6 +592,9 @@ runtcFile path = runtc <$> readFile path
 runInfer :: Infer (Subst, Type) -> Either TypeError Scheme
 runInfer = runInferWith emptyState
 
+runUnify :: Type -> Type -> Either TypeError Subst
+runUnify a b = evalState (runExceptT (unify a b)) emptyState
+
 runInferWith :: InferState -> Infer (Subst, Type) -> Either TypeError Scheme
 runInferWith inferState m = case evalState (runExceptT m) inferState of
         Left  err -> Left err
@@ -562,7 +603,7 @@ runInferWith inferState m = case evalState (runExceptT m) inferState of
 checkFunc :: InferState -> Function -> Either TypeError (String, Type)
 checkFunc state (Func name qtype term) = do
     -- let is = St 0 Set.empty env 0
-    Forall _ itype <- runInferWith state (infer term)
+    Forall _ itype <- runInferWith state (infer 0 term)
     s <- evalState (runExceptT (equal qtype itype)) emptyState
     return (name, s)
 
@@ -585,7 +626,7 @@ genEnv = Map.fromList . map f
 inferExp :: String -> Either TypeError Type
 inferExp prog = do
     let [Func _ _ term] = run ("f : a f = " ++ prog)
-    Forall _ type' <- runInfer (infer term)
+    Forall _ type' <- runInfer (infer 0 term)
     -- return $ deflexType type'
     return type'
 
@@ -596,17 +637,17 @@ inferExp prog = do
 tc :: [Function] -> Infer ()
 tc = mapM_ f
     where f (Func _ qtype term) = 
-            do (s, itype) <- infer term
+            do (s, itype) <- infer 0 term
                env <- gets env
                linenv <- gets linenv
                equal qtype itype
-               put $ St 0 linenv env 0
+               put $ St 0 linenv env
 
 -- | Run typechecker on program
 typecheck :: [Function] -> Either TypeError ()
 typecheck funcs = void $ evalState (runExceptT (tc funcs)) state
     where 
-        state = St 0 Set.empty (genEnv funcs) 0
+        state = St 0 Set.empty (genEnv funcs)
 
 testTc :: String -> Either TypeError ()
 testTc = typecheck . run
