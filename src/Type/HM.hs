@@ -1,9 +1,11 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleInstances #-}
 
 module Type.HM where
 
 import AST.AST
+import Data.String
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import Control.Monad.State
@@ -39,9 +41,20 @@ type TypeEnv = Map.Map Named Scheme
 --  should be substituted with. It could be another type variable.
 type Subst = Map.Map TVar Type
 
+showMap :: Show a => Map.Map String a -> String
+showMap = intercalate "," . map elem . Map.toList
+    where elem (from, to) = from ++ "/" ++ show to 
+
+instance {-# OVERLAPPING #-} Show Subst where
+    show s = "[" ++ showMap s ++ "]"
+
 -- | A resolveaction contains three actions that can be made with a FlexType.
 data ResolveAction = Remove | Rename String | ToDup deriving Show
+
 type Resolver = Map.Map String ResolveAction
+
+instance {-# OVERLAPPING #-} Show Resolver where
+    show r = "{" ++ showMap r ++ "}"
 
 -- | The null substitution are the substitution where nothing are substituted.
 nullSubst :: Subst
@@ -161,9 +174,6 @@ s2 `compose` s1 = Map.map (apply s2) s1 `Map.union` s2
 rcompose :: Resolver -> Resolver -> Resolver
 r2 `rcompose` r1 = r1 `Map.union` r2
 
-
-
-
 (∘) :: Subst -> Map.Map TVar Type -> Map.Map TVar Type
 (∘) = compose
 
@@ -256,6 +266,11 @@ class Substitutable a where
     -- | Find all free type variables.
     ftv   :: a -> Set.Set TVar
 
+    {-# MINIMAL apply, resolve, ftv #-}
+
+    resply :: Resolver -> Subst -> a -> a
+    resply r s = resolve r . apply s
+
 instance Substitutable Type where
     -- | TypeVariables in the type are substituted if they exist in the substitution.
     apply _ TypeBit = TypeBit
@@ -267,7 +282,12 @@ instance Substitutable Type where
     apply s (t1 :=> t2) = apply s t1 :=> apply s t2
     apply s (t1 :>< t2) = apply s t1 :>< apply s t2
 
-    resolve r (TypeFlex id t) = resolveTypeFlex r id t
+    --resolve r (TypeFlex id t) = resolveTypeFlex r id t
+    resolve r (TypeFlex id t) = case Map.lookup id r of
+        Nothing           -> TypeFlex id t
+        Just Remove       -> t
+        Just (Rename new) -> TypeFlex new t
+        Just ToDup        -> TypeDup t
     resolve r (a :=> b) = resolve r a :=> resolve r b
     resolve r (a :>< b) = resolve r a :>< resolve r b
     resolve _      rest = rest
@@ -282,10 +302,10 @@ instance Substitutable Type where
 
 resolveTypeFlex :: Resolver -> String -> Type -> Type
 resolveTypeFlex r id t = case Map.lookup id r of
-    Nothing -> TypeFlex id t
-    Just Remove -> t
+    Nothing           -> TypeFlex id t
+    Just Remove       -> t
     Just (Rename new) -> TypeFlex new t
-    Just ToDup -> bang t
+    Just ToDup        -> bang t
 
 instance Substitutable Scheme where
     -- | The type inside the scheme are applied to the substitution,
@@ -336,8 +356,6 @@ occursCheck a t = a `Set.member` ftv t
 -- TypeFlex (TypeVar a) ~ TypeFlex (TypeVar b) = TypeFlex (TypeVar a (or b))
 -- 
 
--- | Resolve a resolver and apply a substitution to a type.
-resply r s x = resolve r (apply s x)
 
 -- | Given two types, creates a substitution that when applied to the types
 --   would make them 
@@ -710,6 +728,8 @@ checkFunc state (Func name qtype term) = do
     s <- evalState (runExceptT (equal qtype itype)) emptyState
     return (name, s)
 
+debangFunc (TypeDup (a :=> b)) = a :=> b
+debangFunc a = a
 
 -- | Gives the unified type of the type from the type signature
 --   and the inferred type.  
@@ -717,7 +737,7 @@ equal :: Type -> Type -> Infer Type
 equal typ inf = do
     (sub,res) <- unify typ inf -- Try to unify signature with inferred type
     let t = resply res sub inf -- 
-    if t <: typ
+    if t <: debangFunc typ
         then return typ
         else throwError $ SubtypeFailError t typ
 
@@ -733,6 +753,9 @@ inferExp prog = do
     -- return $ deflexType type'
     return type'
 
+instance IsString Type where
+    fromString t = typ
+        where [Func _ typ _] = run $ "m : " ++ t ++ " m = *"
 
 -- tc fs = foldM (\(func, state) -> checkFunc state func) (St 0 Set.empty env 0) fs
 --     where env = genEnv fs
