@@ -178,6 +178,18 @@ prop_linDupExp = expectError $ inferExp "(0, new 0)"
 -- Right ?{c}(a) ⊸ ?{c}(b) ⊸ ?{c}(a ⊗  b)
 prop_flexFlexExp = expectSuccess $ inferExp "\\x.\\y.(x,y)"
 
+prop_letConst = inferExp "let (a, b) = (0, 1) in a" == Right (TypeDup TypeBit)
+
+-- todo: both x and y should have same FlexId
+prop_letFunConst = expectSuccess $ inferExp "\\x.\\y.let (a,b) = (x,y) in a"
+
+-- todo: should have type. !a -o !b -o !(a, a)
+prop_letFunDup = expectSuccess $ inferExp "\\x.\\y.let (a,b) = (x,y) in (a,a)"
+
+-- todo
+prop_leftLet = inferExp "let (a,b) = (*, 0) in a" === Right (TypeDup TypeUnit)
+prop_leftRight = inferExp "let (a,b) = (*, 0) in b" === Right (TypeDup TypeBit)
+
 -- Need return for quickCheckAll
 return []
 runTests = $quickCheckAll
