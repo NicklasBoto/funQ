@@ -47,7 +47,7 @@ expectSuccess = property . isRight
 prop_LetNoProd = expectError $ inferExp "(\\x.let (a,b) = x in a) 0" -- === Left (SubtypeFailError (TypeVar "c" :>< TypeVar "d") (TypeDup TypeBit))
 
 -- | "(\\x . if new 0 then x else x) 0" should fail, since new 0 is a qubit
-prop_IfNoBit = inferExp "(\\x . if new 0 then x else x) 0" === Left (SubtypeFailError (TypeDup TypeBit) TypeQBit)
+prop_IfNoBit = expectError $ inferExp "(\\x . if new 0 then x else x) 0"
 
 -- | prop_ that if statments with mismatching types of then else throws an error 
 prop_MisMatchingIf = head (lefts $ runtc "q : QBit q = new 0 f : QBit f = if 1 then q else 0") === UnificationFailError TypeQBit (TypeDup TypeBit) 
@@ -141,7 +141,7 @@ prop_FunInTup = expectSuccess $ inferExp "(\\x.(x,x,x,x,0,1)) new"
 
 prop_IfGeneral = expectSuccess $ inferExp "\\x. if x then 0 else 1"
 
--- | Should succeed: Right !Bit ⊸ !(Bit ⊗  Bit)
+-- | Should succeed: Right !Bit ⊸ !(Bit ⊗ Bit)
 prop_DupIf = expectSuccess $ inferExp "\\x.if x then (x,x) else (x,x)"
 
 prop_IfOnce =  expectSuccess $ inferExp "\\x.if x then 0 else 0" -- a~?Bit=>[a/?Bit] ?Bit -o !Bit

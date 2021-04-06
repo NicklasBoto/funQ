@@ -342,6 +342,14 @@ resply r s x = resolve r (apply s x)
 -- | Given two types, creates a substitution that when applied to the types
 --   would make them 
 unify :: Type -> Type -> Infer (Subst, Resolver)
+unify (TypeDup (l :=> r)) (l' :=> r') = do
+    (s1, r1) <- unify l l'
+    (s2, r2) <- unify (resply r1 s1 r) (resply r1 s1 r')
+    return (s2 ∘ s1, r2 `rcompose` r1)
+unify (l :=> r) (TypeDup (l' :=> r')) = do
+    (s1, r1) <- unify l l'
+    (s2, r2) <- unify (resply r1 s1 r) (resply r1 s1 r')
+    return (s2 ∘ s1, r2 `rcompose` r1)
 unify (l :=> r) (l' :=> r') = do
     (s1, r1) <- unify l l'
     (s2, r2) <- unify (resply r1 s1 r) (resply r1 s1 r')
@@ -355,8 +363,13 @@ unify t (TypeVar a) = bind a t
 unify (TypeFlex id1 t1) (TypeFlex id2 t2) = createAction (Rename id2) id1
 unify (TypeFlex id t1) (TypeDup t2) = createAction ToDup id
 unify (TypeDup t1) (TypeFlex id t2) = createAction ToDup id 
-unify t1 (TypeFlex id t2) = createAction Remove id 
-unify (TypeFlex id t1) t2 = createAction Remove id 
+unify t1 (TypeFlex id t2) = unify t1 t2 >>= \(s, r1) -> do
+    (_, r2) <- createAction Remove id -- unify t1 och t2
+    return (s, r2 `rcompose` r1)
+unify a@(TypeFlex id t1) t2 = unify t2 a --unify t1 t2 >>= \(s, r1) -> do
+    -- (_, r2) <- createAction Remove id -- unify t1 och t2
+    -- return (s, r2 `rcompose` r1)
+unify (TypeDup t1) (TypeDup t2) = unify t1 t2
 unify t1 t2 | (t1 <: t2 || t2 <: t1) && isConstType t1 && isConstType t2 = return (nullSubst, nullResolver)            
             | otherwise =  throwError $ UnificationFailError t1 t2
 
