@@ -150,7 +150,26 @@ prop_IfSig = expectSuccess $ typecheck . run $ "f   : !Bit -o !Bit "
 -- Should work 
 prop_EqDup = expectSuccess $ inferExp "\\x.(x,0)"
 
+prop_dupExp = inferExp "(0, 0)" == Right (TypeDup (TypeBit :>< TypeBit))
 
+prop_flexDupExp = inferExp "\\x.(x,0)" == Right (TypeDup a :=> TypeDup (a :>< TypeBit))
+    where
+        a = TypeVar "a"
+
+prop_flexLinExp = inferExp "\\x.(x,new 0)" == Right (a :=> a :>< TypeQBit)
+    where
+        a = TypeVar "a"
+
+prop_flexLinExp2 = inferExp "\\x.(new 0, x)" == Right (a :=> TypeQBit :>< a)
+    where
+        a = TypeVar "a"
+
+prop_linLinExp = inferExp "(new 0, new 0)" == Right (TypeQBit :>< TypeQBit)
+
+prop_linDupExp = expectError $ inferExp "(0, new 0)"
+
+-- Right ?{c}(a) ⊸ ?{c}(b) ⊸ ?{c}(a ⊗  b)
+prop_flexFlexExp = expectSuccess $ inferExp "\\x.\\y.(x,y)"
 
 -- Need return for quickCheckAll
 return []

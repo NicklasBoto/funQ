@@ -144,7 +144,7 @@ normalize (Forall ts body) = Forall (fmap snd ord) (normtype body)
 
     normtype (a :=> b) = normtype a :=> normtype b
     normtype (a :>< b) = normtype a :>< normtype b
-    normtype (TypeFlex _ a)  = normtype a
+    normtype (TypeFlex var a)  = TypeFlex var (normtype a)
     normtype (TypeDup a)   = TypeDup $ normtype a
     normtype (TypeVar a)   =
       case lookup a ord of
@@ -262,7 +262,7 @@ instance Substitutable Type where
     apply _ TypeQBit = TypeQBit
     apply _ TypeUnit = TypeUnit
     apply s (TypeDup d) = TypeDup $ apply s d
-    apply s (TypeFlex _ f) = apply s f
+    apply s (TypeFlex id t) = TypeFlex id (apply s t)
     apply s t@(TypeVar v) = Map.findWithDefault t v s
     apply s (t1 :=> t2) = apply s t1 :=> apply s t2
     apply s (t1 :>< t2) = apply s t1 :>< apply s t2
@@ -360,11 +360,11 @@ unify (l :>< r) (l' :>< r') = do
     return (s2 ∘ s1, r2 `rcompose` r1)
 unify (TypeVar a) t = bind a t
 unify t (TypeVar a) = bind a t 
-unify (TypeFlex id1 t1) (TypeFlex id2 t2) = createAction (Rename id2) id1
-unify (TypeFlex id t1) (TypeDup t2) = createAction ToDup id
-unify (TypeDup t1) (TypeFlex id t2) = createAction ToDup id 
+unify (TypeFlex id1 t1) (TypeFlex id2 t2) = createActionM id1 (Rename id2)
+unify (TypeFlex id t1) (TypeDup t2) = createActionM id ToDup 
+unify (TypeDup t1) (TypeFlex id t2) = createActionM id ToDup 
 unify t1 (TypeFlex id t2) = unify t1 t2 >>= \(s, r1) -> do
-    (_, r2) <- createAction Remove id -- unify t1 och t2
+    let r2 = createAction id Remove 
     return (s, r2 `rcompose` r1)
 unify a@(TypeFlex id t1) t2 = unify t2 a --unify t1 t2 >>= \(s, r1) -> do
     -- (_, r2) <- createAction Remove id -- unify t1 och t2
@@ -468,8 +468,11 @@ bind a t | t == TypeVar a  = return (nullSubst, nullResolver)
          | occursCheck a t = throwError $ InfiniteTypeError a t
          | otherwise       = return (Map.singleton a t, nullResolver)
 
-createAction :: ResolveAction -> TVar -> Infer (Subst, Resolver)
-createAction action var = return (nullSubst, Map.singleton var action)
+createActionM :: TVar -> ResolveAction -> Infer (Subst, Resolver)
+createActionM var action = return (nullSubst, Map.singleton var action)
+
+createAction :: TVar -> ResolveAction -> Resolver
+createAction = Map.singleton
 
 -- TypeFlex id0 t1 ~ TypeFlex id1 t2 -> [LVar id0/FlexAction Rename id1] ++ t1 ~ t2
 -- TypeFlex id0 t1 ~ TypeVar "b"
@@ -546,17 +549,17 @@ infer i (Gate gate)  = return (nullSubst, nullResolver, inferGate gate)
 infer i (Tup l r)  = do
     (ls, lr, lt) <- infer i l
     (rs, rr, rt) <- infer i r
-    t <- productExponential lt rt -- todo
-    return (ls ∘ rs, lr `rcompose` rr, t)
+    (pr, pt) <- productExponential lt rt
+    return (ls ∘ rs, pr `rcompose` rr `rcompose` lr, pt)
 infer i (App l r) = do
-    tv <- freshFlex
+    tv <- freshFlex 
     env <- gets env
     (s1,r1,t1) <- infer i l 
     modify (\st -> st{env=apply s1 env}) -- todo, fix all apply
     (s2,r2,t2) <- infer i r
     (s3,r3)    <- unify (apply s2 t1) (t2 :=> tv)
     subtypeCheck (apply (s3 `compose` s2) t1) (apply s3 t2) -- t2 <: 
-    return (s3 ∘ s2 ∘ s1, r3 `rcompose` r2 `rcompose` r1, apply s3 tv)
+    return (s3 ∘ s2 ∘ s1, r3 `rcompose` r2 `rcompose` r1, resply r3 s3 tv)
 infer i (IfEl b l r) = do
     (s1,r1,t1) <- infer i b
     (s2,r2,t2) <- infer i l
@@ -580,19 +583,42 @@ infer i (Abs body) = do
     env <- gets env
     extend (Bound i, Forall [] tv)
     (s1,r1,t1) <- infer (i+1) body
-    return (s1, r1, resply r1 s1 tv :=> t1)
+    let tv11 = resply r1 s1 tv
+    return (s1, r1, tv11 :=> t1)
 infer i New  = return (nullSubst, nullResolver, TypeDup (TypeBit  :=> TypeQBit))
 infer i Meas = return (nullSubst, nullResolver, TypeDup (TypeQBit :=> TypeDup TypeBit))
 infer i Unit = return (nullSubst, nullResolver, TypeDup TypeUnit)
 
-productExponential :: Type -> Type -> Infer Type
-productExponential l r
-    | nexps l == nexps r = return $ iterate bang (debang l :>< debang r) !! nexps l
-    | otherwise = throwError $ ProductDuplicityError l r
-    where
-        nexps :: Type -> Int
-        nexps (TypeDup a) = 1 + nexps a
-        nexps a = 0
+-- | Should move exponentials outside.
+productExponential :: Type -> Type -> Infer (Resolver, Type)
+-- (!a, !b) -> !(a, b)
+productExponential (TypeDup a) (TypeDup b) = return (nullResolver, TypeDup (a :>< b))
+-- (?a, !b) -> !(a, b)
+productExponential (TypeFlex id t) (TypeDup b) = return (createAction id ToDup, TypeDup (t :>< b))
+-- (!a, ?b) -> !(a, b)
+productExponential (TypeDup t1) (TypeFlex id t2) = return (createAction id ToDup, TypeDup (t1 :>< t2))
+-- (?a, ?b) -> ?(a, b)
+productExponential (TypeFlex id1 t1) (TypeFlex id2 t2) = return (createAction id1 (Rename id2), TypeFlex id2 (t1 :>< t2))
+-- (?a, b) -> (a, b)
+productExponential (TypeFlex id t1) t2 = return (createAction id Remove, t1 :>< t2)
+-- (a, ?b) -> (a, b)
+productExponential t1 (TypeFlex id t2) = return (createAction id Remove, t1 :>< t2)
+-- (a, !b) -> fail
+productExponential t1 (TypeDup t2) = throwError $ ProductDuplicityError t1 (TypeDup t2)
+-- (!a, b) -> fail
+productExponential (TypeDup t1) t2 = throwError $ ProductDuplicityError (TypeDup t1) t2
+-- (a, b) -> (a, b)
+productExponential t1 t2 = return (nullResolver, t1 :>< t2)
+
+
+
+-- productExponential l r
+--     | nexps l == nexps r = return $ iterate bang (debang l :>< debang r) !! nexps l
+--     | otherwise = throwError $ ProductDuplicityError l r
+--     where
+--         nexps :: Type -> Int
+--         nexps (TypeDup a) = 1 + nexps a
+--         nexps a = 0
 
 tr :: (Show a, Monad m) => a -> m ()
 tr x = trace (show x) (return ())
