@@ -25,14 +25,7 @@ data Scheme = Forall [TVar] Type
 
 -- | A type variable (TVar) is either a normal linear type variable (LVar) "a", 
 --   or the more general flexible type variable (FVar) "?a".
-data TVar
-    = LVar String
-    | FVar String
-    deriving (Eq, Ord)
-
-instance Show TVar where
-    show (LVar a) = a
-    show (FVar a) = '?' : a
+type TVar = String
 
 instance Show Scheme where
     show (Forall [] t) = printTree (reverseType t)
@@ -46,11 +39,17 @@ type TypeEnv = Map.Map Named Scheme
 --  should be substituted with. It could be another type variable.
 type Subst = Map.Map TVar Type
 
-type Resolver = Map.Map String Type
+-- | A resolveaction contains three actions that can be made with a FlexType.
+data ResolveAction = Remove | Rename String | ToDup deriving Show
+type Resolver = Map.Map String ResolveAction
 
 -- | The null substitution are the substitution where nothing are substituted.
 nullSubst :: Subst
 nullSubst = Map.empty
+
+-- | The resolver that does nothing
+nullResolver :: Resolver
+nullResolver = Map.empty
 
 -- | The empty environment are the type environment where no variables exist.
 emptyEnv :: TypeEnv
@@ -124,23 +123,24 @@ addLin name = do
     modify $ \st -> st{linenv = Set.insert name linenv}
 
 -- | Apply final substitution and normalize the type variables 
-closeOver :: (Subst, Type) -> Scheme
-closeOver (sub, ty) = normalize sc
-  where sc = generalize emptyEnv (apply sub ty)
+closeOver :: (Subst, Resolver, Type) -> Scheme
+closeOver (sub, res, ty) = normalize sc
+  where sc = generalize emptyEnv (resply res sub ty)
 
 -- | Normalizes a polymorphic type to simple type variable names.
 normalize :: Scheme -> Scheme
-normalize (Forall ts body) = Forall (fmap (LVar . snd) ord) (normtype body)
+normalize (Forall ts body) = Forall (fmap snd ord) (normtype body)
   where
     -- | Maps each free variable in the body to 
     ord = zip (nub $ fv body) letters
     
-    fv (TypeVar  a) = [a]
+    -- fv a = Set.toList $ ftv a
+    fv (TypeVar  a)   = [a]
     fv (TypeFlex _ a) = fv a
-    fv (TypeDup  a) = fv a
-    fv (a :=> b)    = fv a ++ fv b
-    fv (a :>< b)    = fv a ++ fv b
-    fv _            = []
+    fv (TypeDup  a)   = fv a
+    fv (a :=> b)      = fv a ++ fv b
+    fv (a :>< b)      = fv a ++ fv b
+    fv _              = []
 
     normtype (a :=> b) = normtype a :=> normtype b
     normtype (a :>< b) = normtype a :>< normtype b
@@ -155,6 +155,14 @@ normalize (Forall ts body) = Forall (fmap (LVar . snd) ord) (normtype body)
 -- | 
 compose :: Subst -> Map.Map TVar Type -> Map.Map TVar Type
 s2 `compose` s1 = Map.map (apply s2) s1 `Map.union` s2
+
+-- | Resolver = Map String ResolveAction
+-- | resolve (r2 `rcompose` r1) typ = resolve r2 (resolve r1 typ)
+rcompose :: Resolver -> Resolver -> Resolver
+r2 `rcompose` r1 = r1 `Map.union` r2
+
+
+
 
 (∘) :: Subst -> Map.Map TVar Type -> Map.Map TVar Type
 (∘) = compose
@@ -204,7 +212,6 @@ deflex           t  = t
 --simplifyFlexes 
 
 
-data ResolveAction = Remove | Rename String | ToDup
 
 
 
@@ -243,7 +250,7 @@ class Substitutable a where
     --   ones in the map.
     apply :: Subst -> a -> a
 
-    -- | "a" -> 
+    -- | Resolves some FlexType constraint.
     resolve :: Resolver -> a -> a
 
     -- | Find all free type variables.
@@ -256,17 +263,29 @@ instance Substitutable Type where
     apply _ TypeUnit = TypeUnit
     apply s (TypeDup d) = TypeDup $ apply s d
     apply s (TypeFlex _ f) = apply s f
-    apply s t@(TypeVar v) = Map.findWithDefault t (LVar v) s
+    apply s t@(TypeVar v) = Map.findWithDefault t v s
     apply s (t1 :=> t2) = apply s t1 :=> apply s t2
     apply s (t1 :>< t2) = apply s t1 :>< apply s t2
 
+    resolve r (TypeFlex id t) = resolveTypeFlex r id t
+    resolve r (a :=> b) = resolve r a :=> resolve r b
+    resolve r (a :>< b) = resolve r a :>< resolve r b
+    resolve _      rest = rest
+    
     -- | The free type variables for a type are all type variables in the type,
     --   since no type variables are bound.
-    ftv (TypeVar v)  = Set.singleton (LVar v)
+    ftv (TypeVar v)  = Set.singleton v
     ftv (TypeFlex _ v) = ftv v
     ftv (t1 :=> t2)  = Set.union (ftv t1) (ftv t2)
     ftv (t1 :>< t2)  = Set.union (ftv t1) (ftv t2)
     ftv _constant    = Set.empty
+
+resolveTypeFlex :: Resolver -> String -> Type -> Type
+resolveTypeFlex r id t = case Map.lookup id r of
+    Nothing -> TypeFlex id t
+    Just Remove -> t
+    Just (Rename new) -> TypeFlex new t
+    Just ToDup -> bang t
 
 instance Substitutable Scheme where
     -- | The type inside the scheme are applied to the substitution,
@@ -274,16 +293,20 @@ instance Substitutable Scheme where
     apply s (Forall as t) = Forall as $ apply s' t
         where s' = foldr Map.delete s as
 
+    resolve r (Forall as t) = Forall as $ resolve r t
+
     -- | All free type variables in a scheme is the type variables
     --   of the type, except for the ones that are bound by the Forall.
     ftv (Forall as t) = Set.difference (ftv t) (Set.fromList as)
 
 instance Substitutable a => Substitutable [a] where
     apply = fmap . apply
+    resolve = fmap . resolve
     ftv = foldr (Set.union . ftv) Set.empty
 
 instance Substitutable TypeEnv where
     apply s env =  Map.map (apply s) env
+    resolve r env = Map.map (resolve r) env
     ftv env = ftv $ Map.elems env
 
 occursCheck ::  Substitutable a => TVar -> a -> Bool
@@ -313,12 +336,30 @@ occursCheck a t = a `Set.member` ftv t
 -- TypeFlex (TypeVar a) ~ TypeFlex (TypeVar b) = TypeFlex (TypeVar a (or b))
 -- 
 
+-- | Resolve a resolver and apply a substitution to a type.
+resply r s x = resolve r (apply s x)
+
 -- | Given two types, creates a substitution that when applied to the types
 --   would make them 
-unify2 :: Type -> Type -> Infer Subst
-unify2 = undefined
+unify :: Type -> Type -> Infer (Subst, Resolver)
+unify (l :=> r) (l' :=> r') = do
+    (s1, r1) <- unify l l'
+    (s2, r2) <- unify (resply r1 s1 r) (resply r1 s1 r')
+    return (s2 ∘ s1, r2 `rcompose` r1)
+unify (l :>< r) (l' :>< r') = do 
+    (s1, r1) <- unify l l'
+    (s2, r2) <- unify r r' -- note: why not apply.
+    return (s2 ∘ s1, r2 `rcompose` r1)
+unify (TypeVar a) t = bind a t
+unify t (TypeVar a) = bind a t 
+unify (TypeFlex id1 t1) (TypeFlex id2 t2) = createAction (Rename id2) id1
+unify (TypeFlex id t1) (TypeDup t2) = createAction ToDup id
+unify (TypeDup t1) (TypeFlex id t2) = createAction ToDup id 
+unify t1 (TypeFlex id t2) = createAction Remove id 
+unify (TypeFlex id t1) t2 = createAction Remove id 
+unify t1 t2 | (t1 <: t2 || t2 <: t1) && isConstType t1 && isConstType t2 = return (nullSubst, nullResolver)            
+            | otherwise =  throwError $ UnificationFailError t1 t2
 
--- unify :: Type -> Type -> Infer Subst
 -- unify (TypeDup (l :=> r)) (l' :=> r') = do
 --         s1 <- unify l l'
 --         s2 <- unify (apply s1 r) (apply s1 r')
@@ -366,56 +407,56 @@ unify2 = undefined
 --           | otherwise = throwError $ UnificationFailError t t'
 
 
-unify :: Type -> Type -> Infer Subst
-unify (TypeDup (l :=> r)) (l' :=> r') = do
-        s1 <- unify l l'
-        s2 <- unify (apply s1 r) (apply s1 r')
-        return (s2 ∘ s1)
-unify (l :=> r) (l' :=> r') = do
-        s1 <- unify l l'
-        s2 <- unify (apply s1 r) (apply s1 r')
-        return (s2 ∘ s1)
-unify (TypeDup (l :>< r)) (l' :>< r') = do
-    s1 <- unify (TypeDup l) l'
-    s2 <- unify (TypeDup r) r'
-    return (compose s2 s1)
-unify (l :>< r) (TypeDup (l' :>< r')) = do
-    s1 <- unify l (TypeDup l')
-    s2 <- unify r (TypeDup r')
-    return (compose s2 s1)
-unify (l :>< r) (l' :>< r') = do
-    s1 <- unify l l'
-    s2 <- unify r r'
-    return (compose s2 s1)
--- ?"a" ~ ?"b" = ["a"/"b"]
-unify (TypeFlex id1 (TypeVar a)) (TypeFlex id2 (TypeVar b)) = bind (LVar a) (TypeVar b) -- vrf LVar?
--- ?a ~ ?b : [a/b]
--- [a/b] ?a --> ?b
--- [?a/?b] ?a --> ?b
--- ?"a" ~ !"b" = []
-unify (TypeFlex id (TypeVar a)) (TypeDup  b) = bind (LVar a) (TypeDup b)
-unify t (TypeFlex id (TypeVar b)) = bind (LVar b) t
-unify (TypeFlex id (TypeVar a)) t = bind (LVar a) t
-unify (TypeVar a) t =  bind (LVar a) t
-unify t (TypeVar a) = bind (LVar a) t
-unify (TypeDup a) (TypeDup b) = unify a b
-unify (TypeFlex _ a) (TypeDup b) = unify a b 
-unify (TypeDup a) (TypeFlex _ b) = unify a b 
-unify (TypeFlex _ t1) t2 = error $ "Unimplementable" ++ " ?" ++ show t1 ++ show t2 
-unify t1 (TypeFlex _ t2) = error $ "urk!" ++ " ?" ++ show t1 ++ " ?" ++ show t2
-unify t t' | (t' <: t || t <: t') && isConstType t && isConstType t' = return nullSubst
-           | otherwise =  throwError $ UnificationFailError t t'
+-- unify :: Type -> Type -> Infer Subst
+-- unify (TypeDup (l :=> r)) (l' :=> r') = do
+--         s1 <- unify l l'
+--         s2 <- unify (apply s1 r) (apply s1 r')
+--         return (s2 ∘ s1)
+-- unify (l :=> r) (l' :=> r') = do
+--         s1 <- unify l l'
+--         s2 <- unify (apply s1 r) (apply s1 r')
+--         return (s2 ∘ s1)
+-- unify (TypeDup (l :>< r)) (l' :>< r') = do
+--     s1 <- unify (TypeDup l) l'
+--     s2 <- unify (TypeDup r) r'
+--     return (compose s2 s1)
+-- unify (l :>< r) (TypeDup (l' :>< r')) = do
+--     s1 <- unify l (TypeDup l')
+--     s2 <- unify r (TypeDup r')
+--     return (compose s2 s1)
+-- unify (l :>< r) (l' :>< r') = do
+--     s1 <- unify l l'
+--     s2 <- unify r r'
+--     return (compose s2 s1)
+-- -- ?"a" ~ ?"b" = ["a"/"b"]
+-- unify (TypeFlex id1 (TypeVar a)) (TypeFlex id2 (TypeVar b)) = bind (LVar a) (TypeVar b) -- vrf LVar?
+-- -- ?a ~ ?b : [a/b]
+-- -- [a/b] ?a --> ?b
+-- -- [?a/?b] ?a --> ?b
+-- -- ?"a" ~ !"b" = []
+-- unify (TypeFlex id (TypeVar a)) (TypeDup  b) = bind (LVar a) (TypeDup b)
+-- unify t (TypeFlex id (TypeVar b)) = bind (LVar b) t
+-- unify (TypeFlex id (TypeVar a)) t = bind (LVar a) t
+-- unify (TypeVar a) t =  bind (LVar a) t
+-- unify t (TypeVar a) = bind (LVar a) t
+-- unify (TypeDup a) (TypeDup b) = unify a b
+-- unify (TypeFlex _ a) (TypeDup b) = unify a b 
+-- unify (TypeDup a) (TypeFlex _ b) = unify a b 
+-- unify (TypeFlex _ t1) t2 = error $ "Unimplementable" ++ " ?" ++ show t1 ++ show t2 
+-- unify t1 (TypeFlex _ t2) = error $ "urk!" ++ " ?" ++ show t1 ++ " ?" ++ show t2
+-- unify t t' | (t' <: t || t <: t') && isConstType t && isConstType t' = return nullSubst
+--            | otherwise =  throwError $ UnificationFailError t t'
 
 --unify (TCon a) (TCon b) | a == b = return nullSubst
 
 -- | Binds a type variable with another type and returns a substitution.
-bind :: TVar -> Type -> Infer Subst
-bind a'@(LVar a) t | t == TypeVar a   = return nullSubst
-                   | occursCheck a' t = throwError $ InfiniteTypeError a t
-                   | otherwise        = return $ Map.singleton a' t
-bind a'@(FVar a) t | t == TypeFlex "cool" (TypeVar a)  = return nullSubst
-                   | occursCheck a' t = throwError $ InfiniteTypeError a t
-                   | otherwise        = return $ Map.singleton a' t
+bind :: TVar -> Type -> Infer (Subst, Resolver)
+bind a t | t == TypeVar a  = return (nullSubst, nullResolver)
+         | occursCheck a t = throwError $ InfiniteTypeError a t
+         | otherwise       = return (Map.singleton a t, nullResolver)
+
+createAction :: ResolveAction -> TVar -> Infer (Subst, Resolver)
+createAction action var = return (nullSubst, Map.singleton var action)
 
 -- TypeFlex id0 t1 ~ TypeFlex id1 t2 -> [LVar id0/FlexAction Rename id1] ++ t1 ~ t2
 -- TypeFlex id0 t1 ~ TypeVar "b"
@@ -467,13 +508,9 @@ letters = [1..] >>= flip replicateM ['a'..'z']
 --   to get a type with unique (and free) type variables.
 instantiate :: Scheme -> Infer Type
 instantiate (Forall as t) = do
-    as' <- mapM rename as -- Each bound variable gets a new name.
+    as' <- mapM (const fresh) as -- Each bound variable gets a new name.
     let s = Map.fromList $ zip as as' -- Map from old type variables to new names.
     return $ apply s t
-
-rename :: TVar -> Infer Type 
-rename (FVar _) = freshFlex
-rename (LVar _) = fresh
 
 -- | 
 generalize :: TypeEnv -> Type -> Scheme
@@ -481,59 +518,59 @@ generalize env t  = Forall as t
     where as = Set.toList $ ftv t `Set.difference` ftv env
 
 -- | Infers a substitution and a type from a Term
-infer :: Integer -> Term -> Infer (Subst, Type)
+infer :: Integer -> Term -> Infer (Subst, Resolver, Type)
 infer i (Idx j)      = lookupEnv (Bound (i-j-1)) 
 infer i (Fun var)    = do
     linEnv <- gets linenv
-    (s, typ) <- lookupEnv (NFun var)
+    (s, res, typ) <- lookupEnv (NFun var)
     case typ of
-        TypeDup _ -> return (s,typ)
+        TypeDup _ -> return (s, res, typ)
         _notdup   -> if Set.member var linEnv
                         then throwError $ TopLevelLinearFail var
-                        else addLin var >> return (s,typ)
-infer i (Bit _)      = return (nullSubst, bang TypeBit)
-infer i (Gate gate)  = return (nullSubst, inferGate gate)
+                        else addLin var >> return (s, res, typ)
+infer i (Bit _)      = return (nullSubst, nullResolver, bang TypeBit)
+infer i (Gate gate)  = return (nullSubst, nullResolver, inferGate gate)
 infer i (Tup l r)  = do
-    (ls, lt) <- infer i l
-    (rs, rt) <- infer i r
-    t <- productExponential lt rt
-    return (ls ∘ rs, t)
+    (ls, lr, lt) <- infer i l
+    (rs, rr, rt) <- infer i r
+    t <- productExponential lt rt -- todo
+    return (ls ∘ rs, lr `rcompose` rr, t)
 infer i (App l r) = do
     tv <- freshFlex
     env <- gets env
-    (s1,t1) <- infer i l 
-    modify (\st -> st{env=apply s1 env})
-    (s2,t2) <- infer i r
-    s3      <- unify (apply s2 t1) (t2 :=> tv)
+    (s1,r1,t1) <- infer i l 
+    modify (\st -> st{env=apply s1 env}) -- todo, fix all apply
+    (s2,r2,t2) <- infer i r
+    (s3,r3)    <- unify (apply s2 t1) (t2 :=> tv)
     subtypeCheck (apply (s3 `compose` s2) t1) (apply s3 t2) -- t2 <: 
-    return (s3 ∘ s2 ∘ s1, apply s3 tv)
+    return (s3 ∘ s2 ∘ s1, r3 `rcompose` r2 `rcompose` r1, apply s3 tv)
 infer i (IfEl b l r) = do
-    (s1,t1) <- infer i b
-    (s2,t2) <- infer i l
-    (s3,t3) <- infer i r
+    (s1,r1,t1) <- infer i b
+    (s2,r2,t2) <- infer i l
+    (s3,r3,t3) <- infer i r
     name <- fresh'
-    s4 <- unify (TypeFlex name TypeBit) t1
-    s5 <- unify t2 t3
-    return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, apply s5 t2)
+    (s4,r4) <- unify (TypeFlex name TypeBit) t1
+    (s5,r5) <- unify t2 t3
+    return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, foldr1 rcompose [r1,r2,r3,r4,r5] ,apply s5 t2)
 infer i (Let eq inn) = do
     tv1 <- inferDuplicity (Abs inn)  
     tv2 <- inferDuplicity inn 
-    (seq, teq) <- infer i eq 
-    product <- unify teq (tv1 :>< tv2)
-    extend (Bound (i+1), product `apply` Forall [] tv1)
-    extend (Bound  i   , product `apply` Forall [] tv2)
-    (sinn, tinn) <- infer (i+2) inn
+    (seq,req,teq) <- infer i eq 
+    (sprod,rprod) <- unify teq (tv1 :>< tv2)
+    extend (Bound (i+1), rprod `resolve` (sprod `apply` Forall [] tv1))
+    extend (Bound  i   , rprod `resolve` (sprod `apply` Forall [] tv2))
+    (sinn,rinn,tinn) <- infer (i+2) inn
     -- return (seq ∘ product ∘ sinn, seq ∘ sinn `apply` tinn)
-    return (sinn ∘ product ∘ seq, seq `apply` tinn)
+    return (sinn ∘ sprod ∘ seq, foldr1 rcompose [req, rprod, rinn] , seq `apply` tinn)
 infer i (Abs body) = do
     tv <- inferDuplicity body
     env <- gets env
     extend (Bound i, Forall [] tv)
-    (s1, t1) <- infer (i+1) body
-    return (s1, apply s1 tv :=> t1)
-infer i New  = return (nullSubst, TypeDup (TypeBit  :=> TypeQBit))
-infer i Meas = return (nullSubst, TypeDup (TypeQBit :=> TypeDup TypeBit))
-infer i Unit = return (nullSubst, TypeDup TypeUnit)
+    (s1,r1,t1) <- infer (i+1) body
+    return (s1, r1, resply r1 s1 tv :=> t1)
+infer i New  = return (nullSubst, nullResolver, TypeDup (TypeBit  :=> TypeQBit))
+infer i Meas = return (nullSubst, nullResolver, TypeDup (TypeQBit :=> TypeDup TypeBit))
+infer i Unit = return (nullSubst, nullResolver, TypeDup TypeUnit)
 
 productExponential :: Type -> Type -> Infer Type
 productExponential l r
@@ -594,13 +631,13 @@ inferDuplicity e
 (!?) = inferDuplicity
 
 -- | Looks up a free or bound variable from the environment
-lookupEnv :: Named -> Infer (Subst, Type)
+lookupEnv :: Named -> Infer (Subst, Resolver, Type)
 lookupEnv x = do
     env' <- gets env
     case Map.lookup x env' of
         Nothing -> throwError $ NotInScopeError x
         Just  s -> do t <- instantiate s
-                      return (nullSubst, t)
+                      return (nullSubst, nullResolver, t)
 
 linearcheck :: Term -> Type -> Infer ()
 linearcheck e = \case
@@ -642,13 +679,13 @@ runtcFile :: FilePath -> IO [Either TypeError (String, Type)]
 runtcFile path = runtc <$> readFile path
 
 -- | Run the inferement code. The result is a type scheme or an exception.
-runInfer :: Infer (Subst, Type) -> Either TypeError Scheme
+runInfer :: Infer (Subst, Resolver, Type) -> Either TypeError Scheme
 runInfer = runInferWith emptyState
 
-runUnify :: Type -> Type -> Either TypeError Subst
+runUnify :: Type -> Type -> Either TypeError (Subst, Resolver)
 runUnify a b = evalState (runExceptT (unify a b)) emptyState
 
-runInferWith :: InferState -> Infer (Subst, Type) -> Either TypeError Scheme
+runInferWith :: InferState -> Infer (Subst, Resolver, Type) -> Either TypeError Scheme
 runInferWith inferState m = case evalState (runExceptT m) inferState of
         Left  err -> Left err
         Right res -> Right $ closeOver res
@@ -665,8 +702,8 @@ checkFunc state (Func name qtype term) = do
 --   and the inferred type.  
 equal :: Type -> Type -> Infer Type
 equal typ inf = do
-    sub <- unify typ inf -- Try to unify signature with inferred type
-    let t = apply sub inf -- 
+    (sub,res) <- unify typ inf -- Try to unify signature with inferred type
+    let t = resply res sub inf -- 
     if t <: typ
         then return typ
         else throwError $ SubtypeFailError t typ
@@ -690,7 +727,7 @@ inferExp prog = do
 tc :: [Function] -> Infer ()
 tc = mapM_ f
     where f (Func _ qtype term) = 
-            do (s, itype) <- infer 0 term
+            do (s,r, itype) <- infer 0 term
                env <- gets env
                linenv <- gets linenv
                equal qtype itype
