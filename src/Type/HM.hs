@@ -46,6 +46,8 @@ type TypeEnv = Map.Map Named Scheme
 --  should be substituted with. It could be another type variable.
 type Subst = Map.Map TVar Type
 
+type Resolver = Map.Map String Type
+
 -- | The null substitution are the substitution where nothing are substituted.
 nullSubst :: Subst
 nullSubst = Map.empty
@@ -134,7 +136,7 @@ normalize (Forall ts body) = Forall (fmap (LVar . snd) ord) (normtype body)
     ord = zip (nub $ fv body) letters
     
     fv (TypeVar  a) = [a]
-    fv (TypeFlex a) = fv a
+    fv (TypeFlex _ a) = fv a
     fv (TypeDup  a) = fv a
     fv (a :=> b)    = fv a ++ fv b
     fv (a :>< b)    = fv a ++ fv b
@@ -142,7 +144,7 @@ normalize (Forall ts body) = Forall (fmap (LVar . snd) ord) (normtype body)
 
     normtype (a :=> b) = normtype a :=> normtype b
     normtype (a :>< b) = normtype a :>< normtype b
-    normtype (TypeFlex a)  = normtype a
+    normtype (TypeFlex _ a)  = normtype a
     normtype (TypeDup a)   = TypeDup $ normtype a
     normtype (TypeVar a)   =
       case lookup a ord of
@@ -167,13 +169,12 @@ debang (TypeDup a) = a
 debang          a  = a
 
 -- | Converts a type variable to a type flex 
-flex :: Type -> Type
-flex (TypeVar a) = TypeFlex (TypeVar a)
-flex          t  = t
+flex :: Type -> Infer Type
+flex t = fresh' >>= \v -> return $ TypeFlex v t
 
 -- | Converts a type flex to a type variable
 deflex :: Type -> Type
-deflex (TypeFlex a) = a
+deflex (TypeFlex _ a) = a
 deflex           t  = t
 
 -- myIf : Bit -> a -> b
@@ -203,6 +204,31 @@ deflex           t  = t
 --simplifyFlexes 
 
 
+data ResolveAction = Remove | Rename String | ToDup
+
+
+
+-- [id0/Bit] TypeFlex id0 Bit -> Bit
+-- [id0/TypeFlex id1 Bit] TypeFlex id0 Bit ->TypeFlex id1 Bit
+-- [id0/TypeDup Bit] TypeFlex id0 Bit -> TypeDup Bit 
+-- [id0/Remove] TypeFlex id0 (TypeVar "a" >< TypeVar "b") -> (TypeVar "a" >< TypeVar "b")
+
+-- TypeFlex id0 t1 -> t1
+-- [id0/t1]  
+-- TypeFlex id0 t2 -> t1
+
+-- TypeFlex id0 t --> [id0/t]
+-- t@()
+
+-- \x.\y.(x,y)
+-- (TypeFlex id1 tx, TypeFlex id2 ty)
+-- (TypeFlex id1 tx, TypeFlex id1 ty)
+
+-- TypeFlex "id0" t0 ~ TypeFlex "id1" t1
+-- {id0/id1} [t0/t1]
+
+-- TypeFlex id1 t1 ~ TypeFlex id1 t1
+
 
 -- | Transforms all flex variables to normal linear type variables.
 deflexType :: Type -> Type
@@ -216,6 +242,10 @@ class Substitutable a where
     --   that also exist in the substitution map, it replaces those instances with the new
     --   ones in the map.
     apply :: Subst -> a -> a
+
+    -- | "a" -> 
+    resolve :: Resolver -> a -> a
+
     -- | Find all free type variables.
     ftv   :: a -> Set.Set TVar
 
@@ -225,7 +255,7 @@ instance Substitutable Type where
     apply _ TypeQBit = TypeQBit
     apply _ TypeUnit = TypeUnit
     apply s (TypeDup d) = TypeDup $ apply s d
-    apply s (TypeFlex f) = apply s f
+    apply s (TypeFlex _ f) = apply s f
     apply s t@(TypeVar v) = Map.findWithDefault t (LVar v) s
     apply s (t1 :=> t2) = apply s t1 :=> apply s t2
     apply s (t1 :>< t2) = apply s t1 :>< apply s t2
@@ -233,7 +263,7 @@ instance Substitutable Type where
     -- | The free type variables for a type are all type variables in the type,
     --   since no type variables are bound.
     ftv (TypeVar v)  = Set.singleton (LVar v)
-    ftv (TypeFlex v) = ftv v
+    ftv (TypeFlex _ v) = ftv v
     ftv (t1 :=> t2)  = Set.union (ftv t1) (ftv t2)
     ftv (t1 :>< t2)  = Set.union (ftv t1) (ftv t2)
     ftv _constant    = Set.empty
@@ -358,21 +388,21 @@ unify (l :>< r) (l' :>< r') = do
     s2 <- unify r r'
     return (compose s2 s1)
 -- ?"a" ~ ?"b" = ["a"/"b"]
-unify (TypeFlex (TypeVar a)) (TypeFlex (TypeVar b)) = bind (LVar a) (TypeVar b) -- vrf LVar?
+unify (TypeFlex id1 (TypeVar a)) (TypeFlex id2 (TypeVar b)) = bind (LVar a) (TypeVar b) -- vrf LVar?
 -- ?a ~ ?b : [a/b]
 -- [a/b] ?a --> ?b
 -- [?a/?b] ?a --> ?b
 -- ?"a" ~ !"b" = []
-unify (TypeFlex (TypeVar a)) (TypeDup  b) = bind (LVar a) (TypeDup b)
-unify t (TypeFlex (TypeVar b)) = bind (LVar b) t
-unify (TypeFlex (TypeVar a)) t = bind (LVar a) t
+unify (TypeFlex id (TypeVar a)) (TypeDup  b) = bind (LVar a) (TypeDup b)
+unify t (TypeFlex id (TypeVar b)) = bind (LVar b) t
+unify (TypeFlex id (TypeVar a)) t = bind (LVar a) t
 unify (TypeVar a) t =  bind (LVar a) t
 unify t (TypeVar a) = bind (LVar a) t
 unify (TypeDup a) (TypeDup b) = unify a b
-unify (TypeFlex a) (TypeDup b) = unify a b 
-unify (TypeDup a) (TypeFlex b) = unify a b 
-unify (TypeFlex t1) t2 = error $ "Unimplementable" ++ " ?" ++ show t1 ++ show t2 
-unify t1 (TypeFlex t2) = error $ "urk!" ++ " ?" ++ show t1 ++ " ?" ++ show t2
+unify (TypeFlex _ a) (TypeDup b) = unify a b 
+unify (TypeDup a) (TypeFlex _ b) = unify a b 
+unify (TypeFlex _ t1) t2 = error $ "Unimplementable" ++ " ?" ++ show t1 ++ show t2 
+unify t1 (TypeFlex _ t2) = error $ "urk!" ++ " ?" ++ show t1 ++ " ?" ++ show t2
 unify t t' | (t' <: t || t <: t') && isConstType t && isConstType t' = return nullSubst
            | otherwise =  throwError $ UnificationFailError t t'
 
@@ -383,9 +413,22 @@ bind :: TVar -> Type -> Infer Subst
 bind a'@(LVar a) t | t == TypeVar a   = return nullSubst
                    | occursCheck a' t = throwError $ InfiniteTypeError a t
                    | otherwise        = return $ Map.singleton a' t
-bind a'@(FVar a) t | t == TypeFlex (TypeVar a)  = return nullSubst
+bind a'@(FVar a) t | t == TypeFlex "cool" (TypeVar a)  = return nullSubst
                    | occursCheck a' t = throwError $ InfiniteTypeError a t
                    | otherwise        = return $ Map.singleton a' t
+
+-- TypeFlex id0 t1 ~ TypeFlex id1 t2 -> [LVar id0/FlexAction Rename id1] ++ t1 ~ t2
+-- TypeFlex id0 t1 ~ TypeVar "b"
+-- id0 bindas till annat id
+-- id0 instansiseras till !
+-- id0 tas bort
+
+-- \\x.if x then 0 else 1
+-- : TypeFlex id0 (TypeVar "a") ~ TypeFlex id1 TypeBit  
+
+-- apply [LVar "a"/TypeAction Bit] (TypeFlex "b" (TypeVar "a")) == (TypeFlex "b" Bit)
+-- apply [LVar "b"/FlexAction Remove] (TypeFlex "b" t) == t
+-- apply [LVar "a"/FlexAction Remove] (TypeFlex "a" (TypeVar "a")) == TypeVar "a"
 
 -- | Checks if a type is a constant type
 isConstType :: Type -> Bool
@@ -403,12 +446,18 @@ fresh = do
   modify $ \st ->  st{count = s+1}
   return $ TypeVar $ letters !! s
 
+fresh' :: Infer String 
+fresh' = do
+  s <- gets count
+  modify $ \st ->  st{count = s+1}
+  return $ letters !! s
+
 -- | Introduce a new flexible type variable.
 freshFlex :: Infer Type
 freshFlex = do
     s <- gets count 
-    modify $ \st ->  st{count = s+1}
-    return $ TypeFlex $ TypeVar $ letters !! s
+    modify $ \st ->  st{count = s+2}
+    return $ TypeFlex (letters !! s) $ TypeVar $ letters !! (s+1)
 
 -- | Returns a list of strings used for fresh type variables.
 letters :: [String]
@@ -462,12 +511,13 @@ infer i (IfEl b l r) = do
     (s1,t1) <- infer i b
     (s2,t2) <- infer i l
     (s3,t3) <- infer i r
-    s4 <- unify (TypeFlex TypeBit) t1
+    name <- fresh'
+    s4 <- unify (TypeFlex name TypeBit) t1
     s5 <- unify t2 t3
     return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, apply s5 t2)
 infer i (Let eq inn) = do
-    tv1 <- inferDuplicity (Abs inn) <$> fresh  
-    tv2 <- inferDuplicity inn <$> fresh
+    tv1 <- inferDuplicity (Abs inn)  
+    tv2 <- inferDuplicity inn 
     (seq, teq) <- infer i eq 
     product <- unify teq (tv1 :>< tv2)
     extend (Bound (i+1), product `apply` Forall [] tv1)
@@ -476,7 +526,7 @@ infer i (Let eq inn) = do
     -- return (seq ∘ product ∘ sinn, seq ∘ sinn `apply` tinn)
     return (sinn ∘ product ∘ seq, seq `apply` tinn)
 infer i (Abs body) = do
-    tv <- inferDuplicity body <$> fresh
+    tv <- inferDuplicity body
     env <- gets env
     extend (Bound i, Forall [] tv)
     (s1, t1) <- infer (i+1) body
@@ -517,27 +567,30 @@ subtypeCheck f b = case debang f of
 
 -- | Return whether a type is a subtype of another type.
 (<:) :: Type -> Type -> Bool
-TypeDup  a  <: TypeDup  b   = TypeDup a <: b
-TypeDup  a  <: TypeFlex b   = a <: b 
-TypeDup  a  <:          b   = a <: b
-(a1 :>< a2) <: (TypeDup (b1 :><  b2)) = a1 <: TypeDup b1 && a2 <: TypeDup b2
-(a1 :>< a2) <: (b1 :><  b2) = a1 <: b1 && a2 <: b2
-(a' :=>  b) <: (a :=>   b') = a  <: a' && b  <: b'
-TypeFlex a  <: TypeDup  b   = True 
-TypeFlex a  <:          b   = a <: b 
-a           <: TypeFlex b   = a <: b
-a           <: TypeVar  b   = True
-a           <:          b   = a == b
+TypeDup  a     <: TypeDup  b      = TypeDup a <: b
+TypeDup  a     <: TypeFlex id b   = a <: b 
+TypeDup  a     <:          b      = a <: b
+(a1 :>< a2)    <: (TypeDup (b1 :><  b2)) = a1 <: TypeDup b1 && a2 <: TypeDup b2
+(a1 :>< a2)    <: (b1 :><  b2)    = a1 <: b1 && a2 <: b2
+(a' :=>  b)    <: (a :=>   b')    = a  <: a' && b  <: b'
+TypeFlex id a  <: TypeDup  b      = True 
+TypeFlex id a  <:          b      = a <: b 
+a              <: TypeFlex id b   = a <: b
+a              <: TypeVar  b      = True
+a              <:          b      = a == b
 
 -- Given a function (or let) body and a bodytype, if the variable bound is used many times
 --  it must be unlinear !t. If its used once or zero times it could have either
 --  a linear or unlinear type, thus having flex.
-inferDuplicity :: Term -> Type -> Type
-inferDuplicity e t
-    | headCount e <= 1 = flex t
-    | otherwise        = bang t
+-- | Given a term, 
+--    if the head variable is used once or zero times returns TypeFlex id (TypeVar var).
+--    if the head variable is used twice or more, returns TypeDup (TypeVar var).
+inferDuplicity :: Term -> Infer Type
+inferDuplicity e
+    | headCount e <= 1 = freshFlex
+    | otherwise        = bang <$> fresh
 
-(!?) :: Term -> Type -> Type
+(!?) :: Term -> Infer Type
 (!?) = inferDuplicity
 
 -- | Looks up a free or bound variable from the environment
