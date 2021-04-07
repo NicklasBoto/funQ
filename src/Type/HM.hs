@@ -206,58 +206,6 @@ deflex :: Type -> Type
 deflex (TypeFlex _ a) = a
 deflex           t  = t
 
--- myIf : Bit -> a -> b
--- condition:Bit, !Bit 
-
--- f : !Bit -o a
--- f = \x . if x then a else b : !Bit -o a
-
--- \x:!Bit. new x
--- HM{\x . new x} : ?Bit -o QBit
--- x till ?a
--- ?a -> Bit
-
--- / !(TypeVar a)
--- !Term Term ?Term
--- Sub ?Sub
--- [?a -> xxx]
--- [a/Bit] ?a --> ?Bit
--- [?a/Bit] ?a --> Bit 
--- [a/Bit] !a --> !Bit
--- [?a/Bit] !a --> !Bit -- ERR : ?a och a matchar inte
--- [a/!Bit] ?a --> 
---   [TVar a / !Bit] TypeFlex (TypeVar a) -> TypeFlex (!Bit)  -- !Bit     
---                                           TypeFlex (TypeDup e) = TypeDup e
-
---simplifyFlexes :: Type -> Type
---simplifyFlexes 
-
-
-
-
-
--- [id0/Bit] TypeFlex id0 Bit -> Bit
--- [id0/TypeFlex id1 Bit] TypeFlex id0 Bit ->TypeFlex id1 Bit
--- [id0/TypeDup Bit] TypeFlex id0 Bit -> TypeDup Bit 
--- [id0/Remove] TypeFlex id0 (TypeVar "a" >< TypeVar "b") -> (TypeVar "a" >< TypeVar "b")
-
--- TypeFlex id0 t1 -> t1
--- [id0/t1]  
--- TypeFlex id0 t2 -> t1
-
--- TypeFlex id0 t --> [id0/t]
--- t@()
-
--- \x.\y.(x,y)
--- (TypeFlex id1 tx, TypeFlex id2 ty)
--- (TypeFlex id1 tx, TypeFlex id1 ty)
-
--- TypeFlex "id0" t0 ~ TypeFlex "id1" t1
--- {id0/id1} [t0/t1]
-
--- TypeFlex id1 t1 ~ TypeFlex id1 t1
-
-
 -- | Transforms all flex variables to normal linear type variables.
 deflexType :: Type -> Type
 deflexType (a :=> b) = deflexType a :=> deflexType b
@@ -335,31 +283,6 @@ instance Substitutable TypeEnv where
 occursCheck ::  Substitutable a => TVar -> a -> Bool
 occursCheck a t = a `Set.member` ftv t
 
--- ?a ~  t : [?a/t]
---  t ~ ?a : [?a/t]
--- ?a ~ !t : [?a/!t]
--- ?a ~ ?b : [a/b]
-
--- [a/b] TypeFlex (TypeVar a) --> TypeFlex (TypeVar b)
-
--- ?a ~ ?b : [?a/?b]
-
--- ?(a >< b) ~ ?(Bit >< QBit) = (a >< b) ~ (Bit >< QBit) : [a/Bit, b/QBit]
--- TypeFlex a ~ TypeFlex b =  unify a b 
--- TypeFlex e1 ~ e2 = ?????
--- TypeFlex e1 ~ (TypeVar "?a") = 
--- 
--- TypeFlex (TypeVar a) ~ TypeBit = TypeBit
--- TypeFlex (TypeVar a) ~ TypeDup TypeBit = TypeDup TypeBit  [?a/TypeDup TypeBit]
--- [FVar a -> TypeBit] TypeFlex (TypeVar a) -> TypeBit
--- TypeFlex (TypeDup TypeBit) = TypeDup TypeBit?
--- ?!Bit = !Bit
--- if ?Bit then a else a
---    FVar 
--- TypeFlex (TypeVar a) ~ TypeFlex (TypeVar b) = TypeFlex (TypeVar a (or b))
--- 
-
-
 -- | Given two types, creates a substitution that when applied to the types
 --   would make them 
 unify :: Type -> Type -> Infer (Subst, Resolver)
@@ -412,19 +335,6 @@ createActionM var action = return (nullSubst, Map.singleton var action)
 
 createAction :: TVar -> ResolveAction -> Resolver
 createAction = Map.singleton
-
--- TypeFlex id0 t1 ~ TypeFlex id1 t2 -> [LVar id0/FlexAction Rename id1] ++ t1 ~ t2
--- TypeFlex id0 t1 ~ TypeVar "b"
--- id0 bindas till annat id
--- id0 instansiseras till !
--- id0 tas bort
-
--- \\x.if x then 0 else 1
--- : TypeFlex id0 (TypeVar "a") ~ TypeFlex id1 TypeBit  
-
--- apply [LVar "a"/TypeAction Bit] (TypeFlex "b" (TypeVar "a")) == (TypeFlex "b" Bit)
--- apply [LVar "b"/FlexAction Remove] (TypeFlex "b" t) == t
--- apply [LVar "a"/FlexAction Remove] (TypeFlex "a" (TypeVar "a")) == TypeVar "a"
 
 -- | Checks if a type is a constant type
 isConstType :: Type -> Bool
@@ -555,16 +465,6 @@ productExponential (TypeDup t1) t2 = throwError $ ProductDuplicityError (TypeDup
 -- (a, b) -> (a, b)
 productExponential t1 t2 = return (nullResolver, t1 :>< t2)
 
-
-
--- productExponential l r
---     | nexps l == nexps r = return $ iterate bang (debang l :>< debang r) !! nexps l
---     | otherwise = throwError $ ProductDuplicityError l r
---     where
---         nexps :: Type -> Int
---         nexps (TypeDup a) = 1 + nexps a
---         nexps a = 0
-
 tr :: (Show a, Monad m) => a -> m ()
 tr x = trace (show x) (return ())
 
@@ -600,9 +500,6 @@ a              <: TypeFlex id b   = a <: b
 a              <: TypeVar  b      = True
 a              <:          b      = a == b
 
--- Given a function (or let) body and a bodytype, if the variable bound is used many times
---  it must be unlinear !t. If its used once or zero times it could have either
---  a linear or unlinear type, thus having flex.
 -- | Given a term, 
 --    if the head variable is used once or zero times returns TypeFlex id (TypeVar var).
 --    if the head variable is used twice or more, returns TypeDup (TypeVar var).
