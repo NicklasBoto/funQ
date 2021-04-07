@@ -43,7 +43,7 @@ type Subst = Map.Map TVar Type
 
 showMap :: Show a => Map.Map String a -> String
 showMap = intercalate "," . map elem . Map.toList
-    where elem (from, to) = from ++ "/" ++ show to 
+    where elem (from, to) = from ++ "/" ++ show to
 
 instance {-# OVERLAPPING #-} Show Subst where
     show s = "[" ++ showMap s ++ "]"
@@ -121,17 +121,19 @@ type Infer = ExceptT TypeError (State InferState)
 
 -- | The state kept in the Infer monad.
 --   count keeps track of what the next fresh type variable is.
+--   idCount keeps track of the next id
 --   linenv keeps track of functions used, so linear functios are used only once.
 --   env keeps track of bound variables and named function types.
 data InferState 
-    = St { count  :: Int 
-         , linenv :: Set.Set String
-         , env    :: TypeEnv
+    = St { count   :: Int 
+         , idCount :: Int
+         , linenv  :: Set.Set String
+         , env     :: TypeEnv
          }
 
 -- | The empty state is where type inferment starts in.
 emptyState :: InferState
-emptyState = St 0 Set.empty Map.empty
+emptyState = St 0 0 Set.empty Map.empty
 
 -- | Extend the type environment with a new name and its type scheme.
 extend :: (Named, Scheme) -> Infer ()
@@ -156,7 +158,7 @@ normalize (Forall ts body) = Forall (fmap snd ord) (normtype body)
   where
     -- | Maps each free variable in the body to 
     ord = zip (nub $ fv body) letters
-    
+
     -- fv a = Set.toList $ ftv a
     fv (TypeVar  a)   = [a]
     fv (TypeFlex _ a) = fv a
@@ -209,7 +211,7 @@ debang          a  = a
 
 -- | Converts a type variable to a type flex 
 flex :: Type -> Infer Type
-flex t = fresh' >>= \v -> return $ TypeFlex v t
+flex t = freshId >>= \v -> return $ TypeFlex v t
 
 -- | Converts a type flex to a type variable
 deflex :: Type -> Type
@@ -259,7 +261,7 @@ instance Substitutable Type where
     resolve r (a :=> b) = resolve r a :=> resolve r b
     resolve r (a :>< b) = resolve r a :>< resolve r b
     resolve _      rest = rest
-    
+
     -- | The free type variables for a type are all type variables in the type,
     --   since no type variables are bound.
     ftv (TypeVar v)  = Set.singleton v
@@ -313,19 +315,19 @@ unify (TypeDup (l :>< r)) (l' :>< r') = do
     (s2, r2) <- unify (TypeDup r) r'
     return (compose s2 s1, rcompose r2 r1)
 unify t1@(l :>< r) t2@(TypeDup (l' :>< r')) = unify t2 t1
-unify (l :>< r) (l' :>< r') = do 
+unify (l :>< r) (l' :>< r') = do
     (s1, r1) <- unify l l'
     (s2, r2) <- unify r r' -- note: why not apply.
     return (s2 ∘ s1, r2 `rcompose` r1)
 unify (TypeVar a) t = bind a t
-unify t (TypeVar a) = bind a t 
+unify t (TypeVar a) = bind a t
 unify (TypeFlex id1 t1) (TypeFlex id2 t2) = unifyWithAction t1 t2 (Rename id2) id1
-unify (TypeFlex id t1) (TypeDup t2) = unifyWithAction t1 t2 ToDup id 
-unify (TypeDup t1) (TypeFlex id t2) = unifyWithAction t1 t2 ToDup id  
+unify (TypeFlex id t1) (TypeDup t2) = unifyWithAction t1 t2 ToDup id
+unify (TypeDup t1) (TypeFlex id t2) = unifyWithAction t1 t2 ToDup id
 unify t1 (TypeFlex id t2) = unifyWithAction t1 t2 Remove id
 unify a@(TypeFlex id t1) t2 = unify t2 a -- reverse this case
 unify (TypeDup t1) (TypeDup t2) = unify t1 t2
-unify t1 t2 | (t1 <: t2 || t2 <: t1) && isConstType t1 && isConstType t2 = return (nullSubst, nullResolver)            
+unify t1 t2 | (t1 <: t2 || t2 <: t1) && isConstType t1 && isConstType t2 = return (nullSubst, nullResolver)
             | otherwise =  throwError $ UnificationFailError t1 t2
 
 unifyWithAction :: Type -> Type -> ResolveAction -> String -> Infer (Subst, Resolver)
@@ -362,18 +364,17 @@ fresh = do
   modify $ \st ->  st{count = s+1}
   return $ TypeVar $ letters !! s
 
-fresh' :: Infer String 
-fresh' = do
-  s <- gets count
-  modify $ \st ->  st{count = s+1}
-  return $ letters !! s
+freshId :: Infer String
+freshId = do
+  i <- gets idCount
+  modify $ \st ->  st{idCount = i+1}
+  return $ "id_" ++ show i
 
 -- | Introduce a new flexible type variable.
 freshFlex :: Infer Type
 freshFlex = do
-    s <- gets count 
-    modify $ \st ->  st{count = s+2}
-    return $ TypeFlex (letters !! s) $ TypeVar $ letters !! (s+1)
+    id <- freshId
+    TypeFlex id <$> fresh
 
 -- | Returns a list of strings used for fresh type variables.
 letters :: [String]
@@ -394,7 +395,7 @@ generalize env t  = Forall as t
 
 -- | Infers a substitution and a type from a Term
 infer :: Integer -> Term -> Infer (Subst, Resolver, Type)
-infer i (Idx j)      = lookupEnv (Bound (i-j-1)) 
+infer i (Idx j)      = lookupEnv (Bound (i-j-1))
 infer i (Fun var)    = do
     linEnv <- gets linenv
     (s, res, typ) <- lookupEnv (NFun var)
@@ -411,9 +412,9 @@ infer i (Tup l r)  = do
     (pr, pt) <- productExponential lt rt
     return (ls ∘ rs, pr `rcompose` rr `rcompose` lr, pt)
 infer i (App l r) = do
-    tv <- freshFlex 
+    tv <- freshFlex
     env <- gets env
-    (s1,r1,t1) <- infer i l 
+    (s1,r1,t1) <- infer i l
     modify (\st -> st{env=apply s1 env}) -- todo, fix all apply
     (s2,r2,t2) <- infer i r
     (s3,r3)    <- unify (apply s2 t1) (t2 :=> tv)
@@ -423,7 +424,7 @@ infer i (IfEl b l r) = do
     (s1,r1,t1) <- infer i b
     (s2,r2,t2) <- infer i l
     (s3,r3,t3) <- infer i r
-    name <- fresh'
+    name <- freshId
     (s4,r4) <- unify (TypeFlex name TypeBit) t1
     (s5,r5) <- unify t2 t3
     return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, foldr1 rcompose [r1,r2,r3,r4,r5] ,apply s5 t2)
@@ -499,13 +500,13 @@ subtypeCheck f b = case debang $ deflex f of
 -- | Return whether a type is a subtype of another type.
 (<:) :: Type -> Type -> Bool
 TypeDup  a     <: TypeDup  b      = TypeDup a <: b
-TypeDup  a     <: TypeFlex id b   = a <: b 
+TypeDup  a     <: TypeFlex id b   = a <: b
 TypeDup  a     <:          b      = a <: b
 (a1 :>< a2)    <: (TypeDup (b1 :><  b2)) = a1 <: TypeDup b1 && a2 <: TypeDup b2
 (a1 :>< a2)    <: (b1 :><  b2)    = a1 <: b1 && a2 <: b2
 (a' :=>  b)    <: (a :=>   b')    = a  <: a' && b  <: b'
-TypeFlex id a  <: TypeDup  b      = True 
-TypeFlex id a  <:          b      = a <: b 
+TypeFlex id a  <: TypeDup  b      = True
+TypeFlex id a  <:          b      = a <: b
 a              <: TypeFlex id b   = a <: b
 a              <: TypeVar  b      = True
 a              <:          b      = a == b
@@ -556,7 +557,7 @@ typecheckTerm e = runInfer (infer 0 e)
 
 typecheckProgram :: [Function] -> [Either TypeError (String, Type)]
 typecheckProgram fs = map (checkFunc state) fs
-    where state = St 0 Set.empty (genEnv fs)
+    where state = St 0 0 Set.empty (genEnv fs)
 
 showTypes :: [Either TypeError (String, Type)] -> IO ()
 showTypes = putStrLn . intercalate "\n\n" . map st
@@ -598,12 +599,12 @@ equal :: Type -> Type -> Infer Type
 equal typ inf = do
     (sub,res) <- unify typ inf -- Try to unify signature with inferred type
     let t = resply res sub inf -- 
-    if t <: debangFunc typ 
+    if t <: debangFunc typ
         then return typ
         else throwError $ SubtypeFailError t typ
 
 -- | Generate environment with function signatures 
-genEnv :: [Function] -> TypeEnv 
+genEnv :: [Function] -> TypeEnv
 genEnv = Map.fromList . map f
     where f (Func n t _) = (NFun n, generalize emptyEnv t)
 
@@ -623,18 +624,18 @@ instance IsString Type where
 
 tc :: [Function] -> Infer ()
 tc = mapM_ f
-    where f (Func _ qtype term) = 
+    where f (Func _ qtype term) =
             do (s,r, itype) <- infer 0 term
                env <- gets env
                linenv <- gets linenv
                equal qtype itype
-               put $ St 0 linenv env
+               put $ St 0 0 linenv env
 
 -- | Run typechecker on program
 typecheck :: [Function] -> Either TypeError ()
 typecheck funcs = void $ evalState (runExceptT (tc funcs)) state
-    where 
-        state = St 0 Set.empty (genEnv funcs)
+    where
+        state = St 0 0 Set.empty (genEnv funcs)
 
 testTc :: String -> Either TypeError ()
 testTc = typecheck . run
