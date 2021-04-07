@@ -23,7 +23,7 @@ prop_testFst = inferExp "\\x.let (a,b) = x in a" === Right (TypeVar "a" :>< Type
 prop_id = inferExp "\\x.x" === Right (TypeVar "a" :=> TypeVar "a")
 
 -- | Test that the output of a linear function cannot be made duplicable ??
-prop_linFunSub = expectError . typecheck . run $ "f : !(Bit -o Bit) " ++
+prop_linFunSub = expectError . typecheck . run $ "f : Bit -o Bit " ++
                                                  "f x = meas (new x) " ++
                                                  "g : !Bit " ++
                                                  "g = f 0 "
@@ -132,8 +132,6 @@ prop_SimpleApp = expectSuccess . typecheck . run $ "b : QBit b = new 0"
 prop_DupFunLinArg = expectError . typecheck . run $ "q : QBit q = new 0 " ++
                                                     "f : !QBit -o !QBit f x = x " ++
                                                     "main : !QBit main = f q"
--------------- ERRORS -----------------
-
 
 -- | Test that a linear bit cannot be used in a non-linear way in an if statement. Should fail.
 prop_IfUnLin = expectError . typecheck . run $ "f : Bit -o Bit f g = if g then g else 1"
@@ -179,6 +177,10 @@ prop_linDupExp = expectError $ inferExp "(0, new 0)"
 prop_flexFlexExp = expectSuccess $ inferExp "\\x.\\y.(x,y)"
 
 prop_letConst = inferExp "let (a, b) = (0, 1) in a" == Right (TypeDup TypeBit)
+
+
+-------------- ERRORS -----------------
+
 
 -- todo: both x and y should have same FlexId
 prop_letFunConst = expectSuccess $ inferExp "\\x.\\y.let (a,b) = (x,y) in a"

@@ -372,24 +372,30 @@ unify (l :=> r) (l' :=> r') = do
     (s1, r1) <- unify l l'
     (s2, r2) <- unify (resply r1 s1 r) (resply r1 s1 r')
     return (s2 ∘ s1, r2 `rcompose` r1)
+unify (TypeDup (l :>< r)) (l' :>< r') = do
+    (s1, r1) <- unify (TypeDup l) l'
+    (s2, r2) <- unify (TypeDup r) r'
+    return (compose s2 s1, rcompose r2 r1)
+unify t1@(l :>< r) t2@(TypeDup (l' :>< r')) = unify t2 t1
 unify (l :>< r) (l' :>< r') = do 
     (s1, r1) <- unify l l'
     (s2, r2) <- unify r r' -- note: why not apply.
     return (s2 ∘ s1, r2 `rcompose` r1)
 unify (TypeVar a) t = bind a t
 unify t (TypeVar a) = bind a t 
-unify (TypeFlex id1 t1) (TypeFlex id2 t2) = createActionM id1 (Rename id2)
-unify (TypeFlex id t1) (TypeDup t2) = createActionM id ToDup 
-unify (TypeDup t1) (TypeFlex id t2) = createActionM id ToDup 
-unify t1 (TypeFlex id t2) = unify t1 t2 >>= \(s, r1) -> do
-    let r2 = createAction id Remove 
-    return (s, r2 `rcompose` r1)
-unify a@(TypeFlex id t1) t2 = unify t2 a --unify t1 t2 >>= \(s, r1) -> do
-    -- (_, r2) <- createAction Remove id -- unify t1 och t2
-    -- return (s, r2 `rcompose` r1)
+unify (TypeFlex id1 t1) (TypeFlex id2 t2) = unifyWithAction t1 t2 (Rename id2) id1
+unify (TypeFlex id t1) (TypeDup t2) = unifyWithAction t1 t2 ToDup id 
+unify (TypeDup t1) (TypeFlex id t2) = unifyWithAction t1 t2 ToDup id  
+unify t1 (TypeFlex id t2) = unifyWithAction t1 t2 Remove id
+unify a@(TypeFlex id t1) t2 = unify t2 a -- reverse this case
 unify (TypeDup t1) (TypeDup t2) = unify t1 t2
 unify t1 t2 | (t1 <: t2 || t2 <: t1) && isConstType t1 && isConstType t2 = return (nullSubst, nullResolver)            
             | otherwise =  throwError $ UnificationFailError t1 t2
+
+unifyWithAction :: Type -> Type -> ResolveAction -> String -> Infer (Subst, Resolver)
+unifyWithAction t1 t2 action id = unify t1 t2 >>= \(s,r1) -> do
+    let r2 = createAction id action
+    return (s, r2 `rcompose` r1)
 
 -- unify (TypeDup (l :=> r)) (l' :=> r') = do
 --         s1 <- unify l l'
@@ -586,16 +592,25 @@ infer i (IfEl b l r) = do
     (s4,r4) <- unify (TypeFlex name TypeBit) t1
     (s5,r5) <- unify t2 t3
     return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, foldr1 rcompose [r1,r2,r3,r4,r5] ,apply s5 t2)
-infer i (Let eq inn) = do
-    tv1 <- inferDuplicity (Abs inn)  
-    tv2 <- inferDuplicity inn 
-    (seq,req,teq) <- infer i eq 
-    (sprod,rprod) <- unify teq (tv1 :>< tv2)
-    extend (Bound (i+1), rprod `resolve` (sprod `apply` Forall [] tv1))
-    extend (Bound  i   , rprod `resolve` (sprod `apply` Forall [] tv2))
-    (sinn,rinn,tinn) <- infer (i+2) inn
-    -- return (seq ∘ product ∘ sinn, seq ∘ sinn `apply` tinn)
-    return (sinn ∘ sprod ∘ seq, foldr1 rcompose [req, rprod, rinn] , seq `apply` tinn)
+infer i (Let eq inn) = do -- let (a, b) = eq in inn
+    tv1 <- inferDuplicity (Abs inn) -- Create typevar for a
+    tv2 <- inferDuplicity inn -- Create typevar for b
+    (rtv, tv) <- productExponential tv1 tv2 -- Create productType tv with exponentials moved out
+
+    (seq,req,teq) <- infer i eq -- Infer the type of eq
+    --tr $ "teq is: " ++ show teq ++ ", tv is: " ++ show tv
+    (sprod,rprod) <- unify teq tv -- teq and tv should be same
+    --tr $ "sprod: " ++ show sprod ++ ", rprod" ++ show rprod
+    -- Add the typevariables tv1 and tv2, with first rtv resolved, then rprod and sprod
+    let tv1' = resply (rprod `rcompose` rtv) sprod tv1
+    let tv2' = resply (rprod `rcompose` rtv) sprod tv2
+    extend (Bound (i+1), Forall [] tv1')
+    extend (Bound  i   , Forall [] tv2')
+    (sinn,rinn,tinn) <- infer (i+2) inn -- Infer the type of inn
+
+    let subst = sinn ∘ sprod ∘ seq -- all subsitutions
+    let resolver = rinn `rcompose` rprod `rcompose` req -- rtv not needed, already used
+    return (subst, resolver, sprod `compose` seq `apply` tinn)
 infer i (Abs body) = do
     tv <- inferDuplicity body
     env <- gets env
