@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE LambdaCase      #-}
+{-# LANGUAGE OverloadedStrings      #-}
 
 module TypeCheckTests where 
 import Type.HM
@@ -20,7 +21,7 @@ prop_testFst = inferExp "\\x.let (a,b) = x in a" === Right (TypeVar "a" :>< Type
 -- == Right ((TypeFlex "a" :>< TypeFlex "b") :=> TypeFlex "a")
 
 -- | \x.x should have type ?a->?a, since it could be either linear or not linear.
-prop_id = inferExp "\\x.x" === Right (TypeVar "a" :=> TypeVar "a")
+prop_id = inferExp "\\x.x" === Right (TypeFlex "a" "a" :=> TypeFlex "a" "a")
 
 -- | Test that the output of a linear function cannot be made duplicable ??
 prop_linFunSub = expectError . typecheck . run $ "f : Bit -o Bit " ++
@@ -28,8 +29,8 @@ prop_linFunSub = expectError . typecheck . run $ "f : Bit -o Bit " ++
                                                  "g : !Bit " ++
                                                  "g = f 0 "
 
--- | prop_ nested let statements
-prop_NestTup = inferExp "\\x . let (a,b) = x in let (b,c) = b in (a,b,c)"  ===  Right (TypeVar "a" :>< TypeVar "b" :>< TypeVar "c" :=> TypeVar "a" :>< TypeVar "b" :>< TypeVar "c")
+-- | prop_ nested let statements. should succeed.
+prop_NestTup = expectSuccess $ inferExp "\\x . let (a,b) = x in let (b,c) = b in (a,b,c)" -- ===  Right (TypeVar "a" :>< TypeVar "b" :>< TypeVar "c" :=> TypeVar "a" :>< TypeVar "b" :>< TypeVar "c")
 
 -- trueprop_s :: IO () 
 -- trueTests = do 

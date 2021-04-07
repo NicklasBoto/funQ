@@ -172,7 +172,18 @@ s2 `compose` s1 = Map.map (apply s2) s1 `Map.union` s2
 -- | Resolver = Map String ResolveAction
 -- | resolve (r2 `rcompose` r1) typ = resolve r2 (resolve r1 typ)
 rcompose :: Resolver -> Resolver -> Resolver
-r2 `rcompose` r1 = r1 `Map.union` r2
+r2 `rcompose` r1 =  r1 `Map.union` r2
+
+rmap :: (TVar, ResolveAction) -> (TVar, ResolveAction) -> (TVar, ResolveAction)
+rmap (t1, r1) (t2,r2) = undefined
+-- titta på alla variabler i t1
+-- kolla om dom också finns i t2
+
+-- {a/Delete} {a/Rename}
+-- {a/Delete} U (rmap {a/Delete} {a/Rename}) = {a/Delete} U {}
+
+-- {a/Rename b} {a/Delete}
+-- resolve {a/Rename b} U {b/Delete}
 
 (∘) :: Subst -> Map.Map TVar Type -> Map.Map TVar Type
 (∘) = compose
@@ -282,7 +293,6 @@ instance Substitutable Type where
     apply s (t1 :=> t2) = apply s t1 :=> apply s t2
     apply s (t1 :>< t2) = apply s t1 :>< apply s t2
 
-    --resolve r (TypeFlex id t) = resolveTypeFlex r id t
     resolve r (TypeFlex id t) = case Map.lookup id r of
         Nothing           -> TypeFlex id t
         Just Remove       -> t
@@ -299,13 +309,6 @@ instance Substitutable Type where
     ftv (t1 :=> t2)  = Set.union (ftv t1) (ftv t2)
     ftv (t1 :>< t2)  = Set.union (ftv t1) (ftv t2)
     ftv _constant    = Set.empty
-
-resolveTypeFlex :: Resolver -> String -> Type -> Type
-resolveTypeFlex r id t = case Map.lookup id r of
-    Nothing           -> TypeFlex id t
-    Just Remove       -> t
-    Just (Rename new) -> TypeFlex new t
-    Just ToDup        -> bang t
 
 instance Substitutable Scheme where
     -- | The type inside the scheme are applied to the substitution,
@@ -393,98 +396,10 @@ unify t1 t2 | (t1 <: t2 || t2 <: t1) && isConstType t1 && isConstType t2 = retur
             | otherwise =  throwError $ UnificationFailError t1 t2
 
 unifyWithAction :: Type -> Type -> ResolveAction -> String -> Infer (Subst, Resolver)
-unifyWithAction t1 t2 action id = unify t1 t2 >>= \(s,r1) -> do
+unifyWithAction t1 t2 action id = do
+    (s,r1) <- unify t1 t2
     let r2 = createAction id action
     return (s, r2 `rcompose` r1)
-
--- unify (TypeDup (l :=> r)) (l' :=> r') = do
---         s1 <- unify l l'
---         s2 <- unify (apply s1 r) (apply s1 r')
---         return (s2 ∘ s1)
--- unify (l :=> r) (l' :=> r') = do
---         s1 <- unify l l'
---         s2 <- unify (apply s1 r) (apply s1 r')
---         return (s2 ∘ s1)
--- unify (TypeDup (l :>< r)) (l' :>< r') = do
---     s1 <- unify (TypeDup l) l'
---     s2 <- unify (TypeDup r) r'
---     return (compose s2 s1)
--- unify (l :>< r) (TypeDup (l' :>< r')) = do
---     s1 <- unify l (TypeDup l')
---     s2 <- unify r (TypeDup r')
---     return (compose s2 s1)
--- unify (l :>< r) (l' :>< r') = do
---     s1 <- unify l l'
---     s2 <- unify r r'
---     return (compose s2 s1)
--- -- ?"a" ~ ?"b" = ["a"/"b"]
--- unify (TypeFlex (TypeVar a)) (TypeFlex (TypeVar b)) = bind (LVar a) (TypeVar b) -- vrf LVar?
--- -- ?a ~ ?b : [a/b]
--- -- [a/b] ?a --> ?b
--- -- [?a/?b] ?a --> ?b
--- -- ?"a" ~ !"b" = []
--- unify (TypeFlex (TypeVar a)) (TypeDup  b) = bind (FVar a) (TypeDup b)
--- unify t (TypeFlex (TypeVar b)) = bind (FVar b) t
--- 
--- unify (TypeFlex (TypeVar a)) t = bind (FVar a) t   -- : ?a ~ t = [?a/t]
--- 
--- unify (TypeVar a) t =  bind (LVar a) t
--- unify t (TypeVar a) = bind (LVar a) t
--- unify (TypeDup a) (TypeDup b) = unify a b
--- -- TypeFlex t1 ~ TypeVar a = [a/!t1]
--- -- TypeFlex t1 ~ TypeDup (TypeVar b) = [b/t1]
--- -- ?Bit ~ !a = Bit ~ !a, går ej
--- --unify (TypeFlex t1) (TypeVar b) = bind (LVar b) (TypeDup t1)
--- -- ?a ~ ?Bit
--- unify (TypeFlex a) (TypeDup b) = unify a b -- : ?a ~ !b = a ~ b  
--- unify (TypeDup a) (TypeFlex b) = unify a b -- : !a ~ ?b = a ~ b  
--- 
--- unify t1 (TypeFlex t2) = error $ "urk! " ++ show t1 ++ show "?" ++ show t2 
--- unify t t' | (t' <: t || t <: t') && isConstType t && isConstType t' = return nullSubst
---           | otherwise = throwError $ UnificationFailError t t'
-
-
--- unify :: Type -> Type -> Infer Subst
--- unify (TypeDup (l :=> r)) (l' :=> r') = do
---         s1 <- unify l l'
---         s2 <- unify (apply s1 r) (apply s1 r')
---         return (s2 ∘ s1)
--- unify (l :=> r) (l' :=> r') = do
---         s1 <- unify l l'
---         s2 <- unify (apply s1 r) (apply s1 r')
---         return (s2 ∘ s1)
--- unify (TypeDup (l :>< r)) (l' :>< r') = do
---     s1 <- unify (TypeDup l) l'
---     s2 <- unify (TypeDup r) r'
---     return (compose s2 s1)
--- unify (l :>< r) (TypeDup (l' :>< r')) = do
---     s1 <- unify l (TypeDup l')
---     s2 <- unify r (TypeDup r')
---     return (compose s2 s1)
--- unify (l :>< r) (l' :>< r') = do
---     s1 <- unify l l'
---     s2 <- unify r r'
---     return (compose s2 s1)
--- -- ?"a" ~ ?"b" = ["a"/"b"]
--- unify (TypeFlex id1 (TypeVar a)) (TypeFlex id2 (TypeVar b)) = bind (LVar a) (TypeVar b) -- vrf LVar?
--- -- ?a ~ ?b : [a/b]
--- -- [a/b] ?a --> ?b
--- -- [?a/?b] ?a --> ?b
--- -- ?"a" ~ !"b" = []
--- unify (TypeFlex id (TypeVar a)) (TypeDup  b) = bind (LVar a) (TypeDup b)
--- unify t (TypeFlex id (TypeVar b)) = bind (LVar b) t
--- unify (TypeFlex id (TypeVar a)) t = bind (LVar a) t
--- unify (TypeVar a) t =  bind (LVar a) t
--- unify t (TypeVar a) = bind (LVar a) t
--- unify (TypeDup a) (TypeDup b) = unify a b
--- unify (TypeFlex _ a) (TypeDup b) = unify a b 
--- unify (TypeDup a) (TypeFlex _ b) = unify a b 
--- unify (TypeFlex _ t1) t2 = error $ "Unimplementable" ++ " ?" ++ show t1 ++ show t2 
--- unify t1 (TypeFlex _ t2) = error $ "urk!" ++ " ?" ++ show t1 ++ " ?" ++ show t2
--- unify t t' | (t' <: t || t <: t') && isConstType t && isConstType t' = return nullSubst
---            | otherwise =  throwError $ UnificationFailError t t'
-
---unify (TCon a) (TCon b) | a == b = return nullSubst
 
 -- | Binds a type variable with another type and returns a substitution.
 bind :: TVar -> Type -> Infer (Subst, Resolver)
@@ -607,17 +522,14 @@ infer i (Let eq inn) = do -- let (a, b) = eq in inn
     extend (Bound (i+1), Forall [] tv1')
     extend (Bound  i   , Forall [] tv2')
     (sinn,rinn,tinn) <- infer (i+2) inn -- Infer the type of inn
-
     let subst = sinn ∘ sprod ∘ seq -- all subsitutions
     let resolver = rinn `rcompose` rprod `rcompose` req -- rtv not needed, already used
-    return (subst, resolver, sprod `compose` seq `apply` tinn)
+    return (subst, resolver, tinn)
 infer i (Abs body) = do
     tv <- inferDuplicity body
-    env <- gets env
     extend (Bound i, Forall [] tv)
     (s1,r1,t1) <- infer (i+1) body
-    let tv11 = resply r1 s1 tv
-    return (s1, r1, tv11 :=> t1)
+    return (s1, r1, resply r1 s1 tv :=> t1)
 infer i New  = return (nullSubst, nullResolver, TypeDup (TypeBit  :=> TypeQBit))
 infer i Meas = return (nullSubst, nullResolver, TypeDup (TypeQBit :=> TypeDup TypeBit))
 infer i Unit = return (nullSubst, nullResolver, TypeDup TypeUnit)
@@ -669,10 +581,10 @@ inferGate g = TypeDup $ gateType $ case g of
         gateType  n = gateType' n :=> gateType' n
 
 subtypeCheck :: Type -> Type -> Infer ()
-subtypeCheck f b = case debang f of
+subtypeCheck f b = case debang $ deflex f of
     (a :=> _) | b <: a    -> return ()
               | otherwise -> throwError $ SubtypeFailError b a
-    t -> error "urk: subtype check" 
+    t -> error $ "urk: subtype check " ++ show t
 
 -- | Return whether a type is a subtype of another type.
 (<:) :: Type -> Type -> Bool
@@ -769,6 +681,7 @@ checkFunc state (Func name qtype term) = do
     s <- evalState (runExceptT (equal qtype itype)) emptyState
     return (name, s)
 
+debangFunc :: Type -> Type
 debangFunc (TypeDup (a :=> b)) = a :=> b
 debangFunc a = a
 
@@ -778,7 +691,7 @@ equal :: Type -> Type -> Infer Type
 equal typ inf = do
     (sub,res) <- unify typ inf -- Try to unify signature with inferred type
     let t = resply res sub inf -- 
-    if t <: debangFunc typ
+    if t <: debangFunc typ 
         then return typ
         else throwError $ SubtypeFailError t typ
 
