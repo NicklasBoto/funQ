@@ -17,7 +17,7 @@ prop_testBit = inferExp "0" === Right (TypeDup TypeBit)
 prop_testDupProd = inferExp "(0, 0)" === Right (TypeDup (TypeBit :>< TypeBit))
 
 -- | Expected (?a, ?b) -o ?a
-prop_testFst = inferExp "\\x.let (a,b) = x in a" === Right (TypeVar "a" :>< TypeVar "b" :=> TypeVar "a")
+prop_testFst = inferExp "\\x.let (a,b) = x in a" === Right (TypeFlex "e" (TypeVar "a" :>< TypeVar "b") :=> TypeFlex "e" (TypeVar "a"))
 -- == Right ((TypeFlex "a" :>< TypeFlex "b") :=> TypeFlex "a")
 
 -- | \x.x should have type ?a->?a, since it could be either linear or not linear.
