@@ -16,17 +16,16 @@ import Data.Bifunctor (first)
 import Debug.Trace
 
 
--- | Representations of free and bound variables in lambda abstractions
+-- | Name functions and bound variables are represented by Named.
 data Named
-    = NFun String -- Named function
+    = NFun String
     | Bound Integer
     deriving (Eq, Ord, Show)
 
--- | A scheme has a type, together with a list of (Forall) bound type variables.
+-- | A scheme is a polymorphic type. Has a list of bound type variables together with a monotype.
 data Scheme = Forall [TVar] Type
 
--- | A type variable (TVar) is either a normal linear type variable (LVar) "a", 
---   or the more general flexible type variable (FVar) "?a".
+-- | A type variable representing any type.
 type TVar = String
 
 instance Show Scheme where
@@ -35,6 +34,7 @@ instance Show Scheme where
                       ++ printTree (reverseType t)
 
 -- | Each variable in the TypeEnv has an associated type Scheme.
+--   Could be a function in outer scope, or a bound variable.
 type TypeEnv = Map.Map Named Scheme
 
 -- | A substitution is a map from a type variable to the type it 
@@ -48,23 +48,27 @@ showMap = intercalate "," . map elem . Map.toList
 instance {-# OVERLAPPING #-} Show Subst where
     show s = "[" ++ showMap s ++ "]"
 
--- | A resolveaction contains three actions that can be made with a FlexType.
+-- | A ResolveAction contains three actions that can be made with a TypeFlax.
+--   Remove gets rid of that TypeFlex.
+--   Rename renames its id.
+--   ToDup makes it a TypeDup.
 data ResolveAction = Remove | Rename String | ToDup deriving Show
 
+-- | A Resolver is a map from ids referencing TypeFlexes to some action.
 type Resolver = Map.Map String ResolveAction
 
 instance {-# OVERLAPPING #-} Show Resolver where
     show r = "{" ++ showMap r ++ "}"
 
--- | The null substitution are the substitution where nothing are substituted.
+-- | The substitution where nothing are substituted.
 nullSubst :: Subst
 nullSubst = Map.empty
 
--- | The resolver that does nothing
+-- | The resolver where no TypeFlex actions are resolved.
 nullResolver :: Resolver
 nullResolver = Map.empty
 
--- | The empty environment are the type environment where no variables exist.
+-- | The type environment where no variables or named functions exist.
 emptyEnv :: TypeEnv
 emptyEnv = Map.empty
 
@@ -93,8 +97,8 @@ instance Show TypeError where
     show (NotInScopeError (Bound j)) =
         "The impossible happened, free deBruijn index"
 
-    show (NotInScopeError (NFun v)) =
-        "Function not in scope: " ++ v
+    show (NotInScopeError (NFun fun)) =
+        "Function not in scope: " ++ fun
 
     show (InfiniteTypeError v t) =
         "Occurs check: cannot construct the infinite type: " ++
@@ -105,40 +109,46 @@ instance Show TypeError where
 
     show (TopLevelLinearFail f) = "Linear function " ++ show f ++ " was used multiple times."
 
--- | Counter for creating fresh type variables
-type Counter = Int
+-- | The monad type inferrement occurs in.
+--   It could have an exception if there is a type error.
+--   It contains some state needed for the infer algorithm.
 
--- | The monad type inferrement occurs, it could have an exception
---   if there is a type error. It keeps track of a counter for what
+--   It keeps track of counter for fresh variables.
+--   It keeps track of 
+--    It keeps track of a counter for what
 --   the next fresh type variable should be.
 type Infer = ExceptT TypeError (State InferState)
 
+-- | The state kept in the Infer monad.
+--   count keeps track of what the next fresh type variable is.
+--   linenv keeps track of functions used, so linear functios are used only once.
+--   env keeps track of bound variables and named function types.
 data InferState 
-    = St { count  :: Counter
+    = St { count  :: Int 
          , linenv :: Set.Set String
          , env    :: TypeEnv
          }
 
+-- | The empty state is where type inferment starts in.
 emptyState :: InferState
 emptyState = St 0 Set.empty Map.empty
 
--- | Extend the type environment with a new bound variable together with its type scheme.
+-- | Extend the type environment with a new name and its type scheme.
 extend :: (Named, Scheme) -> Infer ()
-extend (n,s) = do
+extend (name, scheme) = do
     env <- gets env
-    modify $ \st -> st{env = Map.insert n s env}
+    modify $ \st -> st{env = Map.insert name scheme env}
 
-extend' env (n,s) = Map.insert n s env
-
+-- | Add a function name to used functions.
 addLin :: String -> Infer ()
 addLin name = do
     linenv <- gets linenv
     modify $ \st -> st{linenv = Set.insert name linenv}
 
--- | Apply final substitution and normalize the type variables 
+-- | Apply final substitution, generalize the resulting type, and normalize the type variables.
 closeOver :: (Subst, Resolver, Type) -> Scheme
-closeOver (sub, res, ty) = normalize sc
-  where sc = generalize emptyEnv (resply res sub ty)
+closeOver (sub, res, ty) = normalize scheme
+  where scheme = generalize emptyEnv (resply res sub ty)
 
 -- | Normalizes a polymorphic type to simple type variable names.
 normalize :: Scheme -> Scheme
