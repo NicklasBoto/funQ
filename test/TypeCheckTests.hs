@@ -6,8 +6,7 @@ module TypeCheckTests where
 import Type.HM
 import AST.AST
 import Data.Either (lefts,rights, isLeft, isRight)
-import Test.QuickCheck
-    ( quickCheckAll, (===), Property, Testable(property), quickCheck)
+import Test.QuickCheck (quickCheckAll, (===), Property, Testable(property), quickCheck)
 
 --- Test that should fail (throw an exception)
 expectError :: Either e t -> Property
@@ -35,7 +34,7 @@ prop_testFst = expectSuccess $ inferExp "\\x.let (a,b) = x in a" -- === Right (T
 -- == Right ((TypeFlex "a" :>< TypeFlex "b") :=> TypeFlex "a")
 
 -- | \x.x should have type ?a->?a, since it could be either linear or not linear.
-prop_id = inferExp "\\x.x" === Right (TypeFlex "a" "a" :=> TypeFlex "a" "a")
+prop_id = inferExp "\\x.x" === Right (TypeFlex "id_0" "a" :=> TypeFlex "id_0" "a")
 
 -- | Test that a linear bit can be used as a condition in an if statement. Should succeed.
 prop_IfLinBit = expectSuccess . typecheck . run $ "f : Bit -o Bit f g = if g then 0 else 1"
@@ -84,7 +83,7 @@ prop_EqDup = expectSuccess $ inferExp "\\x.(x,0)"
 
 
 -- | Test that x and y get same flex id and that it type checks. Should succeed
-prop_letFunConst = inferExp "\\x.\\y.let (a,b) = (x,y) in a" === Right (TypeFlex "g" (TypeVar "a") :=>  TypeFlex "g" (TypeVar "b") :=> TypeFlex "g" (TypeVar "a"))
+prop_letFunConst = inferExp "\\x.\\y.let (a,b) = (x,y) in a" === Right (TypeFlex "id_3" (TypeVar "a") :=>  TypeFlex "id_3" (TypeVar "b") :=> TypeFlex "id_3" (TypeVar "a"))
 
 
 -- | Test that the inferred expression have the correct type.  should have type. !a -o !b -o !(a, a) and succeed.
@@ -92,7 +91,7 @@ prop_letFunDup = inferExp "\\x.\\y.let (a,b) = (x,y) in (a,a)"  === Right (TypeD
 
 
 -- | Tests nested let statements with general types. should succeed.
-prop_NestLet = inferExp "\\x . let (a,b) = x in let (b,c) = b in (a,b,c)" ===  Right ( TypeFlex "i" (TypeVar "a" :>< TypeVar "b" :>< TypeVar "c") :=> TypeFlex "i" (TypeVar "a" :>< TypeVar "b" :>< TypeVar "c"))
+prop_NestLet = inferExp "\\x . let (a,b) = x in let (b,c) = b in (a,b,c)" ===  Right ( TypeFlex "id_4" (TypeVar "a" :>< TypeVar "b" :>< TypeVar "c") :=> TypeFlex "id_4" (TypeVar "a" :>< TypeVar "b" :>< TypeVar "c"))
 
 
 -- | Tests that simple let-statements infers correct type. Should succeed.
@@ -105,7 +104,7 @@ prop_ConstLet = inferExp "let (a, b) = (0, 1) in a" === Right (TypeDup TypeBit)
 prop_dupBit = inferExp "(0, 0)" === Right (TypeDup (TypeBit :>< TypeBit))
 
 -- | Test that a general function gets a flexible type. Should succeed.
-prop_DupFlexExp = inferExp "\\x. \\y. (x,y)" === Right (TypeFlex "c" a :=> TypeFlex "c" b :=> TypeFlex "c" (a :>< b))
+prop_DupFlexExp = inferExp "\\x. \\y. (x,y)" === Right (TypeFlex "id_1" a :=> TypeFlex "id_1" b :=> TypeFlex "id_1" (a :>< b))
     where
         a = TypeVar "a"
         b = TypeVar "b"
