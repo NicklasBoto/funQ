@@ -30,11 +30,11 @@ prop_testBit = inferExp "0" === Right (TypeDup TypeBit)
 prop_testDupProd = inferExp "(0, 0)" === Right (TypeDup (TypeBit :>< TypeBit))
 
 -- | Expected (?a, ?b) -o ?a
-prop_testFst = inferExp "\\x.let (a,b) = x in a" === Right (TypeFlex "e" (TypeVar "a" :>< TypeVar "b") :=> TypeFlex "e" (TypeVar "a"))
+prop_testFst = inferExp "\\x.let (a,b) = x in a" === Right (TypeFlex 2 (TypeVar "a" :>< TypeVar "b") :=> TypeFlex 1 (TypeVar "a"))
 -- == Right ((TypeFlex "a" :>< TypeFlex "b") :=> TypeFlex "a")
 
 -- | \x.x should have type ?a->?a, since it could be either linear or not linear.
-prop_id = inferExp "\\x.x" === Right (TypeFlex "id_0" "a" :=> TypeFlex "id_0" "a")
+prop_id = inferExp "\\x.x" === Right (TypeFlex 0 (TypeFlex 0 "a" :=> TypeFlex 0 "a"))
 
 -- | Test that a linear bit can be used as a condition in an if statement. Should succeed.
 prop_IfLinBit = expectSuccess . typecheck . run $ "f : Bit -o Bit f g = if g then 0 else 1"
@@ -83,16 +83,12 @@ prop_EqDup = expectSuccess $ inferExp "\\x.(x,0)"
 
 
 -- | Test that x and y get same flex id and that it type checks. Should succeed
-prop_letFunConst = inferExp "\\x.\\y.let (a,b) = (x,y) in a" === Right (TypeFlex "id_3" (TypeVar "a") :=>  TypeFlex "id_3" (TypeVar "b") :=> TypeFlex "id_3" (TypeVar "a"))
+prop_letFunConst = inferExp "\\x.\\y.let (a,b) = (x,y) in a" === Right (TypeFlex 0 (TypeFlex 3 (TypeVar "a") :=> TypeFlex 4 (TypeFlex 3 (TypeVar "b") :=> TypeFlex 3 (TypeVar "a"))))
 
-
--- | Test that the inferred expression have the correct type.  should have type. !a -o !b -o !(a, a) and succeed.
-prop_letFunDup = inferExp "\\x.\\y.let (a,b) = (x,y) in (a,a)"  === Right (TypeDup (TypeVar "a") :=>  TypeDup (TypeVar "b") :=> TypeDup (TypeVar "a" :>< TypeVar "a"))
 
 
 -- | Tests nested let statements with general types. should succeed.
-prop_NestLet = inferExp "\\x . let (a,b) = x in let (b,c) = b in (a,b,c)" ===  Right ( TypeFlex "id_4" (TypeVar "a" :>< TypeVar "b" :>< TypeVar "c") :=> TypeFlex "id_4" (TypeVar "a" :>< TypeVar "b" :>< TypeVar "c"))
-
+prop_NestLet = inferExp "\\x . let (a,b) = x in let (b,c) = b in (a,b,c)" ===  Right (TypeFlex 0 (TypeFlex 1 (TypeVar "a" :>< TypeVar "b" :>< TypeVar "c") :=> TypeFlex 4 (TypeVar "a" :>< TypeVar "b" :>< TypeVar "c")))
 
 -- | Tests that simple let-statements infers correct type. Should succeed.
 prop_LeftLet = inferExp "let (a,b) = (*, 0) in a" === Right (TypeDup TypeUnit)
@@ -104,23 +100,23 @@ prop_ConstLet = inferExp "let (a, b) = (0, 1) in a" === Right (TypeDup TypeBit)
 prop_dupBit = inferExp "(0, 0)" === Right (TypeDup (TypeBit :>< TypeBit))
 
 -- | Test that a general function gets a flexible type. Should succeed.
-prop_DupFlexExp = inferExp "\\x. \\y. (x,y)" === Right (TypeFlex "id_1" a :=> TypeFlex "id_1" b :=> TypeFlex "id_1" (a :>< b))
+prop_DupFlexExp = inferExp "\\x. \\y. (x,y)" === Right (TypeFlex 0 (TypeFlex 1 a :=> TypeFlex 2 (TypeFlex 1 b :=> TypeFlex 1 (a :>< b))))
     where
         a = TypeVar "a"
         b = TypeVar "b"
 
 -- | Test that the duplicity is the same for all elements in a tuple. Should succeed.
-prop_DupExp = inferExp "\\x.(x,0)" === Right (TypeDup a :=> TypeDup (a :>< TypeBit))
+prop_DupExp = inferExp "\\x.(x,0)" === Right (TypeFlex 0 (TypeDup a :=> TypeDup (a :>< TypeBit)))
     where
         a = TypeVar "a"
 
 -- | Test that the duplicity is the same for all elements in a tuple. Should succeed.
-prop_LinExp = inferExp "\\x.(x,new 0)" === Right (a :=> a :>< TypeQBit)
+prop_LinExp = inferExp "\\x.(x,new 0)" === Right (TypeFlex 0 (a :=> a :>< TypeQBit))
     where
         a = TypeVar "a"
 
 -- | Test that the duplicity is the same for all elements in a tuple. Should succeed.
-prop_LinExp2 = inferExp "\\x.(new 0, x)" === Right (a :=> TypeQBit :>< a)
+prop_LinExp2 = inferExp "\\x.(new 0, x)" === Right (TypeFlex 0 (a :=> TypeQBit :>< a))
     where
         a = TypeVar "a"
         
@@ -199,7 +195,28 @@ prop_DupQbit = expectError . typecheck . run $  "q : !QBit q = new 0"
 -- | Test that mismatched duplicity in a product type gives an error. Should fail.
 prop_linDupExp = expectError $ inferExp "(0, new 0)"
 
+
+prop_dupQbit = expectError . typecheck . run $ "f : !QBit -o !(QBit >< QBit) "
+                                            ++ "f x = (x,x) "
+                                            ++ "g : !(QBit >< QBit) "
+                                            ++ "g = f (new 0)"
+
 -------------- Tests that are not working  -----------------
+
+prod =  inferExp "(0, \\x.x)"
+
+-- | Test that the inferred expression have the correct type.  should have type. !a -o !b -o !(a, a) and succeed.
+-- ?(!a -o !b -o !(a >< a))
+-- inferred type: ?(?a -o ?(!b -o !(a >< a)))
+-- Right !a ⊸ !b ⊸ !(a ⊗ a)
+prop_letFunDup = inferExp "\\x.\\y.let (a,b) = (x,y) in (a,a)"  === Right "!a -o !b -o !(a >< a)" -- Right (TypeDup (TypeVar "a") :=>  TypeDup (TypeVar "b") :=> TypeDup (TypeVar "a" :>< TypeVar "a"))
+
+plfd = typecheck . run $ "f : !a -o !b -o !(a >< a) "
+                      ++ "f x y = let (a,b) = (x,y) in (a,a)"
+
+good = inferExp "(\\x.\\y.(x,y)) 0 (new 0)"
+bad = inferExp "(\\x.\\y.(x,y)) (new 0) 0"
+reallyBad = expectError $ inferExp "(\\x.\\y.let (a,b) = (x,y) in a) (new 0) 0"
 
 -- Need return for quickCheckAll
 return []

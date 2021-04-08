@@ -14,6 +14,7 @@ import Parser.Print
 import Data.List (nub, intercalate)
 import Data.Bifunctor (first)
 import Debug.Trace
+import System.IO.Unsafe
 
 
 -- | Name functions and bound variables are represented by Named.
@@ -41,9 +42,10 @@ type TypeEnv = Map.Map Named Scheme
 --  should be substituted with. It could be another type variable.
 type Subst = Map.Map TVar Type
 
-showMap :: Show a => Map.Map String a -> String
+showMap :: (Show a, Show k) => Map.Map k a -> String 
+-- showMap = undefined
 showMap = intercalate "," . map elem . Map.toList
-    where elem (from, to) = from ++ "/" ++ show to
+    where elem (from, to) = show from ++ "/" ++ show to
 
 instance {-# OVERLAPPING #-} Show Subst where
     show s = "[" ++ showMap s ++ "]"
@@ -52,10 +54,10 @@ instance {-# OVERLAPPING #-} Show Subst where
 --   Remove gets rid of that TypeFlex.
 --   Rename renames its id.
 --   ToDup makes it a TypeDup.
-data ResolveAction = Remove | Rename String | ToDup deriving Show
+data ResolveAction = Remove | Rename Int | ToDup deriving Show
 
 -- | A Resolver is a map from ids referencing TypeFlexes to some action.
-type Resolver = Map.Map String ResolveAction
+type Resolver = Map.Map Int ResolveAction
 
 instance {-# OVERLAPPING #-} Show Resolver where
     show r = "{" ++ showMap r ++ "}"
@@ -154,7 +156,7 @@ closeOver (sub, res, ty) = normalize scheme
 
 -- | Normalizes a polymorphic type to simple type variable names.
 normalize :: Scheme -> Scheme
-normalize (Forall ts body) = Forall (fmap snd ord) (normtype body)
+normalize (Forall ts body) = Forall (fmap snd ord) (normflex $ normtype body)
   where
     -- | Maps each free variable in the body to 
     ord = zip (nub $ fv body) letters
@@ -166,6 +168,16 @@ normalize (Forall ts body) = Forall (fmap snd ord) (normtype body)
     fv (a :=> b)      = fv a ++ fv b
     fv (a :>< b)      = fv a ++ fv b
     fv _              = []
+
+    -- | Finds free flex variables in a type.
+    ffv :: Type -> [Int]
+    ffv (TypeFlex id type') = id : ffv type'
+    ffv (TypeDup  a)   = ffv a
+    ffv (a :=> b)      = ffv a ++ ffv b
+    ffv (a :>< b)      = ffv a ++ ffv b
+    ffv _              = []
+
+    normflex = resolve . Map.fromList $ zip ((nub . ffv) body) $ map (Rename) [0..]
 
     normtype (a :=> b) = normtype a :=> normtype b
     normtype (a :>< b) = normtype a :>< normtype b
@@ -184,18 +196,46 @@ s2 `compose` s1 = Map.map (apply s2) s1 `Map.union` s2
 -- | Resolver = Map String ResolveAction
 -- | resolve (r2 `rcompose` r1) typ = resolve r2 (resolve r1 typ)
 rcompose :: Resolver -> Resolver -> Resolver
-r2 `rcompose` r1 =  r1 `Map.union` r2
+r2 `rcompose` r1 = Map.map (f r2) r1 `Map.union` r2
+    where
+        f :: Resolver -> ResolveAction -> ResolveAction
+        f r (Rename id) = case Map.lookup id r of
+            Just act -> act
+            Nothing  -> Rename id
+        f r action = action
 
-rmap :: (TVar, ResolveAction) -> (TVar, ResolveAction) -> (TVar, ResolveAction)
-rmap (t1, r1) (t2,r2) = undefined
+-- SResolver :: Type -> Type
+-- r2 `srcompose` r1 = \type' -> r2 (r1 type')
+-- sResolve :: Resolver -> SResolver
+-- sResolve res = \type -> resolve res type
+
+-- {b/Delete}   `rcompose` {a/Rename b} = {a/Delete, b/Delete} --?? ?{b}T -o ?{a}T
+-- [b/Delete]   `rcompose` [a/Delete] = {a/Delete, b/Delete}
+-- [a/Rename b] `rcompose` [a/ToDup] = fel, omöjlig, satan själv
+
+-- [a/Action]   `rcompose` [b/Rename a] = [b/Action, a/Action]
+-- [a/Action]   `rcompose` [b/ToDup]    = [b/ToDup,  a/Action]
+-- [a/Action]   `rcompose` [b/Delete]   = [b/Delete, a/Action]
+
+--rmap :: TVar -> ResolveAction -> ResolveAction -> ResolveAction
+--rmap id1 Delete (Rename id2) = undefined
+
+
 -- titta på alla variabler i t1
 -- kolla om dom också finns i t2
+-- 
 
--- {a/Delete} {a/Rename}
--- {a/Delete} U (rmap {a/Delete} {a/Rename}) = {a/Delete} U {}
+-- r2 `rcompose` r1
+-- {a/Delete} {a/Rename b} 
+-- {a/Delete}
 
--- {a/Rename b} {a/Delete}
--- resolve {a/Rename b} U {b/Delete}
+
+-- {a/Rename b} {a/Delete} = [a/Rename b, a/Delete]
+-- {a/Rename b, a/Delete} = a/Delete
+
+
+
+
 
 (∘) :: Subst -> Map.Map TVar Type -> Map.Map TVar Type
 (∘) = compose
@@ -215,15 +255,16 @@ flex t = freshId >>= \v -> return $ TypeFlex v t
 
 -- | Converts a type flex to a type variable
 deflex :: Type -> Type
-deflex (TypeFlex _ a) = a
-deflex           t  = t
+deflex (TypeFlex _ a) = deflex a
+deflex             t  = t
 
 -- | Transforms all flex variables to normal linear type variables.
 deflexType :: Type -> Type
 deflexType (a :=> b) = deflexType a :=> deflexType b
 deflexType (a :>< b) = deflexType a :>< deflexType b
 deflexType (TypeDup a) = TypeDup $ deflexType a
-deflexType a = deflex a
+deflexType (TypeFlex _ a) = deflexType a
+deflexType a = a
 
 class Substitutable a where
     -- | Given a substitution and a type, if the type contains instances of type variables
@@ -307,30 +348,42 @@ unify (l :=> r) (TypeDup (l' :=> r')) = do
     (s2, r2) <- unify (resply r1 s1 r) (resply r1 s1 r')
     return (s2 ∘ s1, r2 `rcompose` r1)
 unify (l :=> r) (l' :=> r') = do
-    (s1, r1) <- unify l l'
+    (s1, r1) <- unify l l' -- denna kukar upp massivt
     (s2, r2) <- unify (resply r1 s1 r) (resply r1 s1 r')
+    tr $ "s1: " ++ show s1
+    tr $ "s2: " ++ show s2
+    tr $ "s2 . s1: " ++ show (s2 `compose` s1)
     return (s2 ∘ s1, r2 `rcompose` r1)
 unify (TypeDup (l :>< r)) (l' :>< r') = do
     (s1, r1) <- unify (TypeDup l) l'
     (s2, r2) <- unify (TypeDup r) r'
     return (compose s2 s1, rcompose r2 r1)
-unify t1@(l :>< r) t2@(TypeDup (l' :>< r')) = unify t2 t1
+unify (l :>< r) (TypeDup (l' :>< r')) = do
+    (s1, r1) <- unify l (TypeDup l')
+    (s2, r2) <- unify r (TypeDup r')
+    return (compose s2 s1, rcompose r2 r1)
+-- unify t1@(l :>< r) t2@(TypeDup (l' :>< r')) = unify t2 t1
+unify (TypeFlex id (l :>< r)) (l' :>< r') = do
+    (s1, r1) <- unify (TypeFlex id l') l
+    (s2, r2) <- unify (TypeFlex id r') r
+    return (compose s2 s1, rcompose r2 r1)
+unify l@(a' :>< b') r@(TypeFlex id (a :>< b)) = unify r l
 unify (l :>< r) (l' :>< r') = do
     (s1, r1) <- unify l l'
-    (s2, r2) <- unify r r' -- note: why not apply.
+    (s2, r2) <- unify (resply r1 s1 r) (resply r1 s1 r') -- note: why not apply.
     return (s2 ∘ s1, r2 `rcompose` r1)
-unify (TypeVar a) t = bind a t
-unify t (TypeVar a) = bind a t
 unify (TypeFlex id1 t1) (TypeFlex id2 t2) = unifyWithAction t1 t2 (Rename id2) id1
 unify (TypeFlex id t1) (TypeDup t2) = unifyWithAction t1 t2 ToDup id
 unify (TypeDup t1) (TypeFlex id t2) = unifyWithAction t1 t2 ToDup id
 unify t1 (TypeFlex id t2) = unifyWithAction t1 t2 Remove id
 unify a@(TypeFlex id t1) t2 = unify t2 a -- reverse this case
+unify (TypeVar a) t = bind a t
+unify t (TypeVar a) = bind a t
 unify (TypeDup t1) (TypeDup t2) = unify t1 t2
 unify t1 t2 | (t1 <: t2 || t2 <: t1) && isConstType t1 && isConstType t2 = return (nullSubst, nullResolver)
             | otherwise =  throwError $ UnificationFailError t1 t2
 
-unifyWithAction :: Type -> Type -> ResolveAction -> String -> Infer (Subst, Resolver)
+unifyWithAction :: Type -> Type -> ResolveAction -> Int -> Infer (Subst, Resolver)
 unifyWithAction t1 t2 action id = do
     (s,r1) <- unify t1 t2
     let r2 = createAction id action
@@ -338,14 +391,15 @@ unifyWithAction t1 t2 action id = do
 
 -- | Binds a type variable with another type and returns a substitution.
 bind :: TVar -> Type -> Infer (Subst, Resolver)
-bind a t | t == TypeVar a  = return (nullSubst, nullResolver)
+--bind a (TypeDup t) = error $ "hjälp: " ++  "!" ++ show t 
+bind a t | t == TypeVar a = return (nullSubst, nullResolver)
          | occursCheck a t = throwError $ InfiniteTypeError a t
          | otherwise       = return (Map.singleton a t, nullResolver)
 
-createActionM :: TVar -> ResolveAction -> Infer (Subst, Resolver)
+createActionM :: Int -> ResolveAction -> Infer (Subst, Resolver)
 createActionM var action = return (nullSubst, Map.singleton var action)
 
-createAction :: TVar -> ResolveAction -> Resolver
+createAction :: Int -> ResolveAction -> Resolver
 createAction = Map.singleton
 
 -- | Checks if a type is a constant type
@@ -353,7 +407,7 @@ isConstType :: Type -> Bool
 isConstType TypeBit = True
 isConstType TypeQBit = True
 isConstType TypeUnit = True
-isConstType (TypeDup d) = isConstType d
+isConstType (TypeDup t) = isConstType t
 isConstType _type = False
 
 -- | Introduce a new type variable.
@@ -364,17 +418,15 @@ fresh = do
   modify $ \st ->  st{count = s+1}
   return $ TypeVar $ letters !! s
 
-freshId :: Infer String
+freshId :: Infer Int
 freshId = do
   i <- gets idCount
   modify $ \st ->  st{idCount = i+1}
-  return $ "id_" ++ show i
+  return i
 
 -- | Introduce a new flexible type variable.
 freshFlex :: Infer Type
-freshFlex = do
-    id <- freshId
-    TypeFlex id <$> fresh
+freshFlex = TypeFlex <$> freshId <*> fresh
 
 -- | Returns a list of strings used for fresh type variables.
 letters :: [String]
@@ -412,14 +464,16 @@ infer i (Tup l r)  = do
     (pr, pt) <- productExponential lt rt
     return (ls ∘ rs, pr `rcompose` rr `rcompose` lr, pt)
 infer i (App l r) = do
-    tv <- freshFlex
     env <- gets env
-    (s1,r1,t1) <- infer i l
-    modify (\st -> st{env=apply s1 env}) -- todo, fix all apply
-    (s2,r2,t2) <- infer i r
-    (s3,r3)    <- unify (apply s2 t1) (t2 :=> tv)
-    subtypeCheck (apply (s3 `compose` s2) t1) (apply s3 t2) -- t2 <: 
-    return (s3 ∘ s2 ∘ s1, r3 `rcompose` r2 `rcompose` r1, resply r3 s3 tv)
+    (s1,r1,t1) <- infer i l -- (\x . \y (x,y))
+    modify (\st -> st{env=resply r1 s1 env}) -- todo, fix all apply
+    (s2,r2,t2) <- infer i r -- QBit 
+    --modify (\st -> st{env=resply r2 s2 env}) -- todo, fix all apply
+    tv <- freshFlex
+    (s3,r3)    <- unify (resply r2 s2 t1) (t2 :=> tv)
+    --modify (\st -> st{env=resply r3 s3 env}) -- todo, fix all apply
+    (s4,r4) <- subtypeCheck (resply (r3 `rcompose` r2) (s3 `compose` s2) t1) (resply r3 s3 t2) -- t2 <: 
+    return (s3 ∘ s2 ∘ s1, r3 `rcompose` r2 `rcompose` r1, resply (r3 `rcompose` r4) (s3 `compose` s4) tv)
 infer i (IfEl b l r) = do
     (s1,r1,t1) <- infer i b
     (s2,r2,t2) <- infer i l
@@ -427,7 +481,7 @@ infer i (IfEl b l r) = do
     name <- freshId
     (s4,r4) <- unify (TypeFlex name TypeBit) t1
     (s5,r5) <- unify t2 t3
-    return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, foldr1 rcompose [r1,r2,r3,r4,r5] ,apply s5 t2)
+    return (s5 ∘ s4 ∘ s3 ∘ s2 ∘ s1, foldr1 rcompose [r1,r2,r3,r4,r5], resply (r5 `rcompose` r4) s5 t2)
 infer i (Let eq inn) = do -- let (a, b) = eq in inn
     tv1 <- inferDuplicity (Abs inn) -- Create typevar for a
     tv2 <- inferDuplicity inn -- Create typevar for b
@@ -450,6 +504,8 @@ infer i (Abs body) = do
     tv <- inferDuplicity body
     extend (Bound i, Forall [] tv)
     (s1,r1,t1) <- infer (i+1) body
+    id <- freshId
+    -- return (s1, r1, TypeFlex id (resply r1 s1 tv :=> t1))
     return (s1, r1, resply r1 s1 tv :=> t1)
 infer i New  = return (nullSubst, nullResolver, TypeDup (TypeBit  :=> TypeQBit))
 infer i Meas = return (nullSubst, nullResolver, TypeDup (TypeQBit :=> TypeDup TypeBit))
@@ -457,27 +513,18 @@ infer i Unit = return (nullSubst, nullResolver, TypeDup TypeUnit)
 
 -- | Should move exponentials outside.
 productExponential :: Type -> Type -> Infer (Resolver, Type)
--- (!a, !b) -> !(a, b)
-productExponential (TypeDup a) (TypeDup b) = return (nullResolver, TypeDup (a :>< b))
--- (?a, !b) -> !(a, b)
-productExponential (TypeFlex id t) (TypeDup b) = return (createAction id ToDup, TypeDup (t :>< b))
--- (!a, ?b) -> !(a, b)
-productExponential (TypeDup t1) (TypeFlex id t2) = return (createAction id ToDup, TypeDup (t1 :>< t2))
--- (?a, ?b) -> ?(a, b)
+productExponential (TypeDup       a) (TypeDup       b) = return (nullResolver, TypeDup (a :>< b))
+productExponential (TypeFlex id   t) (TypeDup       b) = return (createAction id ToDup, TypeDup (t :>< b))
+productExponential (TypeDup      t1) (TypeFlex id  t2) = return (createAction id ToDup, TypeDup (t1 :>< t2))
 productExponential (TypeFlex id1 t1) (TypeFlex id2 t2) = return (createAction id1 (Rename id2), TypeFlex id2 (t1 :>< t2))
--- (?a, b) -> (a, b)
-productExponential (TypeFlex id t1) t2 = return (createAction id Remove, t1 :>< t2)
--- (a, ?b) -> (a, b)
-productExponential t1 (TypeFlex id t2) = return (createAction id Remove, t1 :>< t2)
--- (a, !b) -> fail
-productExponential t1 (TypeDup t2) = throwError $ ProductDuplicityError t1 (TypeDup t2)
--- (!a, b) -> fail
-productExponential (TypeDup t1) t2 = throwError $ ProductDuplicityError (TypeDup t1) t2
--- (a, b) -> (a, b)
-productExponential t1 t2 = return (nullResolver, t1 :>< t2)
+productExponential (TypeFlex id  t1)               t2  = return (createAction id Remove, t1 :>< t2)
+productExponential               t1  (TypeFlex id  t2) = return (createAction id Remove, t1 :>< t2)
+productExponential               t1  (TypeDup      t2) = throwError $ ProductDuplicityError t1 (TypeDup t2)
+productExponential (TypeDup      t1)               t2  = throwError $ ProductDuplicityError (TypeDup t1) t2
+productExponential               t1                t2  = return (nullResolver, t1 :>< t2)
 
-tr :: (Show a, Monad m) => a -> m ()
-tr x = trace (show x) (return ())
+tr :: Monad m => String -> m ()
+tr x = trace x (return ())
 
 -- | Infers type of a Gate
 inferGate :: Gate -> Type
@@ -491,9 +538,9 @@ inferGate g = TypeDup $ gateType $ case g of
         gateType' n = foldr (:><) TypeQBit (replicate (n-1) TypeQBit)
         gateType  n = gateType' n :=> gateType' n
 
-subtypeCheck :: Type -> Type -> Infer ()
+subtypeCheck :: Type -> Type -> Infer (Subst, Resolver)
 subtypeCheck f b = case debang $ deflex f of
-    (a :=> _) | b <: a    -> return ()
+    (a :=> _) | b <: a    -> unify b a
               | otherwise -> throwError $ SubtypeFailError b a
     t -> error $ "urk: subtype check " ++ show t
 
@@ -612,7 +659,6 @@ inferExp :: String -> Either TypeError Type
 inferExp prog = do
     let [Func _ _ term] = run ("f : a f = " ++ prog)
     Forall _ type' <- runInfer (infer 0 term)
-    -- return $ deflexType type'
     return type'
 
 instance IsString Type where
