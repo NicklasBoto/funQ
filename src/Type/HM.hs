@@ -1,6 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TupleSections #-}
 
 module Type.HM where
 
@@ -42,7 +43,7 @@ type TypeEnv = Map.Map Named Scheme
 --  should be substituted with. It could be another type variable.
 type Subst = Map.Map TVar Type
 
-showMap :: (Show a, Show k) => Map.Map k a -> String 
+showMap :: (Show a, Show k) => Map.Map k a -> String
 -- showMap = undefined
 showMap = intercalate "," . map elem . Map.toList
     where elem (from, to) = show from ++ "/" ++ show to
@@ -126,8 +127,8 @@ type Infer = ExceptT TypeError (State InferState)
 --   idCount keeps track of the next id
 --   linenv keeps track of functions used, so linear functios are used only once.
 --   env keeps track of bound variables and named function types.
-data InferState 
-    = St { count   :: Int 
+data InferState
+    = St { count   :: Int
          , idCount :: Int
          , linenv  :: Set.Set String
          , env     :: TypeEnv
@@ -156,7 +157,7 @@ closeOver (sub, res, ty) = normalize scheme
 
 -- | Normalizes a polymorphic type to simple type variable names.
 normalize :: Scheme -> Scheme
-normalize (Forall ts body) = Forall (fmap snd ord) (normflex $ normtype body)
+normalize (Forall ts body) = Forall (fmap snd ord) (normtype body)
   where
     -- | Maps each free variable in the body to 
     ord = zip (nub $ fv body) letters
@@ -177,7 +178,7 @@ normalize (Forall ts body) = Forall (fmap snd ord) (normflex $ normtype body)
     ffv (a :>< b)      = ffv a ++ ffv b
     ffv _              = []
 
-    normflex = resolve . Map.fromList $ zip ((nub . ffv) body) $ map (Rename) [0..]
+    -- normflex = resolve . Map.fromList $ zip ((nub . ffv) body) $ map Rename [0..]
 
     normtype (a :=> b) = normtype a :=> normtype b
     normtype (a :>< b) = normtype a :>< normtype b
@@ -350,9 +351,6 @@ unify (l :=> r) (TypeDup (l' :=> r')) = do
 unify (l :=> r) (l' :=> r') = do
     (s1, r1) <- unify l l' -- denna kukar upp massivt
     (s2, r2) <- unify (resply r1 s1 r) (resply r1 s1 r')
-    tr $ "s1: " ++ show s1
-    tr $ "s2: " ++ show s2
-    tr $ "s2 . s1: " ++ show (s2 `compose` s1)
     return (s2 ∘ s1, r2 `rcompose` r1)
 unify (TypeDup (l :>< r)) (l' :>< r') = do
     (s1, r1) <- unify (TypeDup l) l'
@@ -391,7 +389,7 @@ unifyWithAction t1 t2 action id = do
 
 -- | Binds a type variable with another type and returns a substitution.
 bind :: TVar -> Type -> Infer (Subst, Resolver)
---bind a (TypeDup t) = error $ "hjälp: " ++  "!" ++ show t 
+bind a (TypeDup t) = return (Map.singleton a t, nullResolver)
 bind a t | t == TypeVar a = return (nullSubst, nullResolver)
          | occursCheck a t = throwError $ InfiniteTypeError a t
          | otherwise       = return (Map.singleton a t, nullResolver)
@@ -447,15 +445,15 @@ generalize env t  = Forall as t
 
 -- | Infers a substitution and a type from a Term
 infer :: Integer -> Term -> Infer (Subst, Resolver, Type)
-infer i (Idx j)      = lookupEnv (Bound (i-j-1))
+infer i (Idx j)      = (nullSubst, nullResolver,) <$> lookupEnv (Bound (i-j-1))
 infer i (Fun var)    = do
     linEnv <- gets linenv
-    (s, res, typ) <- lookupEnv (NFun var)
+    typ <- lookupEnv (NFun var)
     case typ of
-        TypeDup _ -> return (s, res, typ)
+        TypeDup _ -> return (nullSubst, nullResolver, typ)
         _notdup   -> if Set.member var linEnv
                         then throwError $ TopLevelLinearFail var
-                        else addLin var >> return (s, res, typ)
+                        else addLin var >> return (nullSubst, nullResolver, typ)
 infer i (Bit _)      = return (nullSubst, nullResolver, bang TypeBit)
 infer i (Gate gate)  = return (nullSubst, nullResolver, inferGate gate)
 infer i (Tup l r)  = do
@@ -486,7 +484,6 @@ infer i (Let eq inn) = do -- let (a, b) = eq in inn
     tv1 <- inferDuplicity (Abs inn) -- Create typevar for a
     tv2 <- inferDuplicity inn -- Create typevar for b
     (rtv, tv) <- productExponential tv1 tv2 -- Create productType tv with exponentials moved out
-
     (seq,req,teq) <- infer i eq -- Infer the type of eq
     --tr $ "teq is: " ++ show teq ++ ", tv is: " ++ show tv
     (sprod,rprod) <- unify teq tv -- teq and tv should be same
@@ -505,11 +502,39 @@ infer i (Abs body) = do
     extend (Bound i, Forall [] tv)
     (s1,r1,t1) <- infer (i+1) body
     id <- freshId
-    -- return (s1, r1, TypeFlex id (resply r1 s1 tv :=> t1))
-    return (s1, r1, resply r1 s1 tv :=> t1)
+    returnLinear <- not . all dupable <$> mapM (lookupEnv . NFun) (fv body)
+    if returnLinear 
+        then return (s1, r1, resply r1 s1 tv :=> t1)
+        else return (s1, r1, TypeFlex id (resply r1 s1 tv :=> t1))
 infer i New  = return (nullSubst, nullResolver, TypeDup (TypeBit  :=> TypeQBit))
 infer i Meas = return (nullSubst, nullResolver, TypeDup (TypeQBit :=> TypeDup TypeBit))
 infer i Unit = return (nullSubst, nullResolver, TypeDup TypeUnit)
+
+fv :: Term -> [String]
+fv (Fun v) = [v]
+fv (Abs e) = fv e
+fv (App l r) = fv l ++ fv r
+fv (Tup t1 t2) = fv t1 ++ fv t2
+fv (IfEl b t f) = fv b ++ fv t ++ fv f
+fv (Let eq inn) = fv eq ++ fv inn 
+fv _ = []
+
+
+dupable :: Type -> Bool
+dupable (TypeDup _) = True
+dupable _ = False
+
+-- (\\x.\\y.let (a,b) = (x,y) in a) (new 0) 0 -- QBit 
+-- ? (?a -o ?b) -o   
+-- \\x.(x,0) 
+-- new : !(Bit -o QBit)
+
+-- q : QBit
+-- q = new 0
+
+-- f : !(Bit -o (QBit >< Bit))
+-- f = \\x . (q,x)
+
 
 -- | Should move exponentials outside.
 productExponential :: Type -> Type -> Infer (Resolver, Type)
@@ -570,13 +595,12 @@ inferDuplicity e
 (!?) = inferDuplicity
 
 -- | Looks up a free or bound variable from the environment
-lookupEnv :: Named -> Infer (Subst, Resolver, Type)
+lookupEnv :: Named -> Infer Type
 lookupEnv x = do
     env' <- gets env
     case Map.lookup x env' of
         Nothing -> throwError $ NotInScopeError x
-        Just  s -> do t <- instantiate s
-                      return (nullSubst, nullResolver, t)
+        Just  s -> instantiate s
 
 linearcheck :: Term -> Type -> Infer ()
 linearcheck e = \case

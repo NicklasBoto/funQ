@@ -30,7 +30,7 @@ prop_testBit = inferExp "0" === Right (TypeDup TypeBit)
 prop_testDupProd = inferExp "(0, 0)" === Right (TypeDup (TypeBit :>< TypeBit))
 
 -- | Expected (?a, ?b) -o ?a
-prop_testFst = inferExp "\\x.let (a,b) = x in a" === Right (TypeFlex 2 (TypeVar "a" :>< TypeVar "b") :=> TypeFlex 1 (TypeVar "a"))
+prop_testFst = inferExp "\\x.let (a,b) = x in a" === Right (TypeFlex 0 (TypeFlex 2 (TypeVar "a" :>< TypeVar "b") :=> TypeFlex 2 (TypeVar "a")))
 -- == Right ((TypeFlex "a" :>< TypeFlex "b") :=> TypeFlex "a")
 
 -- | \x.x should have type ?a->?a, since it could be either linear or not linear.
@@ -88,7 +88,7 @@ prop_letFunConst = inferExp "\\x.\\y.let (a,b) = (x,y) in a" === Right (TypeFlex
 
 
 -- | Tests nested let statements with general types. should succeed.
-prop_NestLet = inferExp "\\x . let (a,b) = x in let (b,c) = b in (a,b,c)" ===  Right (TypeFlex 0 (TypeFlex 1 (TypeVar "a" :>< TypeVar "b" :>< TypeVar "c") :=> TypeFlex 4 (TypeVar "a" :>< TypeVar "b" :>< TypeVar "c")))
+prop_NestLet = inferExp "\\x . let (a,b) = x in let (b,c) = b in (a,b,c)" ===  Right (TypeFlex 0 (TypeFlex 4 (TypeVar "a" :>< TypeVar "b" :>< TypeVar "c") :=> TypeFlex 4 (TypeVar "a" :>< TypeVar "b" :>< TypeVar "c")))
 
 -- | Tests that simple let-statements infers correct type. Should succeed.
 prop_LeftLet = inferExp "let (a,b) = (*, 0) in a" === Right (TypeDup TypeUnit)
@@ -209,15 +209,22 @@ prod =  inferExp "(0, \\x.x)"
 -- ?(!a -o !b -o !(a >< a))
 -- inferred type: ?(?a -o ?(!b -o !(a >< a)))
 -- Right !a ⊸ !b ⊸ !(a ⊗ a)
-prop_letFunDup = inferExp "\\x.\\y.let (a,b) = (x,y) in (a,a)"  === Right "!a -o !b -o !(a >< a)" -- Right (TypeDup (TypeVar "a") :=>  TypeDup (TypeVar "b") :=> TypeDup (TypeVar "a" :>< TypeVar "a"))
+-- prop_letFunDup = inferExp "\\x.\\y.let (a,b) = (x,y) in (a,a)"  === Right "!a -o !b -o !(a >< a)" -- Right (TypeDup (TypeVar "a") :=>  TypeDup (TypeVar "b") :=> TypeDup (TypeVar "a" :>< TypeVar "a"))
+prop_letFunDup = expectSuccess $ inferExp "\\x.\\y.let (a,b) = (x,y) in (a,a)"  
 
 plfd = typecheck . run $ "f : !a -o !b -o !(a >< a) "
                       ++ "f x y = let (a,b) = (x,y) in (a,a)"
 
 good = inferExp "(\\x.\\y.(x,y)) 0 (new 0)"
 bad = inferExp "(\\x.\\y.(x,y)) (new 0) 0"
-reallyBad = expectError $ inferExp "(\\x.\\y.let (a,b) = (x,y) in a) (new 0) 0"
+prop_reallyBad = inferExp "(\\x.\\y.let (a,b) = (x,y) in a) (new 0) 0" === Right TypeQBit
 
+good' = typecheck . run $ "b : Bit b = 0 "
+                       ++ "f : Bit >< QBit f = (\\x.\\y.(x,y)) b (new 0)"
+
+
+bad' = typecheck . run $ "b : Bit b = 0 "
+                      ++ "f : QBit >< Bit f = (new 0, b) "
 -- Need return for quickCheckAll
 return []
 
