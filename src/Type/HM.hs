@@ -510,6 +510,8 @@ infer i New  = return (nullSubst, nullResolver, TypeDup (TypeBit  :=> TypeQBit))
 infer i Meas = return (nullSubst, nullResolver, TypeDup (TypeQBit :=> TypeDup TypeBit))
 infer i Unit = return (nullSubst, nullResolver, TypeDup TypeUnit)
 
+
+
 fv :: Term -> [String]
 fv (Fun v) = [v]
 fv (Abs e) = fv e
@@ -684,6 +686,7 @@ inferExp prog = do
     let [Func _ _ term] = run ("f : a f = " ++ prog)
     Forall _ type' <- runInfer (infer 0 term)
     return type'
+
 
 instance IsString Type where
     fromString t = typ

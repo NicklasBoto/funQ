@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 
-module HM2 where
+module Type.HM2 where
 
 import qualified Data.Set as Set
 import qualified Data.Map as Map
@@ -10,6 +11,9 @@ import AST.AST
 import Control.Monad.State
 import Data.Maybe
 import Data.List
+import Data.String
+import Data.Tree
+import Algebra.Graph hiding (compose)
 
 -- | A constraint could be that a type is a subtype of anothor type. Or that a type variable is
 -- not linear. 
@@ -18,6 +22,10 @@ data Constraint = Subtype Type Type | NotLinear Type deriving (Eq, Ord)
 instance Show Constraint where
     show (Subtype a b) = show a ++ " <: " ++ show b
     show (NotLinear a) = "NotLinear " ++ show a
+
+instance IsString Type where
+    fromString t = typ
+        where [Func _ typ _] = run $ "m : " ++ t ++ " m = *"
 
 -- a : Bit !Bit
 -- b : Bit !Bit
@@ -37,8 +45,8 @@ data Named = Bound Integer | FunName String deriving (Eq, Ord)
 -- | Infer the type of the term together with some constraints.
 infer :: Integer -> TypeEnv -> Term -> Infer (Type, Set.Set Constraint)
 infer _ _ Unit              = return (TypeUnit, Set.empty)
-infer _ _ Meas              = return (TypeDup (TypeQBit :=> TypeDup TypeBit), Set.empty)
-infer _ _ New               = return (TypeDup (TypeBit :=> TypeQBit), Set.empty)
+infer _ _ Meas              = return (TypeQBit :=> TypeDup TypeBit, Set.empty)
+infer _ _ New               = return (TypeBit :=> TypeQBit, Set.empty)
 infer _ _ (Bit _)           = return (TypeDup TypeBit, Set.empty)
 infer _ _ (Gate g)          = return (inferGate g, Set.empty)
 infer _ env (Fun f)         = return (inferFun f env, Set.empty)
@@ -46,6 +54,8 @@ infer absl env (Idx i)      = return (inferBound absl env i, Set.empty)
 infer absl env (IfEl c t f) = inferIfEl absl env c t f
 infer absl env (Abs body)   = inferAbs absl env body
 infer absl env (App f arg)  = inferApp absl env f arg
+infer absl env (Tup l r)    = inferTup absl env l r
+infer absl env (Let eq inn) = inferLet absl env eq inn
 
 -- | Infer type of a Gate
 inferGate :: Gate -> Type
@@ -91,9 +101,12 @@ inferIfEl absl env c t f = do
 inferAbs :: Integer -> TypeEnv -> Term -> Infer (Type, Set.Set Constraint)
 inferAbs absl env body = do
     argType <- freshTypeVar
+    retType <- freshTypeVar
     let env' = addToEnv argType absl env
     (bodyType, bodyConstraints) <- infer (absl+1) env' body
-    let constraints = if headCount body > 1 then Set.insert (NotLinear argType) bodyConstraints else bodyConstraints
+    let constraints = Set.insert (Subtype bodyType retType) $ if headCount body > 1 
+                                                                    then Set.insert (NotLinear argType) bodyConstraints 
+                                                                    else bodyConstraints
     return (argType :=> bodyType, constraints)
 
 inferApp :: Integer -> TypeEnv -> Term -> Term -> Infer (Type, Set.Set Constraint)
@@ -109,6 +122,44 @@ inferApp absl env f arg = do
 
     return (fRet, constraints)
 
+inferTup :: Integer -> TypeEnv -> Term -> Term -> Infer (Type, Set.Set Constraint)
+inferTup absl env l r = do
+    (lType, lConstraints) <- infer absl env l
+    (rType, rConstraints) <- infer absl env r
+
+    l' <- freshTypeVar
+    r' <- freshTypeVar
+
+    let lConstraint = Subtype lType l'
+        rConstraint = Subtype rType r'
+        constraints = Set.unions [Set.fromList [lConstraint, rConstraint], lConstraints, rConstraints]
+    -- todo, care about duplicity, currently I do not care
+    return (l' :>< r', constraints)
+
+inferLet :: Integer -> TypeEnv -> Term -> Term -> Infer (Type, Set.Set Constraint)
+inferLet absl env eq inn = do
+    (eqType, eqConstraints) <- infer absl env eq
+
+    eqLType <- freshTypeVar
+    eqRType <- freshTypeVar
+
+
+    let eqConstraint = Subtype eqType (eqLType :>< eqRType)
+        env' = addToEnv eqLType (absl+1) env -- todo reverse 
+        env'' = addToEnv eqRType absl env'
+
+    retType <- freshTypeVar
+    (innType, innConstraints) <- infer (absl+2) env'' inn
+
+    let innConstraint = Subtype innType retType
+        lNotLinear = headCount (Abs inn) > 1
+        rNotLinear = headCount inn > 1
+        constraints = Set.unions [eqConstraints, innConstraints, Set.fromList [eqConstraint, innConstraint]]
+        constraints' = if lNotLinear then Set.insert (NotLinear eqLType) constraints else constraints
+        constraints'' = if rNotLinear then Set.insert (NotLinear eqRType) constraints' else constraints'
+
+    return (retType, constraints'')
+
 
 -- | Find how many times the head variable x is referenced in the term A. (\x.A)
 headCount :: Term -> Integer
@@ -119,6 +170,7 @@ headCount = f 0
         f absl (Abs e)                = f (absl+1) e
         f absl (App l r)              = f absl l + f absl r
         f absl (IfEl cond true false) = f absl cond + max (f absl true) (f absl false)
+        f absl (Tup l r)              = f absl l + f absl r
         f _ _                         = 0
 
 -- | Add  a lambda variable type to the environment at an abstraction level.
@@ -228,16 +280,30 @@ bind = Map.singleton
 -- | Takes a type and a constraint and constructs possible substitutions satisfying the constraint.
 resolveConstraint :: Constraint -> Either [Solution] [Constraint]
 resolveConstraint (NotLinear a)                           = Left [nullSolution] -- Handle this after.
-resolveConstraint (Subtype (TypeDup a) (TypeVar b))       = Left [bind b a, bind b (TypeDup a)]
-resolveConstraint (Subtype a (TypeVar b))                 = Left [bind b a]
-resolveConstraint (Subtype (TypeVar a) (TypeDup b))       = Left [bind a (TypeDup b)]
-resolveConstraint (Subtype (TypeVar a) b)                 = Left [bind a b, bind a (TypeDup b)]
-resolveConstraint (Subtype (TypeDup a) b)                 = undefined--Right [Subtype (TypeDup a) (TypeDup b)]
-resolveConstraint (Subtype (a :=> b) (c :=> d))           = Right [Subtype c a, Subtype b d]
-resolveConstraint (Subtype (a :>< b) (a':>< b'))          = Right [Subtype a a', Subtype b b']
-resolveConstraint (Subtype t1 t2) | t1 <: t2, isConstType t1, isConstType t2 = Left [nullSolution]
-resolveConstraint (Subtype t1 t2) | t2 <: t1, isConstType t1, isConstType t2 = Left []
+-- resolveConstraint (Subtype (TypeDup a) (TypeVar b))       = Left [bind b a, bind b (TypeDup a)]
+-- resolveConstraint (Subtype (TypeDup a) (TypeDup b))       = Right [Subtype (TypeDup a) b]
+-- resolveConstraint (Subtype (TypeDup a) b)                 = Right [Subtype a b]
+-- resolveConstraint (Subtype a (TypeVar b))                 = Left [bind b a]
+-- resolveConstraint (Subtype (TypeVar a) (TypeDup b))       = Right [Subtype (TypeVar a) b, NotLinear a]
+-- resolveConstraint (Subtype (TypeVar a) b)                 = Left [bind a b, bind a (TypeDup b)]
+-- resolveConstraint (Subtype (a :=> b) (c :=> d))           = Right [Subtype c a, Subtype b d]
+-- resolveConstraint (Subtype (a :>< b) (a':>< b'))          = Right [Subtype a a', Subtype b b']
+-- resolveConstraint (Subtype t1 t2) | t1 <: t2, isConstType t1, isConstType t2 = Left [nullSolution]
+-- resolveConstraint (Subtype t1 t2) | t2 <: t1, isConstType t1, isConstType t2 = Left []
 resolveConstraint const   = error ("Can't resolve: " ++ show const)
+
+
+
+-- (a <: b)
+-- edge ->
+-- (b <: c)
+-- :t unfoldForest :: (b -> (a, [b])) -> [b] -> [Tree a] 
+buildForest :: Set.Set Constraint -> Forest Type
+buildForest cs = unfoldForest f (Set.toList cs)
+    where f :: Constraint -> (Type, [Constraint])
+          f (Subtype a b) = (a, [])
+
+-- data Tree a = Node { rootLabel :: a, subForest :: [Tree a] }
 
 resolveConstraints :: [Constraint] -> [Solution]
 resolveConstraints [] = [nullSolution]-- undefined--foldr (composeAll . resolveConstraint) [nullSolution]
@@ -261,7 +327,7 @@ isConstType (TypeDup t) = isConstType t
 isConstType _type = False
 -- a = Bit
 -- b = c
-
+-- 
 -- a = !Bit
 
 -- Solution
@@ -285,7 +351,7 @@ isConstType _type = False
 
 -- s2 = {a=(Bit, b)} 
 -- s1 = {a=b}
--- ===========
+-- ===========>>=<=>=<<=>==<<==>>==
 -- s = ...
 
 -- while true 
@@ -308,9 +374,6 @@ composeAll sols1 sols2 = catMaybes [compose sol1 sol2 | sol1 <- sols1, sol2 <- s
           --Just [a=Bit], Nothing
           -- a=Bit
 
-
-comp :: Solution -> Constraint -> Solution
-comp = undefined
 
 -- rcompose :: Resolver -> Resolver -> Resolver
 -- r2 `rcompose` r1 = Map.map (f r2) r1 `Map.union` r2
@@ -371,6 +434,62 @@ comp = undefined
 -- [b = !Bit, a = !Bit, c = !Bit]
 
 
+comp :: Constraint -> Solution -> [Solution]
+comp c s = map (Map.union s) $ fuck c s
+
+fuck :: Constraint -> Solution -> [Solution]
+fuck (Subtype (TypeVar a) (TypeVar b)) s = case Map.lookup a s of
+    Just (TypeDup t) -> pure $ Map.fromList [(b, t), (b, TypeDup t)]
+    Just          t  -> pure $ Map.singleton b t
+    Nothing -> pure $ Map.singleton b (TypeVar a)
+fuck (Subtype (TypeDup a) (TypeVar b))      s = [bind b a, bind b (TypeDup a)]
+fuck (Subtype a (TypeVar b))                s = [bind b a]
+fuck (Subtype (TypeVar a) (TypeDup b))      s = [bind a b]
+fuck (Subtype (TypeVar a) b)                s = [bind a b, bind a (TypeDup b)]
+fuck (Subtype t1 t2) s | t1 <: t2, isConstType t1, isConstType t2 = [nullSolution]
+fuck (Subtype t1 t2) s | t2 <: t1, isConstType t1, isConstType t2 = []
+fuck t s = error $ show t
+
+simplifyc :: Constraint -> [Constraint]
+simplifyc (Subtype (a :=> b) (c :=> d)) = [Subtype c a, Subtype b d]
+simplifyc t = [t] 
+
+-- comps :: Constraint -> [Solution]
+comps :: [Constraint] -> Solution -> [Solution]
+comps [] sol1 = [sol1]
+comps (c:cs) s = concatMap (comps cs) (comp c s)
+
+cs = [Subtype "!Bit" "b", Subtype "b" "a", Subtype "a" "c"]
+t :: Type
+t = "c"
+
+test :: String -> [Type]
+test s = let (t,scs) = inferExp s 
+             cs = concatMap simplifyc $ Set.toList scs
+             in map (`apply` t) (comps cs nullSolution)
+-- !Bit <: b
+-- a -o a <: b -o c
+-- b <: a
+-- a <: c
+
+
+-- [b/Bit]
+-- [b/!Bit]
+
+
+-- comp (!Bit <: b) [] = [[b/Bit], [b/!Bit]]
+-- comp (b <: a) [b/Bit] = [[b/Bit] U [a/Bit]]    = [[b/Bit, a/Bit]]
+-- comp (a <: c) [b/Bit, a/Bit] =  [[b/Bit, a/Bit, c/Bit]]
+
+-- comp (!Bit <: Bit) sol = [sol]
+-- comp (Bit <: !Bit) _   = []
+
+-- [b/Bit] [b/!Bit]
+-- [b/Bit, a/Bit] [b/!Bit, a/Bit] [b/!Bit, a/!Bit]
+-- [b/Bit, a/Bit, c/Bit] [b/!Bit, a/Bit, c/Bit] [b/!Bit, a/!Bit, c/Bit] [b/!Bit, a/!Bit, c/!Bit]
+
+-- [a <: b]
+-- [b <: c]
 
 
 
@@ -379,3 +498,44 @@ comp = undefined
 -- [b = !Bit, a = !Bit, c = Bit]
 -- [b = !Bit, a = !Bit, c = !Bit]
 
+-- a <: b 
+
+-- : [a <: Bit,c <: b,!Bit <: c]
+-- : !Bit <: c <: b     a<: Bit
+
+
+-- a <: b   b <: c   c <: a
+
+-- TypeDup a <: TypeDup b
+-- a <: b and 
+-- TypeDup a <: b
+
+-- !(a) <: TypeVar b -> b = a or b = !a
+
+-- !(a -o b) <: (c -o d)
+-- (a -o b) <: (c -o d)
+
+-- TypeVar a <: TypeDup b -> a <: b, Duplicity a 1
+-- 
+
+-- Every type variable is FlexDup id, NoDup, or ForceDup.
+-- "a" <: "b"
+-- if flexKind "a" == FlexDup id1 && flexKind "b" == FlexDup id2 (Both are FlexDup)
+-- (id1 blir ForceDup) => (id2 blir ForceDup, eller, id2 blir NoDup), "a" <: "b"
+-- (id1 blir NoDup) => (id2 -> NoDup)
+-- 
+-- 
+-- if flexKind "a" == ToDup && flexKind "b" == ToDup (Both are Dups)
+-- 
+
+-- a <: b   b <: c
+-- a
+
+-- \\x.x
+-- x:A
+-- ret:B
+-- A <: B
+-- A -> B
+
+-- a <: b  b <: c
+-- a = b, b = c
