@@ -1,13 +1,33 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 module HM2 where
 
 import qualified Data.Set as Set
 import qualified Data.Map as Map
+import Data.Map.Merge.Lazy
+import Debug.Trace
 import AST.AST
 import Control.Monad.State
+import Data.Maybe
+import Data.List
 
 -- | A constraint could be that a type is a subtype of anothor type. Or that a type variable is
 -- not linear. 
-data Constraint = Subtype Type Type | NotLinear Type deriving (Eq, Ord, Show)
+data Constraint = Subtype Type Type | NotLinear Type deriving (Eq, Ord)
+
+instance Show Constraint where
+    show (Subtype a b) = show a ++ " <: " ++ show b
+    show (NotLinear a) = "NotLinear " ++ show a
+
+-- a : Bit !Bit
+-- b : Bit !Bit
+-- c : Bit !Bit
+
+-- [a = !Bit, b = Bit, c = !Bit, d = Bit]
+-- [a = !Bit, b = !Bit, c = !Bit,  d = Bit]
+-- [a = !Bit, b = !Bit, c = !Bit, d = !Bit]
+
+
 
 -- | A type environment keeping track of all global function types and bound variable types.
 type TypeEnv = Map.Map Named Type
@@ -124,37 +144,27 @@ type InferState = Integer
 type Infer a = State InferState a
 
 inferExp :: String -> (Type, Set.Set Constraint)
-inferExp prog = do
-    let [Func _ _ term] = run ("f : a f = " ++ prog)
-    evalState (infer 0 Map.empty term) 0
+inferExp prog = evalState (infer 0 Map.empty term) 0
+    where [Func _ _ term] = run ("f : a f = " ++ prog)
 
-solveExp :: String -> Maybe Type
+
+solveExp :: String -> [Type]
 solveExp prog = resolve type' constraints
     where
         (type', constraints) = inferExp prog
 
--- | Takes a type and a set of constraints and finds a possible type satisfying the constraints, 
---   or none if nothing was found.
-resolve :: Type -> Set.Set Constraint -> Maybe Type
-resolve type' constraints = case resolveAll type' constraints of
-    []   -> Nothing 
-    x:xs -> Just x
 
 -- | Takes a type and a set of constraints and finds all possible types satisfying the constraints.
-resolveAll :: Type -> Set.Set Constraint -> [Type]
-resolveAll type' constraints 
-    | Set.null simpleConstraints = [type']
-    | otherwise = concatMap (uncurry resolveAll) paths
+resolve :: Type -> Set.Set Constraint -> [Type]
+resolve type' constraints = trace ("Solutions: " ++ show solutions) $ nub $ map (applySolution type') solutions
     where
-        simpleConstraints = simplifyConstraints constraints
-        (constraint, rest) = Set.deleteFindMin simpleConstraints
-        substs = resolveConstraint type' constraint
+        solutions = resolveConstraints (Set.toList constraints)
 
-        paths :: [(Type, Set.Set Constraint)]
-        paths = map (\subst -> (apply subst type', apply subst rest)) substs
+        applySolution :: Type -> Solution -> Type
+        applySolution type' solution = apply solution type'-- appundefined
     
 class Appliable a where
-    apply :: Subst -> a -> a
+    apply :: Solution -> a -> a
 
 instance Appliable Type where
     apply subst (a :=> b)   = apply subst a :=> apply subst b
@@ -164,29 +174,208 @@ instance Appliable Type where
 instance (Ord a, Appliable a) => Appliable (Set.Set a) where
     apply subst set = Set.map (apply subst) set
 
+instance (Ord a, Appliable a) => Appliable ([] a) where
+    apply subst set = map (apply subst) set
+
 instance Appliable Constraint where
     apply subst (Subtype a b) = Subtype (apply subst a) (apply subst b)
     apply subst (NotLinear a) = NotLinear (apply subst a)
 
-type Subst = Map.Map String Type
+instance Appliable Solution where
+    apply sol1 sol2 = Map.map (apply sol1) sol2 `Map.union` sol1
 
-nullSubst :: Subst
-nullSubst = Map.empty
+-- compose :: Subst -> Map.Map TVar Type -> Map.Map TVar Type
+-- s2 `compose` s1 = Map.map (apply s2) s1 `Map.union` s2
+type Solution = Map.Map String Type
 
-bind :: String -> Type -> Subst
+nullSolution :: Solution
+nullSolution = Map.empty
+
+bind :: String -> Type -> Solution
 bind = Map.singleton
+-- NotLinear (TypeVar "a")
+-- a<:!TypeBit
+-- 
+-- a blir till !TypeBit
 
+-- Notlinear a, a = QBit -> errror 
+-- Notlinear TypeVar a -> do
+        -- t <- lookup a 
+        --bind a TypeDup t
+
+-- 1. Find type with SubtypeConstraints
+-- 2. Check type satisfies NotLinear constraints.
+-- 
+-- !(Bit ⊸ QBit) <: a ⊸ d
+
+
+-- !(a -o b) <: c -o d
+-- c <: a
+-- b <: d
+-- Nonlinear (a -o d)
+
+
+-- !a <: b
+-- a = b eller !a = b  ?
+
+-- a <: b
+-- ---------
+-- !a <: b
+
+-- add constraint a<:b and a solution a=b
+
+-- 
 -- | Takes a type and a constraint and constructs possible substitutions satisfying the constraint.
-resolveConstraint :: Type -> Constraint -> [Subst]
-resolveConstraint type' (Subtype TypeBit (TypeVar a)) = [bind a TypeBit]
-resolveConstraint type' (Subtype TypeBit TypeBit)     = [nullSubst] 
-resolveConstraint type' (Subtype (a :=> b) (c :=> d))  = undefined
+resolveConstraint :: Constraint -> Either [Solution] [Constraint]
+resolveConstraint (NotLinear a)                           = Left [nullSolution] -- Handle this after.
+resolveConstraint (Subtype (TypeDup a) (TypeVar b))       = Left [bind b a, bind b (TypeDup a)]
+resolveConstraint (Subtype a (TypeVar b))                 = Left [bind b a]
+resolveConstraint (Subtype (TypeVar a) (TypeDup b))       = Left [bind a (TypeDup b)]
+resolveConstraint (Subtype (TypeVar a) b)                 = Left [bind a b, bind a (TypeDup b)]
+resolveConstraint (Subtype (TypeDup a) b)                 = undefined--Right [Subtype (TypeDup a) (TypeDup b)]
+resolveConstraint (Subtype (a :=> b) (c :=> d))           = Right [Subtype c a, Subtype b d]
+resolveConstraint (Subtype (a :>< b) (a':>< b'))          = Right [Subtype a a', Subtype b b']
+resolveConstraint (Subtype t1 t2) | t1 <: t2, isConstType t1, isConstType t2 = Left [nullSolution]
+resolveConstraint (Subtype t1 t2) | t2 <: t1, isConstType t1, isConstType t2 = Left []
+resolveConstraint const   = error ("Can't resolve: " ++ show const)
 
--- | Simplifies constraints.
--- Such that !a<:b simplified to a<:b
-simplifyConstraints :: Set.Set Constraint -> Set.Set Constraint
-simplifyConstraints = Set.concatMap f
-    where
-        f (Subtype (TypeDup a) b) = Subtype a b -- todo: add recursive cases
-        f (Subtype (a :=> b) (c :=> d)) = undefined -- c <:a, b<:d
-        f a = a
+resolveConstraints :: [Constraint] -> [Solution]
+resolveConstraints [] = [nullSolution]-- undefined--foldr (composeAll . resolveConstraint) [nullSolution]
+resolveConstraints (c:cs) = case resolveConstraint c of 
+        Left sols -> apply (last sols) $ concatMap (\sol -> resolveConstraints (apply sol cs)) sols
+        Right cs' -> resolveConstraints (cs ++ cs')
+
+(<:) :: Type -> Type -> Bool
+TypeDup  a     <: TypeDup  b   = TypeDup a <: b
+TypeDup  a     <:          b   = a <: b
+(a1 :>< a2)    <: (b1 :><  b2) = a1 <: b1 && a2 <: b2
+(a' :=>  b)    <: (a :=>   b') = a  <: a' && b  <: b'
+a              <:          b   = a == b
+
+-- | Checks if a type is a constant type
+isConstType :: Type -> Bool
+isConstType TypeBit = True
+isConstType TypeQBit = True
+isConstType TypeUnit = True
+isConstType (TypeDup t) = isConstType t
+isConstType _type = False
+-- a = Bit
+-- b = c
+
+-- a = !Bit
+
+-- Solution
+-- compose [solution] [solution] = [solution]
+-- compose [sol1, sol2] [sol3] = [sol1 med sol3, sol2 med sol3] 
+-- 
+
+-- subst [{a}, {b}]
+-- subst [{c}, {d}}]
+-- subst [{ac}, {ad}, {bc}, {bd}]
+
+-- s2 = {a=Bit} 
+-- s1 = {a=b}
+-- ===========
+-- s = {a=Bit, b=Bit}
+
+-- s2 = {a=Bit}   -- \x . if 1 then 0 else 0 -- Bit, !Bit 
+-- s1 = {a=!Bit}  -- ´(\ x. if x then x else 0) 0 -- !Bit
+-- ===========
+-- s = Nothing ??
+
+-- s2 = {a=(Bit, b)} 
+-- s1 = {a=b}
+-- ===========
+-- s = ...
+
+-- while true 
+-- 1. Lös 1 constraint
+-- 2. Uppdatera constraints med lösning.
+-- 3. Se 1
+
+-- | Compose two solutions into one
+compose :: Solution -> Solution -> Maybe Solution
+s2 `compose` s1 =  if any isNothing ts then Nothing else Just $ Map.fromList $ zip ss $ catMaybes ts
+    where f _ a b = if a == b then Just a else Nothing
+          preserve = mapMissing (\_ x -> Just x)
+          (ss,ts) = unzip $ Map.toList $ merge preserve preserve (zipWithMatched f) s2 s1
+          
+-- | Composes two lists of solutions, to a new solution were we have a solution from both lists.
+composeAll :: [Solution] -> [Solution] -> [Solution]
+composeAll sols1 sols2 = catMaybes [compose sol1 sol2 | sol1 <- sols1, sol2 <- sols2 ]
+          --[a = Bit, a = !Bit] [a = Bit]
+          --[a = Bit, a = Bit] ///// [a=!Bit, a=Bit]
+          --Just [a=Bit], Nothing
+          -- a=Bit
+
+
+comp :: Solution -> Constraint -> Solution
+comp = undefined
+
+-- rcompose :: Resolver -> Resolver -> Resolver
+-- r2 `rcompose` r1 = Map.map (f r2) r1 `Map.union` r2
+--     where
+--         f :: Resolver -> ResolveAction -> ResolveAction
+--         f r (Rename id) = case Map.lookup id r of
+--             Just act -> act
+--             Nothing  -> Rename id
+--         f r action = action
+
+-- !Bit <: b
+-- a -o a <: b -o c
+
+-- [a -o b <: c -o d]
+-- [c <: a] comp [b <: d] --> 
+
+-- 1. [b/Bit],                          [b/!Bit]
+-- 2. ->  [b <: a och a <: c]
+-- 3. apply [b/Bit] [b <: a och a <: c]
+-- 3. [Bit <: a och a <: c]
+-- 4. [a/Bit]
+-- 5. apply [a/Bit] [a<:c]
+-- 6. -> [Bit<:c]
+-- 7. [c/Bit] solution 1
+
+-- apply [b/!Bit] [b <: a och a <: c]
+-- -> [!Bit <: a och a<: c]
+-- [a/Bit] [a/!Bit]
+-- apply [a/Bit] [a <: c]
+-- [Bit <: c]
+-- [c/Bit] solution 2
+
+-- apply [a/!Bit] [a <: c]
+-- [!Bit <: c]
+-- [c/Bit] [c/!Bit] solution 3
+
+-- Set.unions [c/Bit] [c/Bit] [c/Bit] [c/!Bit]
+-- Resulting solution: [c/Bit] [c/!Bit]
+-- Resulting solution: [] -> throwError 
+
+-- [TypeVar "a" <: TypeVar "b"] 
+-- keep the constraint.
+
+-- [b/a]
+
+-- [!a <: b] 
+-- [b/a] [b/!a]
+
+
+-- [a <: a]  [a<:!a]
+
+-- Bit <: QBit -> []
+
+
+-- [b = Bit, a = Bit, c = Bit]
+-- [b = !Bit, a = Bit, c = Bit]
+-- [b = !Bit, a = !Bit, c = Bit]
+-- [b = !Bit, a = !Bit, c = !Bit]
+
+
+
+
+
+-- [b = Bit, a = Bit, c = Bit]
+-- [b = !Bit, a = Bit, c = Bit]
+-- [b = !Bit, a = !Bit, c = Bit]
+-- [b = !Bit, a = !Bit, c = !Bit]
+
