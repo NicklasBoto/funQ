@@ -435,20 +435,20 @@ composeAll sols1 sols2 = catMaybes [compose sol1 sol2 | sol1 <- sols1, sol2 <- s
 
 
 comp :: Constraint -> Solution -> [Solution]
-comp c s = map (Map.union s) $ fuck c s
+comp c s = map (Map.union s) $ resolvec c s
 
-fuck :: Constraint -> Solution -> [Solution]
-fuck (Subtype (TypeVar a) (TypeVar b)) s = case Map.lookup a s of
+resolvec :: Constraint -> Solution -> [Solution]
+resolvec (Subtype (TypeVar a) (TypeVar b)) s = case Map.lookup a s of
     Just (TypeDup t) -> pure $ Map.fromList [(b, t), (b, TypeDup t)]
     Just          t  -> pure $ Map.singleton b t
     Nothing -> pure $ Map.singleton b (TypeVar a)
-fuck (Subtype (TypeDup a) (TypeVar b))      s = [bind b a, bind b (TypeDup a)]
-fuck (Subtype a (TypeVar b))                s = [bind b a]
-fuck (Subtype (TypeVar a) (TypeDup b))      s = [bind a b]
-fuck (Subtype (TypeVar a) b)                s = [bind a b, bind a (TypeDup b)]
-fuck (Subtype t1 t2) s | t1 <: t2, isConstType t1, isConstType t2 = [nullSolution]
-fuck (Subtype t1 t2) s | t2 <: t1, isConstType t1, isConstType t2 = []
-fuck t s = error $ show t
+resolvec (Subtype (TypeDup a) (TypeVar b))      s = [bind b a, bind b (TypeDup a)]
+resolvec (Subtype a (TypeVar b))                s = [bind b a]
+resolvec (Subtype (TypeVar a) (TypeDup b))      s = [bind a b]
+resolvec (Subtype (TypeVar a) b)                s = [bind a b, bind a (TypeDup b)]
+resolvec (Subtype t1 t2) s | t1 <: t2, isConstType t1, isConstType t2 = [nullSolution]
+resolvec (Subtype t1 t2) s | t2 <: t1, isConstType t1, isConstType t2 = []
+resolvec t s = error $ show t
 
 simplifyc :: Constraint -> [Constraint]
 simplifyc (Subtype (a :=> b) (c :=> d)) = [Subtype c a, Subtype b d]

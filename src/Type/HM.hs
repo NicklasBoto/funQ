@@ -57,6 +57,8 @@ instance {-# OVERLAPPING #-} Show Subst where
 --   ToDup makes it a TypeDup.
 data ResolveAction = Remove | Rename Int | ToDup deriving Show
 
+-- {0/ToDup} ?{0}T => !T
+
 -- | A Resolver is a map from ids referencing TypeFlexes to some action.
 type Resolver = Map.Map Int ResolveAction
 
@@ -296,10 +298,10 @@ instance Substitutable Type where
     apply s (t1 :>< t2) = apply s t1 :>< apply s t2
 
     resolve r (TypeFlex id t) = case Map.lookup id r of
-        Nothing           -> TypeFlex id t
-        Just Remove       -> t
-        Just (Rename new) -> TypeFlex new t
-        Just ToDup        -> TypeDup t
+        Nothing           -> TypeFlex id $ resolve r t
+        Just Remove       -> resolve r t
+        Just (Rename new) -> TypeFlex new $ resolve r t
+        Just ToDup        -> TypeDup (resolve r t)
     resolve r (a :=> b) = resolve r a :=> resolve r b
     resolve r (a :>< b) = resolve r a :>< resolve r b
     resolve _      rest = rest
@@ -348,8 +350,8 @@ unify (l :=> r) (TypeDup (l' :=> r')) = do
     (s1, r1) <- unify l l'
     (s2, r2) <- unify (resply r1 s1 r) (resply r1 s1 r')
     return (s2 ∘ s1, r2 `rcompose` r1)
-unify (l :=> r) (l' :=> r') = do
-    (s1, r1) <- unify l l' -- denna kukar upp massivt
+unify (l :=> r) (l' :=> r') = do 
+    (s1, r1) <- unify l l' 
     (s2, r2) <- unify (resply r1 s1 r) (resply r1 s1 r')
     return (s2 ∘ s1, r2 `rcompose` r1)
 unify (TypeDup (l :>< r)) (l' :>< r') = do
@@ -379,7 +381,7 @@ unify (TypeVar a) t = bind a t
 unify t (TypeVar a) = bind a t
 unify (TypeDup t1) (TypeDup t2) = unify t1 t2
 unify t1 t2 | (t1 <: t2 || t2 <: t1) && isConstType t1 && isConstType t2 = return (nullSubst, nullResolver)
-            | otherwise =  throwError $ UnificationFailError t1 t2
+            | otherwise = throwError $ UnificationFailError t1 t2 
 
 unifyWithAction :: Type -> Type -> ResolveAction -> Int -> Infer (Subst, Resolver)
 unifyWithAction t1 t2 action id = do
@@ -443,6 +445,38 @@ generalize :: TypeEnv -> Type -> Scheme
 generalize env t  = Forall as t
     where as = Set.toList $ ftv t `Set.difference` ftv env
 
+
+-- epr : !(T -o (QBit >< QBit))
+-- epr x = ...
+
+-- q : QBit
+-- q = H (new 0)
+
+-- f : Bit
+-- f = measure q
+
+-- g : Bit
+-- g = measure q
+
+-- main : (Bit >< Bit)
+-- main = (f,g)
+
+-- (0,1) -- this becomes possible
+
+-- f : Bit, g : Bit |- (f,g) : Bit >< Bit
+
+-- q : QBit, f : Bit |- (f, measure q) : Bit >< Bit
+
+-- If G1, !D, x:A |- M : B
+-- and G2, !D |- V : A
+-- then G1, G2, !D |- M[x:=V] : B
+
+
+
+-- q = new 0 
+-- f = (q,q)
+
+-- environment instead of int? 
 -- | Infers a substitution and a type from a Term
 infer :: Integer -> Term -> Infer (Subst, Resolver, Type)
 infer i (Idx j)      = (nullSubst, nullResolver,) <$> lookupEnv (Bound (i-j-1))
@@ -454,7 +488,7 @@ infer i (Fun var)    = do
         _notdup   -> if Set.member var linEnv
                         then throwError $ TopLevelLinearFail var
                         else addLin var >> return (nullSubst, nullResolver, typ)
-infer i (Bit _)      = return (nullSubst, nullResolver, bang TypeBit)
+infer i (Bit _)      = (nullSubst, nullResolver,) <$> flex TypeBit
 infer i (Gate gate)  = return (nullSubst, nullResolver, inferGate gate)
 infer i (Tup l r)  = do
     (ls, lr, lt) <- infer i l
@@ -464,14 +498,12 @@ infer i (Tup l r)  = do
 infer i (App l r) = do
     env <- gets env
     (s1,r1,t1) <- infer i l -- (\x . \y (x,y))
-    modify (\st -> st{env=resply r1 s1 env}) -- todo, fix all apply
+    modify (\st -> st{env=resply r1 s1 env})
     (s2,r2,t2) <- infer i r -- QBit 
-    --modify (\st -> st{env=resply r2 s2 env}) -- todo, fix all apply
     tv <- freshFlex
     (s3,r3)    <- unify (resply r2 s2 t1) (t2 :=> tv)
-    --modify (\st -> st{env=resply r3 s3 env}) -- todo, fix all apply
-    (s4,r4) <- subtypeCheck (resply (r3 `rcompose` r2) (s3 `compose` s2) t1) (resply r3 s3 t2) -- t2 <: 
-    return (s3 ∘ s2 ∘ s1, r3 `rcompose` r2 `rcompose` r1, resply (r3 `rcompose` r4) (s3 `compose` s4) tv)
+    (s4,r4) <- subtypeCheck (resply (r3 `rcompose` r2) (s3 `compose` s2) t1) (resply r3 s3 t2) -- t2 <:  
+    return (s3 ∘ s2 ∘ s1, r3 `rcompose` r2 `rcompose` r1, resply r3 s3 tv)
 infer i (IfEl b l r) = do
     (s1,r1,t1) <- infer i b
     (s2,r2,t2) <- infer i l
@@ -508,8 +540,15 @@ infer i (Abs body) = do
         else return (s1, r1, TypeFlex id (resply r1 s1 tv :=> t1))
 infer i New  = return (nullSubst, nullResolver, TypeDup (TypeBit  :=> TypeQBit))
 infer i Meas = return (nullSubst, nullResolver, TypeDup (TypeQBit :=> TypeDup TypeBit))
-infer i Unit = return (nullSubst, nullResolver, TypeDup TypeUnit)
+infer i Unit = (nullSubst, nullResolver,) <$> flex TypeUnit
 
+--                    !(Bit -o QBit)_new <: Bit -o QBit           !Bit_0 <: Bit
+--                   -----------------------------------         ----------------
+--   !Bit_0 <: Bit           D |- new : Bit -o QBit                D |- 0 : Bit
+--  --------------          -----------------------------------------------------
+--    G |- 0 : Bit                          D |- (new 0) : QBit        
+-- ---------------------------------------------------------------------------
+--                 G, D |- (0, new 0) : Bit >< QBit
 
 
 fv :: Term -> [String]
@@ -541,13 +580,13 @@ dupable _ = False
 -- | Should move exponentials outside.
 productExponential :: Type -> Type -> Infer (Resolver, Type)
 productExponential (TypeDup       a) (TypeDup       b) = return (nullResolver, TypeDup (a :>< b))
-productExponential (TypeFlex id   t) (TypeDup       b) = return (createAction id ToDup, TypeDup (t :>< b))
-productExponential (TypeDup      t1) (TypeFlex id  t2) = return (createAction id ToDup, TypeDup (t1 :>< t2))
-productExponential (TypeFlex id1 t1) (TypeFlex id2 t2) = return (createAction id1 (Rename id2), TypeFlex id2 (t1 :>< t2))
-productExponential (TypeFlex id  t1)               t2  = return (createAction id Remove, t1 :>< t2)
-productExponential               t1  (TypeFlex id  t2) = return (createAction id Remove, t1 :>< t2)
-productExponential               t1  (TypeDup      t2) = throwError $ ProductDuplicityError t1 (TypeDup t2)
-productExponential (TypeDup      t1)               t2  = throwError $ ProductDuplicityError (TypeDup t1) t2
+-- productExponential (TypeFlex id   t) (TypeDup       b) = return (createAction id ToDup, TypeDup (t :>< b))
+-- productExponential (TypeDup      t1) (TypeFlex id  t2) = return (createAction id ToDup, TypeDup (t1 :>< t2))
+--productExponential (TypeFlex id1 t1) (TypeFlex id2 t2) = return (createAction id1 (Rename id2), TypeFlex id2 (t1 :>< t2))
+-- productExponential (TypeFlex id  t1)               t2  = return (createAction id Remove, t1 :>< t2)
+-- productExponential               t1  (TypeFlex id  t2) = return (createAction id Remove, t1 :>< t2)
+-- productExponential               t1  (TypeDup      t2) = throwError $ ProductDuplicityError t1 (TypeDup t2)
+-- productExponential (TypeDup      t1)               t2  = throwError $ ProductDuplicityError (TypeDup t1) t2
 productExponential               t1                t2  = return (nullResolver, t1 :>< t2)
 
 tr :: Monad m => String -> m ()
@@ -575,15 +614,19 @@ subtypeCheck f b = case debang $ deflex f of
 (<:) :: Type -> Type -> Bool
 TypeDup  a     <: TypeDup  b      = TypeDup a <: b
 TypeDup  a     <: TypeFlex id b   = a <: b
+(TypeDup (a :>< b)) <: (TypeDup a' :>< (TypeDup b')) = a  <: a' && b  <: b
 TypeDup  a     <:          b      = a <: b
+(TypeDup a :>< TypeDup b) <: (TypeDup (a' :>< b')) = a  <: a' && b  <: b'
 (a1 :>< a2)    <: (TypeDup (b1 :><  b2)) = a1 <: TypeDup b1 && a2 <: TypeDup b2
 (a1 :>< a2)    <: (b1 :><  b2)    = a1 <: b1 && a2 <: b2
 (a' :=>  b)    <: (a :=>   b')    = a  <: a' && b  <: b'
-TypeFlex id a  <: TypeDup  b      = True
+TypeFlex id a  <: TypeDup  b      = a <: b 
 TypeFlex id a  <:          b      = a <: b
 a              <: TypeFlex id b   = a <: b
 a              <: TypeVar  b      = True
 a              <:          b      = a == b
+
+-- ?a  !Bit -> a <: Bit 
 
 -- | Given a term, 
 --    if the head variable is used once or zero times returns TypeFlex id (TypeVar var).
@@ -659,7 +702,7 @@ checkFunc :: InferState -> Function -> Either TypeError (String, Type)
 checkFunc state (Func name qtype term) = do
     -- let is = St 0 Set.empty env 0
     Forall _ itype <- runInferWith state (infer 0 term)
-    s <- evalState (runExceptT (equal qtype itype)) emptyState
+    s <- evalState (runExceptT (subsumeSignature qtype itype)) emptyState
     return (name, s)
 
 debangFunc :: Type -> Type
@@ -668,11 +711,16 @@ debangFunc a = a
 
 -- | Gives the unified type of the type from the type signature
 --   and the inferred type.  
-equal :: Type -> Type -> Infer Type
-equal typ inf = do
+subsumeSignature :: Type -> Type -> Infer Type
+subsumeSignature typ inf = do
     (sub,res) <- unify typ inf -- Try to unify signature with inferred type
+    tr $ "typ: " ++ show typ
+    tr $ "inf: " ++ show inf
+    tr $ "s: " ++ show sub
+    tr $ "r: " ++ show res
     let t = resply res sub inf -- 
-    if t <: debangFunc typ
+    tr $ "t: " ++ show t
+    if t <: typ -- kolla att alla med samma flex id får samma typ 
         then return typ
         else throwError $ SubtypeFailError t typ
 
@@ -701,7 +749,7 @@ tc = mapM_ f
             do (s,r, itype) <- infer 0 term
                env <- gets env
                linenv <- gets linenv
-               equal qtype itype
+               subsumeSignature qtype itype
                put $ St 0 0 linenv env
 
 -- | Run typechecker on program
