@@ -37,6 +37,8 @@ module FunQ
     , urot
     , crot
     , qft
+    , qftDagger
+    , controlT
 
     -- * Simulators
     , run
@@ -72,7 +74,7 @@ import Lib.Gates
       toffoli,
       urot,
       crot,
-      qft )
+      qft, controlT, qftDagger )
 
 -- | Prepares bell state
 bell :: (Bit, Bit) -> QM (QBit, QBit)

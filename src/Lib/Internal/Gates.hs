@@ -94,6 +94,12 @@ qftMatrix n = (1 / sqrt (fromIntegral n)) * (n >< n)
   [ ω^(j*k) | j <- [0..n-1], k <- [0..n-1] ]
   where ω = exp ((2*pi*i) / fromIntegral n)
 
+-- | Quantum fourier transform matrix
+qftDaggerMatrix :: Int -> Matrix C
+qftDaggerMatrix n = (1 / sqrt (fromIntegral n)) * (n >< n)
+  [ ω^(j*k) | j <- [0..n-1], k <- [0..n-1] ]
+  where ω = exp (-(2*pi*i) / fromIntegral n)
+
 notAdjacent :: [Ix] -> Bool
 notAdjacent [a]      = False
 notAdjacent [a, b]   = b-a /= 1

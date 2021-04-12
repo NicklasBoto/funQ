@@ -16,6 +16,7 @@ runTests = do
 
 runTest :: (String, String) -> Run Int -> Run Int
 runTest (fileName, expectedValue) b = do
+  liftIO . print $ "Testing file " ++ show fileName
   res <- run (testPath fileName)
   acc <- b
   if show res == expectedValue
@@ -62,11 +63,12 @@ tests =
     ("third.fq", "1"),
     ("teleport.fq", "1"),
     ("nested-let.fq", "0"),
-    ("deutsch.fq", "1")
+    ("deutsch.fq", "1"),
+    ("qft2.fq",     "0"),
+    ("qpe.fq", "(0,0,1)")
     -- TODO ("toffoli.fq")
     -- TODO ("fredkin.fq",  "0"),
     -- ("qft1.fq",     "0"),
-    -- ("qft2.fq",     "0"),
     -- ("tdagger.fq",  "1"),
   ]
 

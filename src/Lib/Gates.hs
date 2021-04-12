@@ -24,6 +24,8 @@ module Lib.Gates (
     , urot
     , crot
     , qft
+    , qftDagger
+    , controlT
 ) where
 
 import Lib.Internal.Gates
@@ -41,7 +43,7 @@ import Lib.Internal.Gates
       pXmat,
       pYmat,
       pZmat,
-      idmat ) 
+      idmat, qftDaggerMatrix ) 
 import Lib.QM ( QM, QState(QState), QBit(..), getState, put, get )
 import Numeric.LinearAlgebra
     ( Complex(..), (#>), (><), ident, kronecker, Matrix, Linear(scale), C, ident, tr )
@@ -170,6 +172,14 @@ tdagger = runGate $ phasemat (-pi/4)
 --    0 & 1
 -- \end{bmatrix} \]
 --
+
+controlT :: (QBit, QBit) -> QM (QBit, QBit)
+controlT (c, t) = do
+  (_, size) <- getState
+  let g = controlMatrix size c t (phasemat pi/4) 
+  applyGate g
+  return (c,t)
+
 identity :: QBit -> QM QBit
 identity = runGate idmat
 
@@ -239,7 +249,7 @@ qftDagger qs@((Ptr q):_)
   | otherwise = do
       (_, size) <- getState
       let n = length qs
-      let matrixQFT = tr $ qftMatrix (2 ^ n)
+      let matrixQFT = tr $ qftDaggerMatrix (2 ^ n)
       let ids = replicate (size - n + 1) (ident 2)
       let masqwe = changeAt matrixQFT q ids
       applyGate $ foldr1 applyParallel masqwe
