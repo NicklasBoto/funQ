@@ -234,3 +234,12 @@ runTests = $quickCheckAll
 
 -- should work, trixa liet med ifsatsen
 f = typecheck . run $ "f : Bit f = 0 g : Bit g = if 1 then f else f"
+
+-- f is a function that should be able to take both !Bit and Bit, since !Bit <: Bit.
+-- should succeed
+subtypeProblem = typecheck . run $ "a : Bit a = 0 " 
+                                ++ "b : !Bit b = 0 "
+                                ++ "f : !(Bit -o QBit) f = new "
+                                ++ "test : Bit test = (\\x . (x a, x b)) f"
+
+
