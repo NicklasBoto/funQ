@@ -1,0 +1,34 @@
+-- qpe with 3 counting qubits
+
+-- init : QBit >< QBit >< QBit >< QBit
+-- init = (new 0, new 0, new 0, new 1)
+
+-- had : (QBit >< QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit)
+-- had q = let (a,b,c,d) = q in (H a, H b, H c, d)
+
+-- applyAllU : QBit >< QBit >< QBit >< QBit
+-- applyAllU = let (a,b,c,d) = had init in let (e,f) = CT (a,d) in (e,b,c,f)
+                -- let (e,f) = CT (a,d) in                                 -- q0
+                --     let (g,h) = CT (b,f) in                                -- q1
+                --         let (i,j) = CT (g,h) in                            -- q1
+                --             let (k,l) = CT (c,j) in                        -- q2
+                --                 let (m,n) = CT (k,l) in                    -- q2
+                --                     let (o,p) = CT (m,n) in                -- q2
+                --                         let (q,r) = CT (o,p) in            -- q2
+                --                             let (s,t) = CT (q,r) in        -- q3
+                --                                 (e,i,s)
+-- applyU1 : (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)
+-- applyU1 q = let (a, b, c) = (new 0, new 0, new 1) in let (e,f) = CT (a,b) in (e,f,c)--(let (e,f) = CT (a,c) in (e,b,c)) 
+
+main : Bit >< Bit
+main = let (a,b) = QFT ((new 0), (new 0)) in (meas a, meas b)
+-- -- main : (Bit >< Bit >< Bit)
+-- -- main = let (a,b,c) = QFTI applyAllU in (meas a, meas b, meas c)
+-- main : Bit >< Bit >< Bit >< Bit
+-- main = let (a,b,c,d) = applyAllU (new 0, new 0, new 0, new 1) in (meas a, meas b, meas c, meas d)
+
+-- plus : !Bit -o !Bit -o !Bit
+-- plus a b = if a then (if b then 0 else 1) else (if b then 1 else 0)
+
+-- main : !(Bit >< Bit >< Bit)
+-- main = let (a,b,c) = (0,1,0) in let (d,e) = (a, plus a b) in (d,e,c)

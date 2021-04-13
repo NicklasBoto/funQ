@@ -68,4 +68,6 @@ GTOF  . Gate ::= "TOFFOLI" ;
 GSWP  . Gate ::= "SWAP"    ;
 GFRDK . Gate ::= "FREDKIN" ;
 GQFT  . Gate ::= "QFT"     ;
+GQFTI . Gate ::= "QFTI"    ;
+GCT   . Gate ::= "CT"      ;
 GGate . Gate ::= GateIdent ; 
