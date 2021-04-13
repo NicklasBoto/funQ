@@ -1,27 +1,26 @@
 -- qpe with 3 counting qubits
 
--- init : QBit >< QBit >< QBit >< QBit
--- init = (new 0, new 0, new 0, new 1)
+init : QBit >< QBit >< QBit >< QBit
+init = (new 0, new 0, new 0, new 1)
 
--- had : (QBit >< QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit)
--- had q = let (a,b,c,d) = q in (H a, H b, H c, d)
+had : (QBit >< QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit)
+had q = let (a,b,c,d) = q in (H a, H b, H c, d)
 
--- applyAllU : QBit >< QBit >< QBit >< QBit
--- applyAllU = let (a,b,c,d) = had init in let (e,f) = CT (a,d) in (e,b,c,f)
-                -- let (e,f) = CT (a,d) in                                 -- q0
-                --     let (g,h) = CT (b,f) in                                -- q1
-                --         let (i,j) = CT (g,h) in                            -- q1
-                --             let (k,l) = CT (c,j) in                        -- q2
-                --                 let (m,n) = CT (k,l) in                    -- q2
-                --                     let (o,p) = CT (m,n) in                -- q2
-                --                         let (q,r) = CT (o,p) in            -- q2
-                --                             let (s,t) = CT (q,r) in        -- q3
-                --                                 (e,i,s)
--- applyU1 : (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)
--- applyU1 q = let (a, b, c) = (new 0, new 0, new 1) in let (e,f) = CT (a,b) in (e,f,c)--(let (e,f) = CT (a,c) in (e,b,c)) 
+applyAllU : QBit >< QBit >< QBit
+applyAllU = let (a,b,c,d) = had init in 
+                let (e,f) = CT (a,d) in -- q0
+                    let (g,h) = CT (b,f) in -- q1
+                        let (i,j) = CT (g,h) in -- q1
+                            let (k,l) = CT (c,j) in -- q2
+                                let (m,n) = CT (k,l) in -- q2
+                                    let (o,p) = CT (m,n) in -- q2
+                                        let (q,r) = CT (o,p) in -- q2
+                                            (e,i,q)
+                                            
 
-main : Bit >< Bit
-main = let (a,b) = QFT ((new 0), (new 0)) in (meas a, meas b)
+main : Bit >< Bit >< Bit  --QBit >< QBit >< QBit
+main = let (a,b,c) = QFTI applyAllU in (meas a, meas b, meas c) --(a,b,c)
+
 -- -- main : (Bit >< Bit >< Bit)
 -- -- main = let (a,b,c) = QFTI applyAllU in (meas a, meas b, meas c)
 -- main : Bit >< Bit >< Bit >< Bit

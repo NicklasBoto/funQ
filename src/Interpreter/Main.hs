@@ -13,10 +13,11 @@ import Control.Monad.Except
       ExceptT(..),
       mapExceptT,
       runExceptT,
-      withExceptT )
+      withExceptT, replicateM )
 import Data.Bifunctor ( Bifunctor(bimap) )
 import Control.Exception (try)
 import qualified Type.HM as HM
+import Data.List
 
 -- TODO:
 -- * fixa partial application
@@ -31,7 +32,7 @@ import qualified Type.HM as HM
 -- * kunna skriva run [filnamn] utan hela sökvägen -> letar i subdirectories efter filen
 main :: IO ()
 main = runInputT defaultSettings loop
-  where 
+  where
     loop :: InputT IO ()
     loop = do
       minput <- getInputLine "λ: "
@@ -39,13 +40,13 @@ main = runInputT defaultSettings loop
           Nothing -> return ()
           Just "quit" -> return ()
           Just input -> do
-            let w = words input 
+            let w = words input
             case head w of
-              "run" -> do 
-                outputStrLn $ "runs " ++ (w !! 1)
+              "run" -> do
+                outputStrLn $ "runs " ++ (w !! 1)
                 liftIO $ runIO (w !! 1)
                 loop
-              _ -> do 
+              _ -> do
                 liftIO $ runTerminalIO $ "main : a main = " ++ input
                 loop
 
@@ -105,3 +106,65 @@ typecheck = toErr HM.typecheck TypeError . const <*> id
 
 eval :: A.Program -> Run I.Value
 eval = withExceptT ValueError . mapExceptT Q.run . I.interpret
+
+rundistest :: FilePath -> IO ()
+rundistest path = do
+  res <- runExceptT $ rundist path
+  case res of
+    Left err -> print err
+    Right r  -> gatherResults r
+
+rundist :: FilePath -> Run [I.Value]
+rundist path = do 
+  a <- readfile path >>= parse >>= typecheck
+  evaldist a 100
+
+
+evaldist :: A.Program -> Int -> Run [I.Value]
+evaldist prg reps = replicateM reps $ (withExceptT ValueError . mapExceptT Q.run . I.interpret) prg
+--   where 
+
+        -- sortera listan 
+        -- -> plocka ut unika element 
+        -- -> räkna antalet av de olika unika elementen i startlistan
+        -- -> konvertera till binärt
+        -- -> printa andelar 
+-- input (1,0,1)
+
+exVTup :: I.Value
+exVTup = I.VTup (I.VBit 1) (I.VTup (I.VBit 0) (I.VBit 1))
+
+
+readtup :: I.Value -> Int
+readtup tup@(I.VTup a as) = (toDec . catchBit . reverse . I.fromVTup) tup
+  where catchBit []            = []
+        catchBit (I.VBit b:bs) = (fromIntegral . toInteger) b : catchBit bs
+        toDec []        = 0
+        toDec (b:bs)    = b + 2*toDec bs
+
+findUniques []     as = as
+findUniques (b:bs) as = if b `elem` as then findUniques bs as else findUniques bs (insert b as)
+countOcc as = map length $ (group . sort) as
+uniquesAndCount as = zip (sort (findUniques as [])) (countOcc as)
+
+toBin 0 = []
+toBin n | n `mod` 2 == 1 = toBin (n `div` 2) ++ [1]
+toBin n | n `mod` 2 == 0 = toBin (n `div` 2) ++ [0]
+
+stat :: Int -> [(Int, Int)] -> [([Int], Double, Int)]
+stat _   []         = []
+stat len ((a,b):as) = (toBin a, dub b/dub len, b) : stat len as
+  where dub = fromIntegral . toInteger
+
+prettystats :: ([Int], Double, Int) -> String
+prettystats (a,b,c) = concatMap show a ++ ": " ++ "\t" ++ (show . truncateboi) b ++ "%" ++ "\t" ++ show c
+
+-- truncateboi :: Double -> Double
+truncateboi :: Double -> Double
+truncateboi d = (fromIntegral . truncate) (10000*(d :: Double))/100
+
+gatherResults :: [I.Value] -> IO ()
+gatherResults vals@(I.VTup _ _:as) = do
+  let res = uniquesAndCount $ map readtup vals
+  let stats = stat (length vals) res
+  mapM_ (putStrLn . prettystats) stats

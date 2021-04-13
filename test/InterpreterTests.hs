@@ -64,7 +64,6 @@ tests =
     ("teleport.fq", "1"),
     ("nested-let.fq", "0"),
     ("deutsch.fq", "1"),
-    ("qft2.fq",     "0"),
     ("qpe.fq", "(0,0,1)")
     -- TODO ("toffoli.fq")
     -- TODO ("fredkin.fq",  "0"),
