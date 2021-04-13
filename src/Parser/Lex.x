@@ -29,8 +29,6 @@ $u = [. \n]          -- universal: any character
 $white+ ;
 @rsyms
     { tok (\p s -> PT p (eitherResIdent TV s)) }
-$s ([\' \_]| ($d | $l)) * \  * \:
-    { tok (\p s -> PT p (eitherResIdent T_FunVar s)) }
 $s ([\' \_]| ($d | $l)) *
     { tok (\p s -> PT p (eitherResIdent T_Var s)) }
 $c +
@@ -57,7 +55,6 @@ data Tok =
  | TV !String         -- identifiers
  | TD !String         -- double precision float literals
  | TC !String         -- character literals
- | T_FunVar !String
  | T_Var !String
  | T_GateIdent !String
  | T_Lambda !String
@@ -98,7 +95,6 @@ tokenText t = case t of
   PT _ (TD s)   -> s
   PT _ (TC s)   -> s
   Err _         -> "#error"
-  PT _ (T_FunVar s) -> s
   PT _ (T_Var s) -> s
   PT _ (T_GateIdent s) -> s
   PT _ (T_Lambda s) -> s

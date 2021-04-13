@@ -97,9 +97,6 @@ instance Print Integer where
 instance Print Double where
   prt _ x = doc (shows x)
 
-instance Print Parser.Abs.FunVar where
-  prt _ (Parser.Abs.FunVar i) = doc $ showString $ i
-
 instance Print Parser.Abs.Var where
   prt _ (Parser.Abs.Var i) = doc $ showString $ i
 
@@ -141,7 +138,7 @@ instance Print Parser.Abs.Bit where
 
 instance Print Parser.Abs.FunDec where
   prt i e = case e of
-    Parser.Abs.FDecl funvar type_ function -> prPrec i 0 (concatD [prt 0 funvar, prt 0 type_, prt 0 function])
+    Parser.Abs.FDecl type_ function -> prPrec i 0 (concatD [prt 0 type_, prt 0 function])
   prtList _ [] = concatD []
   prtList _ (x:xs) = concatD [prt 0 x, prt 0 xs]
 
@@ -154,7 +151,7 @@ instance Print Parser.Abs.Function where
 
 instance Print Parser.Abs.Arg where
   prt i e = case e of
-    Parser.Abs.FArg var -> prPrec i 0 (concatD [prt 0 var])
+    Parser.Abs.FArg var type_ -> prPrec i 0 (concatD [prt 0 var, doc (showString ":"), prt 0 type_])
   prtList _ [] = concatD []
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString " "), prt 0 xs]
 

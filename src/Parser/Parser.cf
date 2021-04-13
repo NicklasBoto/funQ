@@ -20,18 +20,16 @@ BZero. Bit ::= "0";
 BOne.  Bit ::= "1";
 
 --- Function declaration  --- 
-FDecl. FunDec ::= FunVar Type Function;
+FDecl. FunDec ::= Type Function;
 terminator FunDec "";
 
 FDef.  Function ::= Var [Arg] "=" Term;
 
-FArg. Arg ::= Var ;
+FArg. Arg ::= Var ":" Type;
 separator Arg " ";
 
 comment "--" ; 
 
-token FunVar (lower (letter | digit | '_' | '\'')* (' ')* ':') ;
- 
 --- Var ---
 token Var (lower (letter | digit | '_' | '\'')*) ;
 

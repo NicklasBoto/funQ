@@ -50,7 +50,7 @@ data Term
     | App  Term Term
     | IfEl Term Term Term
     | Let Term Term
-    | Abs Term
+    | Abs Type Term
     | New
     | Meas
     | Unit
@@ -107,7 +107,7 @@ reverseType (l :=> r) = P.TypeFunc (reverseType l) (reverseType r)
 --   Uses an environment to keep track of the Bruijn indicies.
 --   Converts names such as "new" to its own terms New.
 makeImTerm :: Env -> P.Term -> Term
-makeImTerm env (P.TLamb _ var term) = Abs $ makeImTerm env' term
+makeImTerm env (P.TLamb _ var type' term) = Abs (convertType type') $ makeImTerm env' term
     where env' = M.insert (name var) 0 (M.map succ env)
 makeImTerm env (P.TApp l r) = App (makeImTerm env l) (makeImTerm env r)
 makeImTerm env (P.TVar (P.Var "new")) = New
@@ -127,15 +127,24 @@ makeImTerm _env P.TStar = Unit
 
 -- | Convert a function to intermediate abstract syntax (lambdaized, with de Bruijn indices)
 makeImFunction :: P.FunDec -> Function
-makeImFunction (P.FDecl n t fun) = Func (unfun n) (convertType t) (makeImTerm M.empty $ lambdaize fun)
-    where unfun (P.FunVar x) = init $ filter (/=' ') x
+makeImFunction (P.FDecl retType function) = Func name (convertType retType) term --(unfun n) (convertType t) (makeImTerm M.empty $ lambdaize fun)
+    where
+        (P.FDef (P.Var name) args body) = function
+        term = makeImTerm M.empty $ lambdaize function
+        
+    -- where unfun (P.FunVar x) = init $ filter (/=' ') x
 
 -- | Convert all functions to lambda abstractions
 lambdaize :: P.Function -> P.Term
 lambdaize (P.FDef _ [] term) = term
-lambdaize (P.FDef _n (a:args) term) = P.TLamb lambda (unArg a) (lambdaize (P.FDef _n args term))
-    where unArg (P.FArg v) = v
-          lambda = P.Lambda "\\"
+lambdaize (P.FDef n (a:args) body) = P.TLamb lambda name type' term --(unArg a) type' (lambdaize (P.FDef _n args term))
+    where 
+        lambda = P.Lambda "//"
+        (P.FArg name type') = a
+        term = lambdaize (P.FDef n args body)
+
+    -- where unArg (P.FArg v) = v
+    --       lambda = P.Lambda "\\"
 
 -- | Translate abstract syntax from parser to intermediate abstract syntax
 toIm :: P.Program -> Program
@@ -147,8 +156,9 @@ fromIm = P.PDef . map reverseImFunction
 
 -- | Convert a function from intermediate abstract syntax to the abstract parser syntax.
 reverseImFunction :: Function -> P.FunDec
-reverseImFunction (Func name t term) = P.FDecl (P.FunVar (name++" :")) (reverseType t) (P.FDef (P.Var name) [] term')
-    where term' = reverseImTerm 0 term
+reverseImFunction (Func name retType term) = P.FDecl (reverseType retType) function
+    where
+        function = P.FDef (P.Var name) [] (reverseImTerm 0 term)
 
 -- | imTerm in reverse. From the intermediate term to the parser term.
 reverseImTerm :: Integer -> Term -> P.Term
@@ -160,7 +170,7 @@ reverseImTerm env (Tup l r)    = P.TTup $ P.Tuple (reverseImTerm env l) [reverse
 reverseImTerm env (App  t1 t2) = P.TApp (reverseImTerm env t1) (reverseImTerm env t2)
 reverseImTerm env (IfEl c t e) = P.TIfEl (reverseImTerm env c) (reverseImTerm env t) (reverseImTerm env e)
 reverseImTerm env (Let eq inn) = P.TLet (P.Var ('x' : show (env + 1))) (P.Var ('x' : show env)) (reverseImTerm env eq) (reverseImTerm (env + 2) inn)
-reverseImTerm env (Abs  term)  = P.TLamb (P.Lambda "\\") (P.Var ('x' : show env)) (reverseImTerm (env+1) term)
+reverseImTerm env (Abs type' term)  = P.TLamb (P.Lambda "\\") (P.Var ('x' : show env)) (reverseType type') (reverseImTerm (env+1) term)
 reverseImTerm env New          = P.TVar (P.Var "new")
 reverseImTerm env Meas         = P.TVar (P.Var "meas")
 reverseImTerm env Unit         = P.TStar

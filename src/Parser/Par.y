@@ -78,15 +78,11 @@ import Parser.Lex
   'in' { PT _ (TS _ 29) }
   'let' { PT _ (TS _ 30) }
   'then' { PT _ (TS _ 31) }
-  L_FunVar { PT _ (T_FunVar $$) }
   L_Var { PT _ (T_Var $$) }
   L_GateIdent { PT _ (T_GateIdent $$) }
   L_Lambda { PT _ (T_Lambda $$) }
 
 %%
-
-FunVar :: { Parser.Abs.FunVar}
-FunVar  : L_FunVar { Parser.Abs.FunVar $1 }
 
 Var :: { Parser.Abs.Var}
 Var  : L_Var { Parser.Abs.Var $1 }
@@ -130,7 +126,7 @@ Bit :: { Parser.Abs.Bit }
 Bit : '0' { Parser.Abs.BZero } | '1' { Parser.Abs.BOne }
 
 FunDec :: { Parser.Abs.FunDec }
-FunDec : FunVar Type Function { Parser.Abs.FDecl $1 $2 $3 }
+FunDec : Type Function { Parser.Abs.FDecl $1 $2 }
 
 ListFunDec :: { [Parser.Abs.FunDec] }
 ListFunDec : {- empty -} { [] } | FunDec ListFunDec { (:) $1 $2 }
@@ -139,7 +135,7 @@ Function :: { Parser.Abs.Function }
 Function : Var ListArg '=' Term { Parser.Abs.FDef $1 $2 $4 }
 
 Arg :: { Parser.Abs.Arg }
-Arg : Var { Parser.Abs.FArg $1 }
+Arg : Var ':' Type { Parser.Abs.FArg $1 $3 }
 
 ListArg :: { [Parser.Abs.Arg] }
 ListArg : {- empty -} { [] } | Arg ListArg { (:) $1 $2 }

@@ -127,7 +127,7 @@ eval env = \case
          VTup x1 x2 <- eval env eq
          eval env{ values = x2 : x1 : values env } inn
 
-    A.Abs e  -> return $ VFunc (values env) e
+    A.Abs _ e  -> return $ VFunc (values env) e
     A.Unit   -> return VUnit
     A.Gate g -> throwError $ NotApplied $ "Gate " ++ show g ++ " must be applied to something"
     A.New    -> throwError $ NotApplied "New must be applied to something"

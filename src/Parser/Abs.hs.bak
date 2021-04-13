@@ -33,7 +33,7 @@ data Term
     | TApp Term Term
     | TIfEl Term Term Term
     | TLet Var Var Term Term
-    | TLamb Lambda Var Term
+    | TLamb Lambda Var Type Term
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data Tup = Tuple Term [Term]
