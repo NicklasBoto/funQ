@@ -26,6 +26,7 @@ module Lib.Gates (
     , qft
     , qftDagger
     , controlT
+    , cphase
 ) where
 
 import Lib.Internal.Gates
@@ -43,7 +44,7 @@ import Lib.Internal.Gates
       pXmat,
       pYmat,
       pZmat,
-      idmat, qftDaggerMatrix ) 
+      idmat) 
 import Lib.QM ( QM, QState(QState), QBit(..), getState, put, get )
 import Numeric.LinearAlgebra
     ( Complex(..), (#>), (><), ident, kronecker, Matrix, Linear(scale), C, ident, tr )
@@ -159,7 +160,7 @@ phase = runGate $ phasemat pi/2
 --
 -- ![pi8](images/t.PNG)
 phasePi8 :: QBit -> QM QBit
-phasePi8 = runGate $ phasemat pi/4
+phasePi8 = runGate $ phasemat (pi/4)
 
 -- | Hermetian adjoint of T gate (`phasePi8`)
 tdagger :: QBit -> QM QBit
@@ -176,7 +177,14 @@ tdagger = runGate $ phasemat (-pi/4)
 controlT :: (QBit, QBit) -> QM (QBit, QBit)
 controlT (c, t) = do
   (_, size) <- getState
-  let g = controlMatrix size c t (phasemat pi/4) 
+  let g = controlMatrix size c t (phasemat (pi/4 :: Double)) 
+  applyGate g
+  return (c,t)
+
+cphase :: (QBit, QBit) -> Double -> QM (QBit, QBit)
+cphase (c, t) p = do
+  (_, size) <- getState
+  let g = controlMatrix size c t (phasemat (p :: Double)) 
   applyGate g
   return (c,t)
 
@@ -249,7 +257,7 @@ qftDagger qs@((Ptr q):_)
   | otherwise = do
       (_, size) <- getState
       let n = length qs
-      let matrixQFT = tr $ qftDaggerMatrix (2 ^ n)
+      let matrixQFT = tr $ qftMatrix (2 ^ n)
       let ids = replicate (size - n + 1) (ident 2)
       let masqwe = changeAt matrixQFT q ids
       applyGate $ foldr1 applyParallel masqwe

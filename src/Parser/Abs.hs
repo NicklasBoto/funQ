@@ -69,6 +69,12 @@ data Gate
     | GQFT
     | GQFTI
     | GCT
+    | GCR2
+    | GCR2D
+    | GCR4
+    | GCR4D
+    | GCR8
+    | GCR8D
     | GGate GateIdent
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 

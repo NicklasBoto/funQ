@@ -68,25 +68,31 @@ import Parser.Lex
   '><' { PT _ (TS _ 11) }
   'Bit' { PT _ (TS _ 12) }
   'CNOT' { PT _ (TS _ 13) }
-  'CT' { PT _ (TS _ 14) }
-  'FREDKIN' { PT _ (TS _ 15) }
-  'H' { PT _ (TS _ 16) }
-  'I' { PT _ (TS _ 17) }
-  'QBit' { PT _ (TS _ 18) }
-  'QFT' { PT _ (TS _ 19) }
-  'QFTI' { PT _ (TS _ 20) }
-  'S' { PT _ (TS _ 21) }
-  'SWAP' { PT _ (TS _ 22) }
-  'T' { PT _ (TS _ 23) }
-  'TOFFOLI' { PT _ (TS _ 24) }
-  'X' { PT _ (TS _ 25) }
-  'Y' { PT _ (TS _ 26) }
-  'Z' { PT _ (TS _ 27) }
-  'else' { PT _ (TS _ 28) }
-  'if' { PT _ (TS _ 29) }
-  'in' { PT _ (TS _ 30) }
-  'let' { PT _ (TS _ 31) }
-  'then' { PT _ (TS _ 32) }
+  'CR2' { PT _ (TS _ 14) }
+  'CR2D' { PT _ (TS _ 15) }
+  'CR4' { PT _ (TS _ 16) }
+  'CR4D' { PT _ (TS _ 17) }
+  'CR8' { PT _ (TS _ 18) }
+  'CR8D' { PT _ (TS _ 19) }
+  'CT' { PT _ (TS _ 20) }
+  'FREDKIN' { PT _ (TS _ 21) }
+  'H' { PT _ (TS _ 22) }
+  'I' { PT _ (TS _ 23) }
+  'QBit' { PT _ (TS _ 24) }
+  'QFT' { PT _ (TS _ 25) }
+  'QFTI' { PT _ (TS _ 26) }
+  'S' { PT _ (TS _ 27) }
+  'SWAP' { PT _ (TS _ 28) }
+  'T' { PT _ (TS _ 29) }
+  'TOFFOLI' { PT _ (TS _ 30) }
+  'X' { PT _ (TS _ 31) }
+  'Y' { PT _ (TS _ 32) }
+  'Z' { PT _ (TS _ 33) }
+  'else' { PT _ (TS _ 34) }
+  'if' { PT _ (TS _ 35) }
+  'in' { PT _ (TS _ 36) }
+  'let' { PT _ (TS _ 37) }
+  'then' { PT _ (TS _ 38) }
   L_FunVar { PT _ (T_FunVar $$) }
   L_Var { PT _ (T_Var $$) }
   L_GateIdent { PT _ (T_GateIdent $$) }
@@ -191,6 +197,12 @@ Gate : 'H' { Parser.Abs.GH }
      | 'QFT' { Parser.Abs.GQFT }
      | 'QFTI' { Parser.Abs.GQFTI }
      | 'CT' { Parser.Abs.GCT }
+     | 'CR2' { Parser.Abs.GCR2 }
+     | 'CR2D' { Parser.Abs.GCR2D }
+     | 'CR4' { Parser.Abs.GCR4 }
+     | 'CR4D' { Parser.Abs.GCR4D }
+     | 'CR8' { Parser.Abs.GCR8 }
+     | 'CR8D' { Parser.Abs.GCR8D }
      | GateIdent { Parser.Abs.GGate $1 }
 {
 

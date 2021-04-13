@@ -96,4 +96,10 @@ transGate x = case x of
   Parser.Abs.GQFT -> failure x
   Parser.Abs.GQFTI -> failure x
   Parser.Abs.GCT -> failure x
+  Parser.Abs.GCR2 -> failure x
+  Parser.Abs.GCR2D -> failure x
+  Parser.Abs.GCR4 -> failure x
+  Parser.Abs.GCR4D -> failure x
+  Parser.Abs.GCR8 -> failure x
+  Parser.Abs.GCR8D -> failure x
   Parser.Abs.GGate gateident -> failure x

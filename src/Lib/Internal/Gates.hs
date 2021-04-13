@@ -20,7 +20,7 @@ import Numeric.LinearAlgebra
       ident,
       kronecker,
       Matrix,
-      Linear(scale) )
+      Linear(scale), Convert (toComplex), mkPolar )
 
 instance {-# OVERLAPS#-} Show (Matrix C) where
   show mx = dispcf 3 mx
@@ -94,12 +94,6 @@ qftMatrix n = (1 / sqrt (fromIntegral n)) * (n >< n)
   [ ω^(j*k) | j <- [0..n-1], k <- [0..n-1] ]
   where ω = exp ((2*pi*i) / fromIntegral n)
 
--- | Quantum fourier transform matrix
-qftDaggerMatrix :: Int -> Matrix C
-qftDaggerMatrix n = (1 / sqrt (fromIntegral n)) * (n >< n)
-  [ ω^(j*k) | j <- [0..n-1], k <- [0..n-1] ]
-  where ω = exp (-(2*pi*i) / fromIntegral n)
-
 notAdjacent :: [Ix] -> Bool
 notAdjacent [a]      = False
 notAdjacent [a, b]   = b-a /= 1
@@ -136,7 +130,7 @@ phasemat :: Double -> Matrix C
 phasemat r = (2 >< 2)
   [ 1, 0
   , 0, p ]
-  where p = exp (i*(r :+ 0))
+  where p = exp (0 :+ r)--(i*(r :+ 0))
 
 -- | PauliX matrix
 pXmat :: Matrix C

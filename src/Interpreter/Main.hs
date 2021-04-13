@@ -117,7 +117,7 @@ rundistest path = do
 rundist :: FilePath -> Run [I.Value]
 rundist path = do 
   a <- readfile path >>= parse >>= typecheck
-  evaldist a 100
+  evaldist a 300
 
 
 evaldist :: A.Program -> Int -> Run [I.Value]
@@ -151,13 +151,13 @@ toBin 0 = []
 toBin n | n `mod` 2 == 1 = toBin (n `div` 2) ++ [1]
 toBin n | n `mod` 2 == 0 = toBin (n `div` 2) ++ [0]
 
-stat :: Int -> [(Int, Int)] -> [([Int], Double, Int)]
+stat :: Int -> [(Int, Int)] -> [(Int, Double, Int)]
 stat _   []         = []
-stat len ((a,b):as) = (toBin a, dub b/dub len, b) : stat len as
+stat len ((a,b):as) = (a, dub b/dub len, b) : stat len as
   where dub = fromIntegral . toInteger
 
-prettystats :: ([Int], Double, Int) -> String
-prettystats (a,b,c) = concatMap show a ++ ": " ++ "\t" ++ (show . truncateboi) b ++ "%" ++ "\t" ++ show c
+prettystats :: (Int, Double, Int) -> String
+prettystats (a,b,c) = show a ++ ": " ++ "\t" ++ (show . truncateboi) b ++ "%" ++ "\t" ++ show c
 
 -- truncateboi :: Double -> Double
 truncateboi :: Double -> Double

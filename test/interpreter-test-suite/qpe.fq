@@ -1,33 +1,64 @@
 -- qpe with 3 counting qubits
-
 init : QBit >< QBit >< QBit >< QBit
-init = (new 0, new 0, new 0, new 1)
-
-had : (QBit >< QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit)
-had q = let (a,b,c,d) = q in (H a, H b, H c, d)
+init = (H (new 0), H (new 0), H (new 0), new 1)
 
 applyAllU : QBit >< QBit >< QBit
-applyAllU = let (a,b,c,d) = had init in 
-                let (e,f) = CT (a,d) in -- q0
-                    let (g,h) = CT (b,f) in -- q1
-                        let (i,j) = CT (g,h) in -- q1
-                            let (k,l) = CT (c,j) in -- q2
-                                let (m,n) = CT (k,l) in -- q2
-                                    let (o,p) = CT (m,n) in -- q2
-                                        let (q,r) = CT (o,p) in -- q2
+applyAllU = let (a,b,c,d) = init in 
+                let (e,f) = CR4 (a,d) in -- q0
+                    let (g,h) = CR4 (b,f) in -- q1
+                        let (i,j) = CR4 (g,h) in -- q1
+                            let (k,l) = CR4 (c,j) in -- q2
+                                let (m,n) = CR4 (k,l) in -- q2
+                                    let (o,p) = CR4 (m,n) in -- q2
+                                        let (q,r) = CR4 (o,p) in -- q2
                                             (e,i,q)
-                                            
+-- main : Bit >< Bit >< Bit
+-- main = let (a,b,c) = qftdagger applyAllU in (meas a, meas b, meas c)
 
-main : Bit >< Bit >< Bit  --QBit >< QBit >< QBit
-main = let (a,b,c) = QFTI applyAllU in (meas a, meas b, meas c) --(a,b,c)
 
--- -- main : (Bit >< Bit >< Bit)
--- -- main = let (a,b,c) = QFTI applyAllU in (meas a, meas b, meas c)
--- main : Bit >< Bit >< Bit >< Bit
--- main = let (a,b,c,d) = applyAllU (new 0, new 0, new 0, new 1) in (meas a, meas b, meas c, meas d)
+qftdagger : (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)
+qftdagger q =   let (q1,q2,q3) = q in 
+                    let (q11,q31) = SWAP (q1,q3) in
+                        let (q32,q21) = CR2D (H q31,q2) in
+                            let (q33,q12) = CR4D (q32,q11) in
+                                let (q22,q13) = CR2D (H q21,q12) in
+                                    (H q13,q22,q33)
+                -- c -> d -> i
+                -- b -> h
+                -- a -> e -> f -> g
 
--- plus : !Bit -o !Bit -o !Bit
--- plus a b = if a then (if b then 0 else 1) else (if b then 1 else 0)
+qft : (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)
+qft q = let (q1,q2,q3) = q in
+            let (q21,q11) = CR2 (q2,H q1) in
+                let (q31,q12) = CR4 (q3,q11) in
+                    let (q32,q22) = CR2 (q31,H q21) in
+                        (H q32, q22, q12)
 
--- main : !(Bit >< Bit >< Bit)
--- main = let (a,b,c) = (0,1,0) in let (d,e) = (a, plus a b) in (d,e,c)
+meas3 : (QBit >< QBit >< QBit) -o (Bit >< Bit >< Bit)
+meas3 q = let (a,b,c) = q in (meas a, meas b, meas c)
+
+main : (Bit >< Bit >< Bit)
+main = let (a,b,c) = qftdagger (qft (new 0, new 0, new 1)) in meas3 (a,b,c)
+--                  a -> d -> f -> i -> k -> m
+--                  b -> g -> j -> l -> o -> q
+--                  c -> e -> n -> p -> r
+
+-- main : Bit
+-- main = let (a,b) = CR2D ((new 1), (new 0)) in meas b
+
+-- qpe with 4 counting qubits
+-- init : QBit >< QBit >< QBit >< QBit >< QBit
+-- init = (H (new 0), H (new 0), H (new 0), H (new 0), new 1)
+
+-- applyAllU : QBit >< QBit >< QBit >< QBit
+-- applyAllU = let (a,b,c,d,e) = init in 
+--                 let (f,g) = CT (a,e) in -- q0
+--                     let (h,i) = CT (CT (b,g)) in -- q1
+--                         let (j,k) = CT (CT (CT (CT (c,h)))) in -- q2
+--                             let (l,m) = CT ( CT ( CT ( CT (CT (CT (CT (CT (d,k)))))))) in -- q2
+--                             (f,h,j,l)                                            
+
+
+
+
+-- TODO: kollar varför fasgrindarna fackar

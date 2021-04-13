@@ -12,8 +12,9 @@ import qualified FunQ as Q
 import Control.Monad.State ()
 import Data.Functor ( (<&>) )
 import Parser.Abs as Abs
-    ( Gate(GS, GH, GX, GY, GZ, GI, GT, GCNOT, GTOF, GSWP, GFRDK, GQFT, GQFTI, GCT),
-      Bit(BOne, BZero) )
+    ( Gate(GS, GH, GX, GY, GZ, GI, GT, GCNOT, GTOF, GSWP, GFRDK, GQFT, GQFTI, 
+      GCR2,GCR2D,GCR4,GCR4D,GCR8,GCR8D),
+      Bit(BOne, BZero)  )
 import qualified AST.AST as A
 
 -- TODO:
@@ -111,10 +112,16 @@ eval env = \case
             Abs.GCNOT -> run2Gate Q.cnot e2 env
             Abs.GTOF  -> run3Gate Q.toffoli e2 env
             Abs.GSWP  -> run2Gate Q.swap e2 env
-            Abs.GCT   -> run2Gate Q.controlT e2 env
             Abs.GFRDK -> run3Gate Q.fredkin e2 env
             Abs.GQFT  -> runQFT   Q.qft e2 env
             Abs.GQFTI -> runQFT   Q.qftDagger e2 env
+            Abs.GCR2  -> run2Gate (`Q.cphase` (pi/2)) e2 env
+            Abs.GCR2D  -> run2Gate (`Q.cphase` (-pi/2)) e2 env
+            Abs.GCR4  -> run2Gate (`Q.cphase` (pi/4)) e2 env
+            Abs.GCR4D  -> run2Gate (`Q.cphase` (-pi/4)) e2 env
+            Abs.GCR8  -> run2Gate (`Q.cphase` (-pi/8)) e2 env
+            Abs.GCR8D  -> run2Gate (`Q.cphase` (-pi/8)) e2 env
+
         A.New -> do
             VBit b' <- eval env e2
             lift $ Q.new b' <&> VQBit

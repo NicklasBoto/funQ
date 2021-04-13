@@ -363,7 +363,12 @@ inferGate g = gateType $ case g of
     GQFTI -> 3 -- temp
     GSWP  -> 2
     GCNOT -> 2
-    GCT   -> 2
+    GCR2  -> 2
+    GCR2D -> 2
+    GCR4  -> 2
+    GCR4D -> 2
+    GCR8  -> 2
+    GCR8D -> 2
     _     -> 1
     where
         gateType' n = foldr (:><) TypeQBit (replicate (n-1) TypeQBit)
