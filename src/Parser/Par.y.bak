@@ -64,18 +64,19 @@ import Parser.Lex
   'H' { PT _ (TS _ 15) }
   'I' { PT _ (TS _ 16) }
   'QBit' { PT _ (TS _ 17) }
-  'S' { PT _ (TS _ 18) }
-  'SWAP' { PT _ (TS _ 19) }
-  'T' { PT _ (TS _ 20) }
-  'TOFFOLI' { PT _ (TS _ 21) }
-  'X' { PT _ (TS _ 22) }
-  'Y' { PT _ (TS _ 23) }
-  'Z' { PT _ (TS _ 24) }
-  'else' { PT _ (TS _ 25) }
-  'if' { PT _ (TS _ 26) }
-  'in' { PT _ (TS _ 27) }
-  'let' { PT _ (TS _ 28) }
-  'then' { PT _ (TS _ 29) }
+  'QFT' { PT _ (TS _ 18) }
+  'S' { PT _ (TS _ 19) }
+  'SWAP' { PT _ (TS _ 20) }
+  'T' { PT _ (TS _ 21) }
+  'TOFFOLI' { PT _ (TS _ 22) }
+  'X' { PT _ (TS _ 23) }
+  'Y' { PT _ (TS _ 24) }
+  'Z' { PT _ (TS _ 25) }
+  'else' { PT _ (TS _ 26) }
+  'if' { PT _ (TS _ 27) }
+  'in' { PT _ (TS _ 28) }
+  'let' { PT _ (TS _ 29) }
+  'then' { PT _ (TS _ 30) }
   L_FunVar { PT _ (T_FunVar $$) }
   L_Var { PT _ (T_Var $$) }
   L_GateIdent { PT _ (T_GateIdent $$) }
@@ -110,8 +111,8 @@ Term2 :: { Parser.Abs.Term }
 Term2 : Term2 Term3 { Parser.Abs.TApp $1 $2 } | Term3 { $1 }
 
 Term1 :: { Parser.Abs.Term }
-Term1 : 'if' Term2 'then' Term2 'else' Term { Parser.Abs.TIfEl $2 $4 $6 }
-      | 'let' '(' Var ',' Var ')' '=' Term2 'in' Term { Parser.Abs.TLet $3 $5 $8 $10 }
+Term1 : 'if' Term2 'then' Term 'else' Term { Parser.Abs.TIfEl $2 $4 $6 }
+      | 'let' '(' Var ',' Var ')' '=' Term 'in' Term { Parser.Abs.TLet $3 $5 $8 $10 }
       | Lambda Var '.' Term { Parser.Abs.TLamb $1 $2 $4 }
       | Term2 { $1 }
 
@@ -170,6 +171,7 @@ Gate : 'H' { Parser.Abs.GH }
      | 'TOFFOLI' { Parser.Abs.GTOF }
      | 'SWAP' { Parser.Abs.GSWP }
      | 'FREDKIN' { Parser.Abs.GFRDK }
+     | 'QFT' { Parser.Abs.GQFT }
      | GateIdent { Parser.Abs.GGate $1 }
 {
 

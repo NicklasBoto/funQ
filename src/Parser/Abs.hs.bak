@@ -73,6 +73,7 @@ data Gate
     | GTOF
     | GSWP
     | GFRDK
+    | GQFT
     | GGate GateIdent
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
