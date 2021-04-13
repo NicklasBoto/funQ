@@ -3,29 +3,13 @@ init : QBit >< QBit >< QBit >< QBit
 init = (H (new 0), H (new 0), H (new 0), new 1)
 
 applyAllU : QBit >< QBit >< QBit
-applyAllU = let (a,b,c,d) = init in 
-                let (e,f) = CR4 (a,d) in -- q0
-                    let (g,h) = CR4 (b,f) in -- q1
-                        let (i,j) = CR4 (g,h) in -- q1
-                            let (k,l) = CR4 (c,j) in -- q2
-                                let (m,n) = CR4 (k,l) in -- q2
-                                    let (o,p) = CR4 (m,n) in -- q2
-                                        let (q,r) = CR4 (o,p) in -- q2
-                                            (e,i,q)
--- main : Bit >< Bit >< Bit
--- main = let (a,b,c) = qftdagger applyAllU in (meas a, meas b, meas c)
-
-
-qftdagger : (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)
-qftdagger q =   let (q1,q2,q3) = q in 
-                    let (q11,q31) = SWAP (q1,q3) in
-                        let (q32,q21) = CR2D (H q31,q2) in
-                            let (q33,q12) = CR4D (q32,q11) in
-                                let (q22,q13) = CR2D (H q21,q12) in
-                                    (H q13,q22,q33)
-                -- c -> d -> i
-                -- b -> h
-                -- a -> e -> f -> g
+applyAllU = let (q0,q1,q2,q3) = init in 
+                let (q21,q31) = CR4 (q2,q3) in
+                    let (q11,q32) = CR4 (CR4 (q1,q31)) in
+                        let (q01,q33) = CR4 (CR4 (CR4 (CR4 (q0,q32)))) in
+                            (q01,q11,q21)
+main : Bit >< Bit >< Bit
+main = let (a,b,c) = qftdagger applyAllU in meas3 (a,b,c)
 
 qft : (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)
 qft q = let (q1,q2,q3) = q in
@@ -34,17 +18,21 @@ qft q = let (q1,q2,q3) = q in
                     let (q32,q22) = CR2 (q31,H q21) in
                         (H q32, q22, q12)
 
+qftdagger : (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)
+qftdagger q =   let (q1,q2,q3) = q in 
+                    let (q11,q31) = SWAP (q1,q3) in
+                        let (q32,q21) = CR2D (H q31,q2) in
+                            let (q33,q12) = CR4D (q32,q11) in
+                                let (q22,q13) = CR2D (H q21,q12) in
+                                    (H q13,q22,q33)
+
 meas3 : (QBit >< QBit >< QBit) -o (Bit >< Bit >< Bit)
 meas3 q = let (a,b,c) = q in (meas a, meas b, meas c)
 
-main : (Bit >< Bit >< Bit)
-main = let (a,b,c) = qftdagger (qft (new 0, new 0, new 1)) in meas3 (a,b,c)
---                  a -> d -> f -> i -> k -> m
---                  b -> g -> j -> l -> o -> q
---                  c -> e -> n -> p -> r
+-- | Test of qft
+-- main : (Bit >< Bit >< Bit)
+-- main = let (a,b,c) = qftdagger (qft (new 0, new 0, new 1)) in meas3 (a,b,c)
 
--- main : Bit
--- main = let (a,b) = CR2D ((new 1), (new 0)) in meas b
 
 -- qpe with 4 counting qubits
 -- init : QBit >< QBit >< QBit >< QBit >< QBit
