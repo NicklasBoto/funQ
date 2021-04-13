@@ -130,7 +130,7 @@ phasemat :: Double -> Matrix C
 phasemat r = (2 >< 2)
   [ 1, 0
   , 0, p ]
-  where p = exp (0 :+ r)--(i*(r :+ 0))
+  where p = exp (0 :+ 2*pi*r)--(i*(r :+ 0))
 
 -- | PauliX matrix
 pXmat :: Matrix C

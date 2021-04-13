@@ -2,14 +2,27 @@
 init : QBit >< QBit >< QBit >< QBit
 init = (H (new 0), H (new 0), H (new 0), new 1)
 
+init4 : QBit >< QBit >< QBit >< QBit >< QBit
+init4 = (H (new 0), H (new 0), H (new 0), H (new 0), new 1)
+
 applyAllU : QBit >< QBit >< QBit
 applyAllU = let (q0,q1,q2,q3) = init in 
-                let (q21,q31) = CR4 (q2,q3) in
-                    let (q11,q32) = CR4 (CR4 (q1,q31)) in
-                        let (q01,q33) = CR4 (CR4 (CR4 (CR4 (q0,q32)))) in
+                let (q21,q31) = CR3 (q2,q3) in
+                    let (q11,q32) = CR3 (CR3 (q1,q31)) in
+                        let (q01,q33) = CR3 (CR3 (CR3 (CR3 (q0,q32)))) in
                             (q01,q11,q21)
+
+applyAllU4 : QBit >< QBit >< QBit >< QBit
+applyAllU4 = let (q0,q1,q2,q3,q4) = init4 in
+                let (q31,q41) = CR8 (q3,q4) in
+                    let (q21,q42) = CR8 (CR8 (q2,q41)) in
+                        let (q11,q43) = CR8 (CR8 (CR8 (CR8 (q1,q42)))) in
+                            let (q01,q44) = CR8 (CR8 (CR8 (CR8 (CR8 (CR8 (CR8 (CR8 (q0,q43)))))))) in
+                            (q01,q11,q21,q31)
+
+
 main : Bit >< Bit >< Bit
-main = let (a,b,c) = qftdagger applyAllU in meas3 (a,b,c)
+main = let (a,b,c) = QFTI applyAllU in meas3 (a,b,c) -- let (a,b,c,d) = QFTI applyAllU4 in meas4 (a,b,c,d)
 
 qft : (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)
 qft q = let (q1,q2,q3) = q in
@@ -27,7 +40,9 @@ qftdagger q =   let (q1,q2,q3) = q in
                                     (H q13,q22,q33)
 
 meas3 : (QBit >< QBit >< QBit) -o (Bit >< Bit >< Bit)
-meas3 q = let (a,b,c) = q in (meas a, meas b, meas c)
+meas3 q = let (a,b,c) = q in (meas a,meas b,meas c)
+meas4 : (QBit >< QBit >< QBit >< QBit) -o (Bit >< Bit >< Bit >< Bit)
+meas4 q = let (a,b,c,d) = q in (meas a,meas b,meas c,meas d)
 
 -- | Test of qft
 -- main : (Bit >< Bit >< Bit)

@@ -71,6 +71,8 @@ data Gate
     | GCT
     | GCR2
     | GCR2D
+    | GCR3
+    | GCR3D
     | GCR4
     | GCR4D
     | GCR8

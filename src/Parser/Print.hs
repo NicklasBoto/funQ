@@ -208,6 +208,8 @@ instance Print Parser.Abs.Gate where
     Parser.Abs.GCT -> prPrec i 0 (concatD [doc (showString "CT")])
     Parser.Abs.GCR2 -> prPrec i 0 (concatD [doc (showString "CR2")])
     Parser.Abs.GCR2D -> prPrec i 0 (concatD [doc (showString "CR2D")])
+    Parser.Abs.GCR3 -> prPrec i 0 (concatD [doc (showString "CR3")])
+    Parser.Abs.GCR3D -> prPrec i 0 (concatD [doc (showString "CR3")])
     Parser.Abs.GCR4 -> prPrec i 0 (concatD [doc (showString "CR4")])
     Parser.Abs.GCR4D -> prPrec i 0 (concatD [doc (showString "CR4D")])
     Parser.Abs.GCR8 -> prPrec i 0 (concatD [doc (showString "CR8")])

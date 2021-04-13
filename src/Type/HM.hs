@@ -365,6 +365,8 @@ inferGate g = gateType $ case g of
     GCNOT -> 2
     GCR2  -> 2
     GCR2D -> 2
+    GCR3  -> 2
+    GCR3D -> 2
     GCR4  -> 2
     GCR4D -> 2
     GCR8  -> 2

@@ -38,7 +38,6 @@ module FunQ
     , crot
     , qft
     , qftDagger
-    , controlT
     , cphase
 
     -- * Simulators
@@ -75,7 +74,7 @@ import Lib.Gates
       toffoli,
       urot,
       crot,
-      qft, controlT, qftDagger,
+      qft, qftDagger,
       cphase )
 
 -- | Prepares bell state
@@ -94,15 +93,3 @@ bellMeasure (x,y) = do
     m_x <- measure x
     m_y <- measure y
     return (m_x, m_y)
-
-
-testt :: QM ()
-testt = do
-  q <- new 1
-  q' <- new 1
-  checkState
-  controlT (q,q')
-  checkState
-  measure q
-  measure q'
-  checkState

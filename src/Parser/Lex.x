@@ -119,7 +119,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "CT" 20 (b "=" 10 (b "," 5 (b ")" 3 (b "(" 2 (b "!" 1 N N) N) (b "*" 4 N N)) (b "0" 8 (b "." 7 (b "-o" 6 N N) N) (b "1" 9 N N))) (b "CR2D" 15 (b "CNOT" 13 (b "Bit" 12 (b "><" 11 N N) N) (b "CR2" 14 N N)) (b "CR8" 18 (b "CR4D" 17 (b "CR4" 16 N N) N) (b "CR8D" 19 N N)))) (b "TOFFOLI" 30 (b "QFT" 25 (b "I" 23 (b "H" 22 (b "FREDKIN" 21 N N) N) (b "QBit" 24 N N)) (b "SWAP" 28 (b "S" 27 (b "QFTI" 26 N N) N) (b "T" 29 N N))) (b "if" 35 (b "Z" 33 (b "Y" 32 (b "X" 31 N N) N) (b "else" 34 N N)) (b "let" 37 (b "in" 36 N N) (b "then" 38 N N))))
+resWords = b "CR8D" 20 (b "=" 10 (b "," 5 (b ")" 3 (b "(" 2 (b "!" 1 N N) N) (b "*" 4 N N)) (b "0" 8 (b "." 7 (b "-o" 6 N N) N) (b "1" 9 N N))) (b "CR2D" 15 (b "CNOT" 13 (b "Bit" 12 (b "><" 11 N N) N) (b "CR2" 14 N N)) (b "CR4D" 18 (b "CR4" 17 (b "CR3" 16 N N) N) (b "CR8" 19 N N)))) (b "T" 30 (b "QBit" 25 (b "H" 23 (b "FREDKIN" 22 (b "CT" 21 N N) N) (b "I" 24 N N)) (b "S" 28 (b "QFTI" 27 (b "QFT" 26 N N) N) (b "SWAP" 29 N N))) (b "else" 35 (b "Y" 33 (b "X" 32 (b "TOFFOLI" 31 N N) N) (b "Z" 34 N N)) (b "let" 38 (b "in" 37 (b "if" 36 N N) N) (b "then" 39 N N))))
    where b s n = let bs = s
                  in  B bs (TS bs n)
 

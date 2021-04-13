@@ -25,7 +25,6 @@ module Lib.Gates (
     , crot
     , qft
     , qftDagger
-    , controlT
     , cphase
 ) where
 
@@ -173,13 +172,6 @@ tdagger = runGate $ phasemat (-pi/4)
 --    0 & 1
 -- \end{bmatrix} \]
 --
-
-controlT :: (QBit, QBit) -> QM (QBit, QBit)
-controlT (c, t) = do
-  (_, size) <- getState
-  let g = controlMatrix size c t (phasemat (pi/4 :: Double)) 
-  applyGate g
-  return (c,t)
 
 cphase :: (QBit, QBit) -> Double -> QM (QBit, QBit)
 cphase (c, t) p = do
