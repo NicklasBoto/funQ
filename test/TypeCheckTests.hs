@@ -243,3 +243,10 @@ subtypeProblem = typecheck . run $ "a : Bit a = 0 "
                                 ++ "test : Bit test = (\\x . (x a, x b)) f"
 
 
+-- simpler example with same problem
+stProb = inferExp "(\\x . (x 0, x 0)) new"
+
+tes = inferExp "(\\x . x 0) new"
+
+-- not working, problem when we say that x must be duplicable, should work?
+stProb2 = inferExp "(\\x . (new x, new x)) 0"

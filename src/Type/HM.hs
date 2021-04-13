@@ -302,6 +302,7 @@ instance Substitutable Type where
         Just Remove       -> resolve r t
         Just (Rename new) -> TypeFlex new $ resolve r t
         Just ToDup        -> TypeDup (resolve r t)
+    resolve r (TypeDup t) = TypeDup (resolve r t)
     resolve r (a :=> b) = resolve r a :=> resolve r b
     resolve r (a :>< b) = resolve r a :>< resolve r b
     resolve _      rest = rest
@@ -377,7 +378,7 @@ unify (TypeFlex id t1) (TypeDup t2) = unifyWithAction t1 t2 ToDup id
 unify (TypeDup t1) (TypeFlex id t2) = unifyWithAction t1 t2 ToDup id
 unify t1 (TypeFlex id t2) = unifyWithAction t1 t2 Remove id
 unify a@(TypeFlex id t1) t2 = unify t2 a -- reverse this case
-unify (TypeVar a) t = bind a t
+unify (TypeVar a) t = bind a t   -- TypeDup a ~ ?(TypeFlex b -o TypeFlex c), unify a (b -o c)
 unify t (TypeVar a) = bind a t
 unify (TypeDup t1) (TypeDup t2) = unify t1 t2
 unify t1 t2 | (t1 <: t2 || t2 <: t1) && isConstType t1 && isConstType t2 = return (nullSubst, nullResolver)
@@ -480,7 +481,7 @@ generalize env t  = Forall as t
 -- | Infers a substitution and a type from a Term
 infer :: Integer -> Term -> Infer (Subst, Resolver, Type)
 infer i (Idx j)      = (nullSubst, nullResolver,) <$> lookupEnv (Bound (i-j-1))
-infer i (Fun var)    = do
+infer _ (Fun var)    = do
     linEnv <- gets linenv
     typ <- lookupEnv (NFun var)
     case typ of
@@ -489,21 +490,52 @@ infer i (Fun var)    = do
                         then throwError $ TopLevelLinearFail var
                         else addLin var >> return (nullSubst, nullResolver, typ)
 infer i (Bit _)      = (nullSubst, nullResolver,) <$> flex TypeBit
-infer i (Gate gate)  = return (nullSubst, nullResolver, inferGate gate)
+infer _ (Gate gate)  = return (nullSubst, nullResolver, inferGate gate)
 infer i (Tup l r)  = do
+    tr $ "Infer tup l = " ++ show l ++ ", r = " ++ show r
     (ls, lr, lt) <- infer i l
+    tr $ "l has type = " ++ show lt ++ ", with subst = " ++ show ls ++ " & resolver = " ++ show lr
+    -- resply environment
+    env <- gets env 
+    modify (\st -> st{env=resply lr ls env})
     (rs, rr, rt) <- infer i r
-    (pr, pt) <- productExponential lt rt
+    tr $ "r has type = " ++ show rt ++ ", with subst = " ++ show rs ++ " & resolver = " ++ show rr
+    let rt' = resply lr ls rt 
+    let lt' = resply rr rs lt
+    tr $ "ls: " ++ show ls
+    tr $ "rt: " ++ show rt
+    tr $ "rs: " ++ show rs
+    tr $ "rr: " ++ show rr 
+    tr $ "rt': " ++ show rt'
+    tr $ "lt': " ++ show lt'
+    modify (\st -> st{env=resply rr rs env})
+    (pr, pt) <- productExponential lt' rt'
+    tr $ "pt: " ++ show pt
     return (ls ∘ rs, pr `rcompose` rr `rcompose` lr, pt)
 infer i (App l r) = do
+    tr $ "Infer appl l = " ++ show l ++ ", r = " ++ show r
     env <- gets env
-    (s1,r1,t1) <- infer i l -- (\x . \y (x,y))
+    (s1,r1,t1) <- infer i l -- t1 = !(?{3}(Bit) ⊸ ?{4}(c)) ⊸ ?{1}(b) ⊗  ?{4}(c))
     modify (\st -> st{env=resply r1 s1 env})
     (s2,r2,t2) <- infer i r -- QBit 
+    modify (\st -> st{env=resply r2 s2 env})
+    tr $ "l: " ++ show t1 ++ ", r: " ++ show t2
     tv <- freshFlex
-    (s3,r3)    <- unify (resply r2 s2 t1) (t2 :=> tv)
+    id <- freshId 
+    tr $ "tv: " ++ show tv
+    tr $ "s1: " ++ show s1 ++ "r1: " ++ show r1
+    tr $ "s2: " ++ show s2 ++ "r2: " ++ show r2
+    tr $ "resply s1 r1" ++ show (resply r1 s1 t2)
+    tr $ "unif left: " ++ show (resply r2 s2 t1)
+    tr $ "unif right: " ++ show (t2 :=> tv)
+    (s3,r3)    <- unify (resply r2 s2 t1) (TypeFlex id (t2 :=> tv))
+    tr $ "s3: " ++ show s3 ++ "r3: " ++ show r3
+   --- f: Bit -o QBit -o c >< c  b: Bit -o QBit -o c x c 
+   -- t2 <: 
+    tr $ "subtypecheck f: " ++ show (resply (r3 `rcompose` r2) (s3 `compose` s2) t1) ++ "b: " ++ show (resply r3 s3 t2)
     (s4,r4) <- subtypeCheck (resply (r3 `rcompose` r2) (s3 `compose` s2) t1) (resply r3 s3 t2) -- t2 <:  
-    return (s3 ∘ s2 ∘ s1, r3 `rcompose` r2 `rcompose` r1, resply r3 s3 tv)
+    tr $ "s4: " ++ show s4 ++ "r4: " ++ show r4
+    return (s4 ∘ s3 ∘ s2 ∘ s1, r4 `rcompose` r3 `rcompose` r2 `rcompose` r1, resply r3 s3 tv)
 infer i (IfEl b l r) = do
     (s1,r1,t1) <- infer i b
     (s2,r2,t2) <- infer i l
@@ -531,16 +563,23 @@ infer i (Let eq inn) = do -- let (a, b) = eq in inn
     return (subst, resolver, tinn)
 infer i (Abs body) = do
     tv <- inferDuplicity body
+    tr $ show tv
     extend (Bound i, Forall [] tv)
     (s1,r1,t1) <- infer (i+1) body
+    tr $ "t1 :" ++ show t1
+    tr $ "tv new: " ++ show (resply r1 s1 tv)
     id <- freshId
     returnLinear <- not . all dupable <$> mapM (lookupEnv . NFun) (fv body)
+    tr $ "resply tv" ++ show (resply r1 s1 tv)
+    tr $ "resply tv" ++ show (resply r1 s1 tv :=> t1)
     if returnLinear 
         then return (s1, r1, resply r1 s1 tv :=> t1)
         else return (s1, r1, TypeFlex id (resply r1 s1 tv :=> t1))
-infer i New  = return (nullSubst, nullResolver, TypeDup (TypeBit  :=> TypeQBit))
-infer i Meas = return (nullSubst, nullResolver, TypeDup (TypeQBit :=> TypeDup TypeBit))
-infer i Unit = (nullSubst, nullResolver,) <$> flex TypeUnit
+infer _ New  = do
+    flexBit <- flex TypeBit 
+    return (nullSubst, nullResolver, TypeDup (flexBit  :=> TypeQBit)) -- !(Bit -o QBit) !(?Bit -o QBit)
+infer _ Meas = return (nullSubst, nullResolver, TypeDup (TypeQBit :=> TypeDup TypeBit))
+infer _ Unit = (nullSubst, nullResolver,) <$> flex TypeUnit
 
 --                    !(Bit -o QBit)_new <: Bit -o QBit           !Bit_0 <: Bit
 --                   -----------------------------------         ----------------
@@ -580,6 +619,8 @@ dupable _ = False
 -- | Should move exponentials outside.
 productExponential :: Type -> Type -> Infer (Resolver, Type)
 productExponential (TypeDup       a) (TypeDup       b) = return (nullResolver, TypeDup (a :>< b))
+productExponential (TypeFlex id1  a) (TypeFlex id2  b) | id1 == id2 = return (nullResolver, TypeFlex id1 (a :>< b))
+
 -- productExponential (TypeFlex id   t) (TypeDup       b) = return (createAction id ToDup, TypeDup (t :>< b))
 -- productExponential (TypeDup      t1) (TypeFlex id  t2) = return (createAction id ToDup, TypeDup (t1 :>< t2))
 --productExponential (TypeFlex id1 t1) (TypeFlex id2 t2) = return (createAction id1 (Rename id2), TypeFlex id2 (t1 :>< t2))
@@ -606,7 +647,7 @@ inferGate g = TypeDup $ gateType $ case g of
 
 subtypeCheck :: Type -> Type -> Infer (Subst, Resolver)
 subtypeCheck f b = case debang $ deflex f of
-    (a :=> _) | b <: a    -> unify b a
+    (a :=> _) | b <: a    -> unify b a --- f: Bit -o b -o c >< c  b: Bit -o QBit -o d 
               | otherwise -> throwError $ SubtypeFailError b a
     t -> error $ "urk: subtype check " ++ show t
 
