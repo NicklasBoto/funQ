@@ -10,6 +10,9 @@ type Result = Err String
 failure :: Show a => a -> Result
 failure x = Left $ "Undefined case: " ++ show x
 
+transFunVar :: Parser.Abs.FunVar -> Result
+transFunVar x = case x of
+  Parser.Abs.FunVar string -> failure x
 transVar :: Parser.Abs.Var -> Result
 transVar x = case x of
   Parser.Abs.Var string -> failure x
@@ -42,7 +45,7 @@ transBit x = case x of
   Parser.Abs.BOne -> failure x
 transFunDec :: Parser.Abs.FunDec -> Result
 transFunDec x = case x of
-  Parser.Abs.FDecl type_ function -> failure x
+  Parser.Abs.FDecl funvar type_ function -> failure x
 transFunction :: Parser.Abs.Function -> Result
 transFunction x = case x of
   Parser.Abs.FDef var args term -> failure x

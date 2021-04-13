@@ -19,7 +19,7 @@ $i = [$l $d _ ']     -- identifier character
 $u = [. \n]          -- universal: any character
 
 @rsyms =    -- symbols and non-identifier-like reserved words
-   \* | \( | \, | \) | \= | \: | \. | "0" | "1" | \! | \> \< | \- "o"
+   \* | \( | \, | \) | \= | \) \. | "0" | "1" | \: | \! | \> \< | \- "o"
 
 :-
 
@@ -29,6 +29,8 @@ $u = [. \n]          -- universal: any character
 $white+ ;
 @rsyms
     { tok (\p s -> PT p (eitherResIdent TV s)) }
+$s ([\' \_]| ($d | $l)) * \  * \:
+    { tok (\p s -> PT p (eitherResIdent T_FunVar s)) }
 $s ([\' \_]| ($d | $l)) *
     { tok (\p s -> PT p (eitherResIdent T_Var s)) }
 $c +
@@ -55,6 +57,7 @@ data Tok =
  | TV !String         -- identifiers
  | TD !String         -- double precision float literals
  | TC !String         -- character literals
+ | T_FunVar !String
  | T_Var !String
  | T_GateIdent !String
  | T_Lambda !String
@@ -95,6 +98,7 @@ tokenText t = case t of
   PT _ (TD s)   -> s
   PT _ (TC s)   -> s
   Err _         -> "#error"
+  PT _ (T_FunVar s) -> s
   PT _ (T_Var s) -> s
   PT _ (T_GateIdent s) -> s
   PT _ (T_Lambda s) -> s
@@ -113,7 +117,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "H" 16 (b "0" 8 (b "*" 4 (b "(" 2 (b "!" 1 N N) (b ")" 3 N N)) (b "-o" 6 (b "," 5 N N) (b "." 7 N N))) (b "><" 12 (b ":" 10 (b "1" 9 N N) (b "=" 11 N N)) (b "CNOT" 14 (b "Bit" 13 N N) (b "FREDKIN" 15 N N)))) (b "X" 24 (b "S" 20 (b "QBit" 18 (b "I" 17 N N) (b "QFT" 19 N N)) (b "T" 22 (b "SWAP" 21 N N) (b "TOFFOLI" 23 N N))) (b "if" 28 (b "Z" 26 (b "Y" 25 N N) (b "else" 27 N N)) (b "let" 30 (b "in" 29 N N) (b "then" 31 N N))))
+resWords = b "H" 16 (b "0" 8 (b ")." 4 (b "(" 2 (b "!" 1 N N) (b ")" 3 N N)) (b "," 6 (b "*" 5 N N) (b "-o" 7 N N))) (b "><" 12 (b ":" 10 (b "1" 9 N N) (b "=" 11 N N)) (b "CNOT" 14 (b "Bit" 13 N N) (b "FREDKIN" 15 N N)))) (b "X" 24 (b "S" 20 (b "QBit" 18 (b "I" 17 N N) (b "QFT" 19 N N)) (b "T" 22 (b "SWAP" 21 N N) (b "TOFFOLI" 23 N N))) (b "if" 28 (b "Z" 26 (b "Y" 25 N N) (b "else" 27 N N)) (b "let" 30 (b "in" 29 N N) (b "then" 31 N N))))
    where b s n = let bs = s
                  in  B bs (TS bs n)
 

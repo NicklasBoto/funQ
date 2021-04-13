@@ -127,7 +127,7 @@ makeImTerm _env P.TStar = Unit
 
 -- | Convert a function to intermediate abstract syntax (lambdaized, with de Bruijn indices)
 makeImFunction :: P.FunDec -> Function
-makeImFunction (P.FDecl retType function) = Func name (convertType retType) term --(unfun n) (convertType t) (makeImTerm M.empty $ lambdaize fun)
+makeImFunction (P.FDecl _ t function) = Func name (convertType t) term --(unfun n) (convertType t) (makeImTerm M.empty $ lambdaize fun)
     where
         (P.FDef (P.Var name) args body) = function
         term = makeImTerm M.empty $ lambdaize function
@@ -156,7 +156,7 @@ fromIm = P.PDef . map reverseImFunction
 
 -- | Convert a function from intermediate abstract syntax to the abstract parser syntax.
 reverseImFunction :: Function -> P.FunDec
-reverseImFunction (Func name retType term) = P.FDecl (reverseType retType) function
+reverseImFunction (Func name type' term) = P.FDecl (P.FunVar name) (reverseType type')function
     where
         function = P.FDef (P.Var name) [] (reverseImTerm 0 term)
 

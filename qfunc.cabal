@@ -48,8 +48,6 @@ library
       Parser.Par
       Parser.Print
       Parser.Skel
-      Type.HM
-      Type.HM2
       Type.STLC
       Type.TypeChecker
       CoinFlip

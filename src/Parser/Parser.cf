@@ -9,7 +9,7 @@ TStar . Term3 ::= "*"                                                 ;
 TApp  . Term2 ::= Term2 Term3                                         ; 
 TIfEl . Term1 ::= "if" Term2 "then" Term "else" Term                  ; 
 TLet  . Term1 ::= "let" "(" Var "," Var ")" "=" Term "in" Term        ;
-TLamb . Term1 ::= Lambda Var ":" Type "." Term                                 ; 
+TLamb . Term1 ::= Lambda Var "(" Type ")." Term                                 ; 
 coercions Term 3;
 
 Tuple. Tup ::= "(" Term "," [Term] ")" ;
@@ -20,7 +20,7 @@ BZero. Bit ::= "0";
 BOne.  Bit ::= "1";
 
 --- Function declaration  --- 
-FDecl. FunDec ::= Type Function;
+FDecl. FunDec ::= FunVar Type Function;
 terminator FunDec "";
 
 FDef.  Function ::= Var [Arg] "=" Term;
@@ -29,6 +29,8 @@ FArg. Arg ::= Var ":" Type;
 separator Arg " ";
 
 comment "--" ; 
+
+token FunVar (lower (letter | digit | '_' | '\'')* (' ')* ':') ;
 
 --- Var ---
 token Var (lower (letter | digit | '_' | '\'')*) ;

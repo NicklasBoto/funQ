@@ -1,258 +1,185 @@
-{-# LANGUAGE GeneralisedNewtypeDeriving #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase #-}
 module Type.TypeChecker where
-
-import AST.AST 
-import qualified Data.Map as M
--- import qualified Parser.Abs as P (Gate(..))
+import AST.AST
 import Control.Monad.Except
-import Control.Monad.State
-import Data.Either
-import Prelude hiding (GT)
-{-
-(>=>), (><) :: Type -> Type -> Type
-(>=>) = (:=>)
-(><)  = (:><)
+import qualified Data.Map as M
+import qualified Data.Set as S
 
-data Named
-    = Bound Integer
-    | Free String
-    deriving (Ord, Eq, Show)
+-- | Typecheck a program.
+--   Returns TypeError on failure an unit on success.
+typecheck :: Program -> Either TypeError ()
+typecheck program = runExcept (typecheckP program)
 
-type Context = M.Map Named Type
+-- | Parse a typecheck a program encoded as a string.
+tcStr :: String -> Either TypeError ()
+tcStr = typecheck . run
 
-data Err 
-    = NoSuchGateError
-    | TypeMismatchError Type Type
-    | TypeNonFactorizableError Type
-    | NotInScopeError Named
-    | Fail String
+-- | All type errors that can occur.
+data TypeError = 
+    NotFunction Type           -- A type was expected to be a function but was not.
+    | Mismatch Type Type       -- Expected a type but found another type.
+    | NotProduct Type          -- A type was expected to be a product but was not.
+    | LinearNotAllowed String  -- A function that should not be linear was linear.
+    | NotInScope String        -- A function was not in scope.
+    | DuplicateFunction String -- A function was defined multiple times.
     deriving Show
 
-newtype Check a = MkCheck (StateT Context (Except Err) a)
-    deriving (Functor, Applicative, Monad, MonadError Err, MonadState Context)
+-- | Typecheck the program inside Check monad.
+typecheckP :: Program -> Check ()
+typecheckP program = do
+    checkNamesUnique program
+    checkTopLevelUnlinear top
+    mapM_ (typecheckF top) program
+    where
+        top = buildTopEnv program
 
-instance MonadFail Check where
-    fail = throwError . Fail
+-- Typechecks the function inside the check monad.
+typecheckF :: TopEnv -> Function -> Check ()
+typecheckF top (Func name type' term) = do
+    t <- inferTerm [] top term
+    if t <: type' then
+        return ()
+    else
+        throwError (Mismatch type' t)
 
-runResult :: Check a -> Either Err a
-runResult (MkCheck s) = runExcept $ evalStateT s M.empty
+type TopEnv = M.Map String Type
 
-getResult :: Check a -> a
-getResult r = case runResult r of
-    Right r -> r
-    Left  e -> error $ show e
+-- | Builds map between top level names and types.
+buildTopEnv :: Program -> TopEnv
+buildTopEnv program = M.fromList (map addFunc program)
+    where
+        addFunc :: Function -> (String, Type)
+        addFunc (Func name t _) = (name, t)
 
-tcFile :: FilePath -> IO [Err]
-tcFile p = typecheckProgram <$> runFile p
+-- | Check that all top level names are unique.
+checkNamesUnique :: Program -> Check ()
+checkNamesUnique = foldM_ f S.empty 
+    where
+        f :: S.Set String -> Function -> Check (S.Set String)
+        f visited (Func n _ _) 
+            | S.member n visited = throwError (DuplicateFunction n)
+            | otherwise          = return (S.insert n visited)
+        
 
-tc :: String -> [Err]
-tc = typecheckProgram . run
-
-typecheckProgram :: [Function] -> [Err]
-typecheckProgram prog = lefts $ map (run' . uncurry (typecheck 0) . f) prog
-    where f (Func _ typ term) = (term, typ)
-          context = buildProgramContext prog
-          run' (MkCheck s) = runExcept $ evalStateT s context
-
-buildProgramContext :: Program -> Context
-buildProgramContext = M.fromList . map f
-       where f (Func name typ _) = (Free name, typ)
-
--- f : (Bit -o (QBit -o Bit))
--- f = \x.\y.x
-
--- ca f -> [x : Bit, y : QBit ], x
-
--- typecheck :: Program -> TC Program
--- typ ner
-
--- f : QBit -> Bit
--- f = new
-
-baseType :: MonadError Err m => Type -> Type -> m ()
-baseType exp typ = if typ == exp 
-    then return () else throwError $ TypeMismatchError exp typ
-
-typecheck :: Integer -> Term -> Type -> Check ()
-typecheck i (Abs body) (n :=> p) = do
-    modify $ M.insert (Bound i) n
-    typecheck (i+1) body p
-typecheck i (Idx j) t = do
-    c <- get
-    case M.lookup (Bound j) c of
-        Nothing    -> throwError $ NotInScopeError (Bound j)
-        Just type' -> baseType t type'
-typecheck i (Bit _) t = baseType t TypeBit
-typecheck i (Gate g) t = baseType t =<< inferGate g
-typecheck i New t = baseType t (TypeBit :=> TypeQBit)
-typecheck i Meas t = baseType t (TypeQBit :=> TypeBit)
-typecheck i Unit t = baseType t TypeUnit
-typecheck i (QVar v) t = do
-    c <- get
-    case M.lookup (Free v) c of
-        Nothing -> throwError $ NotInScopeError (Free v)  
-        Just type' -> baseType t type'
-typecheck i (Tup [e]) t = typecheck i e t
-typecheck i (Tup (e:es)) (t :>< t') = typecheck i e t >> typecheck i (Tup es) t'
-typecheck i (Let eq inn) t = do
-    l :>< r <- infer i eq
-    modify $ M.insert (Bound (i+1)) r . M.insert (Bound i) l
-    typecheck (i+2) inn t
-typecheck i (App e1 e2) t = infer i e1 >>= \case
-        (TypeVar v :=> b) -> do
-            --typecheck i e2 (TypeVar v)
-            --if t == b then return () else throwError $ TypeMismatchError t b
-            
-
-            te2 <- infer i e2 
-
-            modify (M.insert (Bound i) te2)
-            if t == b 
-                then return ()
-                else throwError $ TypeMismatchError t b
-        (a :=> b) -> do
-                te2 <- infer i e2
-                if a == te2 && t == b 
-                    then return () 
-                    else throwError $ TypeMismatchError a te2
-        t'        -> throwError $ TypeMismatchError (t' :=> t) t'
-typecheck i e t = error $ show e
-
--- tc :: [Type] ->
-
--- typecheck i _c (App (Abs term) r) type' = undefined
--- typ upp
--- \0. \1.(here i is 2, c=[0:Typ0,1:Typ1]) 1 
-
-infer :: Integer -> Term -> Check Type
-infer i (QVar v) = do 
-    c <- get 
-    case M.lookup (Free v) c of
-        Just type' -> return type'
-        Nothing    -> throwError $ NotInScopeError (Free v)
-infer i (Idx x)  = do
-    c <- get 
-    let v = Bound (i - x - 1)
-    case M.lookup v c of
-        Just type' -> return type'
-        Nothing -> throwError $ NotInScopeError v
-infer i (Bit _)  = return TypeBit 
-infer i Unit     = return TypeUnit
-infer i (Gate g) = inferGate g
-infer i Meas     = return $ TypeQBit :=> TypeBit
-infer i New      = return $ TypeBit :=> TypeQBit
-infer i (Tup ts) = foldr1 (><) <$> mapM (infer i) ts
-infer i (App l r) = do
-    il <- infer i l 
-    ir <- infer i r
-    inferApp il ir
-infer i (IfEl b true false) = do
-    typecheck i b TypeBit
-    trueType  <- infer i true
-    falseType <- infer i false 
-    inferIf trueType falseType
-infer i (Let eq inn) = do
-    ~(l :>< r) <- checkTup =<< infer i eq
-    modify $  M.insert (Bound (i+1)) r . M.insert (Bound i) l
-    infer (i+2) inn
-infer i (Abs e) = do
-    modify $ M.insert (Bound i) (TypeVar ("a"++ show i)) 
-    et <- infer (i+1) e
-    return $ TypeVar ("a" ++ show i) :=> et
-
---     rightType <- infer i e
---     -- Need to insert, not lookup.
---     c <- get 
---     let varType = M.lookup (Bound i) c
---     return $ varType :=> rightType
---     where
---         varType = M.lookup (Bound i) c
--- -- 
+-- | Check that all top level names are unlinear.
+checkTopLevelUnlinear :: TopEnv -> Check ()
+checkTopLevelUnlinear env = mapM_ checkFuncUnlinear (M.toList env)
+    where
+        checkFuncUnlinear :: (String, Type) -> Check ()
+        checkFuncUnlinear (name, TypeDup a) = return ()
+        checkFuncUnlinear (name, a) = throwError $ LinearNotAllowed name
 
 
+-- | Ability to throw type errors when type checking.
+type Check a = Except TypeError a
 
--- f : Bit -> QBit -> Bit
--- f = \b . \q 
+-- | Whether a type is a subtype of another type.
+(<:) :: Type -> Type -> Bool
+TypeDup a <: TypeDup b     = TypeDup a <: b       -- (!)
+TypeDup a <: b             = a <: b               -- (D)
+(a1 :>< a2) <: (b1 :>< b2) = a1 <: b1 && a2 <: b2 -- (><)
+(a' :=> b) <: (a :=> b')   = a  <: a' && b  <: b' -- (-o)
+a <: b                     = a == b               -- (ax)
 
+-- | Count how many times the variable bound to the head is used.
+headCount :: Term -> Integer
+headCount = headCount' 0
+    where
+        headCount' :: Integer -> Term -> Integer
+        headCount' absl term = case term of
+            Idx i      -> if absl == i then 0 else 1
+            Abs _ e    -> headCount' (absl+1) e
+            App f arg  -> headCount' absl f + headCount' absl arg
+            IfEl c t f -> headCount' absl c + max (headCount' absl t) (headCount' absl f)
+            Tup l r    -> headCount' absl l + headCount' absl r
+            Let eq inn -> headCount' absl eq + headCount' (absl+2) inn
+            _          -> 0
 
--- f = \x . \y . 
+-- | Infer the type of a term.
+inferTerm :: [Type] -> TopEnv -> Term -> Check Type
+inferTerm _ _ Unit      = return $ TypeDup TypeUnit
+inferTerm _ _ (Bit _)   = return $ TypeDup TypeBit
+inferTerm _ _ New       = return $ TypeDup (TypeBit :=> TypeQBit)
+inferTerm _ _ Meas      = return $ TypeDup (TypeQBit :=> TypeDup TypeBit)
+inferTerm _ _ (Gate g)  = return $ inferGate g
+inferTerm ctx top (Abs t e) = do
+    et <- inferTerm (t:ctx) top e
+    if linears et then
+        return (t :=> et)
+    else
+        return $ TypeDup (t :=> et)
+inferTerm ctx top (Let eq inn) = do
+    teq <- inferTerm ctx top eq 
+    let nBangs = numBangs teq
+    case debangg teq of
+        (a1 :>< a2) -> do
+            let a1t = addBangs nBangs a1
+            let a2t = addBangs nBangs a2
+            inferTerm (a2t : a1t : ctx) top inn
+        _ -> throwError $ NotProduct teq
+inferTerm ctx top (App f arg) = do
+    tf <- inferTerm ctx top f
+    argT <- inferTerm ctx top arg
 
+    -- tf must be a function and the passed argument must be a subtype of the function argument.
+    case debangg tf of
+        (fArg :=> fRet) | argT <: fArg -> return fRet 
+                        | otherwise -> throwError $ Mismatch fArg argT
+        _ -> throwError $ NotFunction tf
+inferTerm ctx top (Tup l r) = do
+    lt <- inferTerm ctx top l
+    rt <- inferTerm ctx top r
+    return $ shiftBang (lt :>< rt)
+inferTerm ctx _ (Idx i) = return $ ctx !! fromIntegral i
+inferTerm _ top (Fun fun) = case M.lookup fun top of
+    Nothing -> throwError $ NotInScope fun 
+    Just t  -> return t
+inferTerm ctx top (IfEl c t f) = do
+    tc <- inferTerm ctx top c
+    tt <- inferTerm ctx top t
+    tf <- inferTerm ctx top f
+    if tc <: TypeBit then
+        if tt == tf then -- Should we require them to be equal? Or to have a common superclass.
+            return tt
+        else
+            throwError $ Mismatch tt tf
+    else
+        throwError $ Mismatch TypeBit tc
 
--- f x =
--- (\x.aoeu)y
--- \x.aoeu -> y
+-- | Unwraps as many ! as possible from a type.
+debangg :: Type -> Type
+debangg (TypeDup a) = debangg a
+debangg a           = a
 
--- f : Bit -> Bit
--- f x = \y.x
+-- | Moves as many common bangs as possible from inside a tuple to the outside.
+shiftBang :: Type -> Type
+shiftBang (TypeDup a :>< TypeDup b) = TypeDup (shiftBang (a :>< b))
+shiftBang a = a
 
--- infer (\y.x) [x : Bit] ==> a -> Bit
+-- | Return how many ! a type is wrapped in.
+numBangs :: Type -> Integer
+numBangs (TypeDup a) = 1 + numBangs a
+numBangs a = 0
 
----- *
--- (\x.(\y.x)0) : Bit -> Bit []
+-- | Wrap a type in some number of !.
+addBangs :: Integer -> Type -> Type
+addBangs 0 a = a
+addBangs n a = addBangs (n-1) (TypeDup a)
 
--- (\y.x) 0 : Bit [x : Bit]
----- (\y.x) : a -> Bit [x : Bit]
----- 0 : a [x : Bit, y : a]
----- 0 : Bit [x : Bit, y : Bit]
+-- | Check if there are any linear values in a type.
+linears :: Type -> Bool
+linears (TypeDup a) = False
+-- linears (a :=> b)   = linears b
+-- linears (a :>< b)   = linears a || linears b
+linears a           = True
 
----- *
--- (\x.(\y.\z.x) 0 1) : Bit -> Bit []
--- (((\y.\z.x) 0) 1) : Bit [x : Bit]
----- 0 [x : Bit, y : Bit, z : a2]
----- 1 [x : Bit, y : Bit, z : Bit]
-
---let (var, var)
-checkTup :: Type -> Check Type
-checkTup (l :>< r) = return $ l >< r
-checkTup t         = throwError $ TypeNonFactorizableError t
-
-
-inferApp :: Type -> Type -> Check Type 
-inferApp (n :=> p) t
-    | n == t    = return p
-    | otherwise = throwError $ TypeMismatchError n t
-
-inferIf :: Type -> Type -> Check Type
-inferIf t f
-    | t == f    = return t
-    | otherwise = throwError $ TypeMismatchError t f
-
-
--- Func "f" TypeQBit (App New (Bit 0))
-
-inferGate :: Gate -> Check Type
-inferGate GCNOT = return ((TypeQBit :>< TypeQBit) :=> (TypeQBit :>< TypeQBit))
-inferGate GSWP  = return ((TypeQBit :>< TypeQBit) :=> (TypeQBit :>< TypeQBit))
-inferGate GFRDK = return ((TypeQBit :>< TypeQBit :>< TypeQBit) :=> (TypeQBit :>< TypeQBit :>< TypeQBit))
-inferGate GTOF  = return ((TypeQBit :>< TypeQBit :>< TypeQBit) :=> (TypeQBit :>< TypeQBit :>< TypeQBit))
-inferGate GH    = return (TypeQBit :=> TypeQBit) 
-inferGate GX    = return (TypeQBit :=> TypeQBit) 
-inferGate GY    = return (TypeQBit :=> TypeQBit) 
-inferGate GZ    = return (TypeQBit :=> TypeQBit) 
-inferGate GI    = return (TypeQBit :=> TypeQBit) 
-inferGate GS    = return (TypeQBit :=> TypeQBit) 
-inferGate GT    = return (TypeQBit :=> TypeQBit) 
-inferGate _g    = throwError NoSuchGateError
- 
-
--- id : Bit -o Bit
--- id = \x . (\y . x) 0
-
--- tc id []
--- tc (App (\y . x) 0) [x : Bit]
-
--- (\y . x) [x : Bit]
--- x [x : Bit, y : a]
-
--- [x : Bit]
--- \y . x : a -> Bit
-
--- App (\y . x : a -> Bit) (0 : Bit) : Bit
-
-
-shouldTypecheck1 = "id : Bit -o Bit id x = (\\y.x) 0"
-
-ast = run shouldTypecheck1
--}
+-- | Infer type of a gate.
+inferGate :: Gate -> Type
+inferGate g = TypeDup (arg :=> arg)
+    where
+        n = case g of
+            GFRDK -> 3
+            GTOF  -> 3
+            GSWP  -> 2
+            GCNOT -> 2
+            _     -> 1
+        arg = foldr (:><) TypeQBit (replicate (n-1) TypeQBit)

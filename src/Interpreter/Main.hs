@@ -10,7 +10,7 @@ import Control.Monad.Except
 import Interpreter.Interpreter
 import System.Console.Haskeline
 import Control.Monad.Except
-import qualified Type.HM as HM
+import qualified Type.TypeChecker as TypeChecker
 
 -- TODO: 
 -- * köra fq utryck i cmd (utan att mata in en fil)
@@ -43,7 +43,7 @@ type Run = ExceptT Error IO
 
 data Error
   = ParseError String
-  | TypeError HM.TypeError
+  | TypeError TypeChecker.TypeError
   | ValueError ValueError
   | NoSuchFile FilePath
     deriving Show
@@ -77,7 +77,7 @@ parse s = case pProgram (myLexer s) of
 -- [Function] -> Either TypeError ()
 -- Func String Type Term
 typecheck :: A.Program -> Run ()
-typecheck p = case HM.typecheck p of
+typecheck p = case TypeChecker.typecheck p of
   Left err -> do
     liftIO $ putStrLn "TYPE ERROR"
     throwError $ TypeError err

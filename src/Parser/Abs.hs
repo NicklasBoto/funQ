@@ -9,6 +9,9 @@ import Prelude (Char, Double, Integer, String)
 import qualified Prelude as C (Eq, Ord, Show, Read)
 import qualified Data.String
 
+newtype FunVar = FunVar String
+  deriving (C.Eq, C.Ord, C.Show, C.Read, Data.String.IsString)
+
 newtype Var = Var String
   deriving (C.Eq, C.Ord, C.Show, C.Read, Data.String.IsString)
 
@@ -39,7 +42,7 @@ data Tup = Tuple Term [Term]
 data Bit = BZero | BOne
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
-data FunDec = FDecl Type Function
+data FunDec = FDecl FunVar Type Function
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data Function = FDef Var [Arg] Term
