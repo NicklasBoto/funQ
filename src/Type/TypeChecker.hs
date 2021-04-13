@@ -103,7 +103,7 @@ inferTerm _ _ Meas      = return $ TypeDup (TypeQBit :=> TypeDup TypeBit)
 inferTerm _ _ (Gate g)  = return $ inferGate g
 inferTerm ctx top (Abs t e) = do
     et <- inferTerm (t:ctx) top e
-    if linears et then
+    if any (\idx -> isLinear (ctx !! fromIntegral idx)) (freeVars e) then
         return (t :=> et)
     else
         return $ TypeDup (t :=> et)
@@ -165,12 +165,23 @@ addBangs :: Integer -> Type -> Type
 addBangs 0 a = a
 addBangs n a = addBangs (n-1) (TypeDup a)
 
--- | Check if there are any linear values in a type.
-linears :: Type -> Bool
-linears (TypeDup a) = False
--- linears (a :=> b)   = linears b
--- linears (a :>< b)   = linears a || linears b
-linears a           = True
+-- | Whether a type is linear and not wrapped in !.
+isLinear :: Type -> Bool
+isLinear (TypeDup _) = False
+isLinear _           = True
+
+-- | Finds all free de bruijn variables in a term.
+freeVars :: Term -> [Integer] -- todo: make sure it is not off by one and the result integers makes sense according to the callee.
+freeVars = freeVars' 0
+    where
+        freeVars' :: Integer -> Term -> [Integer]
+        freeVars' n (Tup l r)    = freeVars' n l ++ freeVars' n r 
+        freeVars' n (App f a)    = freeVars' n f ++ freeVars' n a
+        freeVars' n (Let eq inn) = freeVars' n eq ++ freeVars' (n+2) inn
+        freeVars' n (Abs _ e)    = freeVars' (n+2) e
+        freeVars' n (Idx i)      = if i >= n then [n - i] else [] 
+        freeVars' _ _            = []
+
 
 -- | Infer type of a gate.
 inferGate :: Gate -> Type
