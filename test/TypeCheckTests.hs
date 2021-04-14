@@ -1,20 +1,90 @@
--- {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell #-}
 -- {-# LANGUAGE LambdaCase      #-}
--- {-# LANGUAGE OverloadedStrings      #-}
+{-# LANGUAGE OverloadedStrings      #-}
 
 module TypeCheckTests where 
 import Type.TypeChecker
+import Test.QuickCheck (quickCheckAll, (===), Property, Testable(property), quickCheck, Arbitrary(..), Gen(..), frequency, elements, generate, sample, withMaxSuccess, (==>))
+import Data.Either (lefts,rights, isLeft, isRight)
+import AST.AST ( Type(TypeDup, (:=>), (:><)) )
+import Control.Monad.Except
 
-f = tcStr "f:!(Bit -o Bit) f=(\\a(Bit).0)"
-a = tcStr "f:!(T -o QBit) f = \\x(T). new 0"
+instance Arbitrary Type where
+    arbitrary = frequency 
+              [ (6, elements ["Bit", "T", "QBit"])
+              , (1, (:=>) <$> arbitrary <*> arbitrary)
+              , (1, (:><) <$> arbitrary <*> arbitrary)
+              , (2, TypeDup . debangg <$> arbitrary)
+              ]
+
+-- | When typecheck is expected to succeed.
+expectSuccess :: Either e t -> Property 
+expectSuccess = property . isRight
+
+--- When typecheck is expected to fail.
+expectError :: Either e t -> Property
+expectError = property . isLeft
+
+testSup f = case runExcept f of
+    Right t -> Just t
+    Left _ -> Nothing
+
+
+prop_ArgId = expectSuccess $ tcStr "f : !(Bit -o Bit) f x = x"
+prop_LamId = expectSuccess $ tcStr "f : !(Bit -o Bit) f = \\x:Bit.x"
+prop_LamConst0 = expectSuccess $ tcStr "f: !(Bit -o Bit) f = \\a:Bit.0"
+prop_Create0Qbit = expectSuccess $ tcStr "f: !(T -o QBit) f = \\x:T. new 0"
+prop_Create0Qbit2 = expectSuccess $ tcStr "f: T -o QBit f = \\x:T. new 0"
+prop_NullaryBit = expectSuccess $ tcStr "f: Bit f = 0"
+prop_NullaryBit2 = expectSuccess $ tcStr "f: !Bit f = 0"
+prop_NullaryQBit = expectError $ tcStr "f: !QBit f = new 0"
+prop_NullaryQBit2 = expectError $ tcStr "f: QBit f = new 0"
+
+prop_IfGenTyp = expectSuccess $ tcStr "f: Bit f = ((\\a:Bit.\\b:!Bit.if 1 then a else b)0)0"
+
+
+prop_supBits = runExcept (sup "Bit" "!Bit") === Right "Bit"
+prop_supBits2 = testSup (sup "!Bit" "Bit") === Just "Bit"
+prop_supCom t1 t2 = testSup (sup t1 t2) === testSup (sup t2 t1)
+prop_infCom t1 t2 = testSup (inf t1 t2) === testSup (inf t2 t1)
+prop_supAss t1 t2 t3 = testSup (assTest sup t1 t2 t3) === testSup (assTest sup t2 t3 t1)
+prop_infAss t1 t2 t3 = testSup (assTest inf t1 t2 t3) === testSup (assTest inf t2 t3 t1)
+prop_supIdp t = testSup (sup t t) === Just t
+prop_infIdp t = testSup (inf t t) === Just t
+
+-- A <: B ==> sup A B == A
+prop_subSup t1 t2 = t1 <: t2 ==> (testSup (sup t1 t2) === Just t2)
+-- A <: B ==> inf A B == A
+prop_subInf t1 t2 = t1 <: t2 ==> (testSup (inf t1 t2) === Just t1)
+
+x = testSup (sup "Bit -o QBit" "!Bit -o QBit")
+
+assTest f a b c = f a b >>= f c
+-- !Bit <: !!Bit
+-- !!Bit <: !Bit
+-- !!Bit != !Bit
+-- poset
+-- lattice
+
+
+
+
+-- t1 ^ (t2 ^ t3) == (t1 ^ t2) ^ t3
+
+
+
+-- a ^ b ^ b = a ^ b
+-- x ^ x = x
+
+return []
+
+-- Run all tests 
+runTests :: IO Bool
+runTests = $quickCheckAll
+
 -- import Type.HM
 -- import AST.AST
--- import Data.Either (lefts,rights, isLeft, isRight)
--- import Test.QuickCheck (quickCheckAll, (===), Property, Testable(property), quickCheck)
 
--- --- Test that should fail (throw an exception)
--- expectError :: Either e t -> Property
--- expectError = property . isLeft
 
 -- --- Test that should fail (throw an exception)
 -- expectErrorWith :: TypeError -> Either TypeError t -> Property
@@ -225,12 +295,7 @@ a = tcStr "f:!(T -o QBit) f = \\x(T). new 0"
 
 -- reallyBad = typecheck . run $ "f : (a >< b) -o !b f x = let (a,b) = x in a"
 
--- -- Need return for quickCheckAll
--- return []
-
--- -- Run all tests 
--- runTests :: IO Bool
--- runTests = $quickCheckAll
+-- Need return for quickCheckAll
 
 -- -- ?{3}(?{2}(a ⊗  b) ⊸ ?{2}(b)) 
 
@@ -249,6 +314,9 @@ a = tcStr "f:!(T -o QBit) f = \\x(T). new 0"
 
 -- -- simpler example with same problem
 -- stProb = inferExp "(\\x . (x 0, x 0)) new"
+
+-- even simpler example
+-- stp = inferExp "\\x.(x 0, x 0)"
 
 -- tes = inferExp "(\\x . x 0) new"
 

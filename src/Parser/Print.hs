@@ -123,7 +123,7 @@ instance Print Parser.Abs.Term where
     Parser.Abs.TApp term1 term2 -> prPrec i 2 (concatD [prt 2 term1, prt 3 term2])
     Parser.Abs.TIfEl term1 term2 term3 -> prPrec i 1 (concatD [doc (showString "if"), prt 2 term1, doc (showString "then"), prt 0 term2, doc (showString "else"), prt 0 term3])
     Parser.Abs.TLet var1 var2 term1 term2 -> prPrec i 1 (concatD [doc (showString "let"), doc (showString "("), prt 0 var1, doc (showString ","), prt 0 var2, doc (showString ")"), doc (showString "="), prt 0 term1, doc (showString "in"), prt 0 term2])
-    Parser.Abs.TLamb lambda var type_ term -> prPrec i 1 (concatD [prt 0 lambda, prt 0 var, doc (showString "("), prt 0 type_, doc (showString ")."), prt 0 term])
+    Parser.Abs.TLamb lambda funvar type_ term -> prPrec i 1 (concatD [prt 0 lambda, prt 0 funvar, prt 0 type_, doc (showString "."), prt 0 term])
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
 
@@ -154,7 +154,7 @@ instance Print Parser.Abs.Function where
 
 instance Print Parser.Abs.Arg where
   prt i e = case e of
-    Parser.Abs.FArg var type_ -> prPrec i 0 (concatD [prt 0 var, doc (showString ":"), prt 0 type_])
+    Parser.Abs.FArg var -> prPrec i 0 (concatD [prt 0 var])
   prtList _ [] = concatD []
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString " "), prt 0 xs]
 

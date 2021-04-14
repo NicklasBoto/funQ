@@ -37,6 +37,9 @@ data Function = Func String Type Term
 
 type Program = [Function]
 
+fname :: P.FunVar -> String
+fname (P.FunVar v) = filter (\x -> x /= ' ' && x /= ':') v
+
 name :: P.Var -> String
 name (P.Var v) = v
 
@@ -108,12 +111,12 @@ reverseType (l :=> r) = P.TypeFunc (reverseType l) (reverseType r)
 --   Converts names such as "new" to its own terms New.
 makeImTerm :: Env -> P.Term -> Term
 makeImTerm env (P.TLamb _ var type' term) = Abs (convertType type') $ makeImTerm env' term
-    where env' = M.insert (name var) 0 (M.map succ env)
+    where env' = M.insert (fname var) 0 (M.map succ env)
 makeImTerm env (P.TApp l r) = App (makeImTerm env l) (makeImTerm env r)
 makeImTerm env (P.TVar (P.Var "new")) = New
 makeImTerm env (P.TVar (P.Var "meas")) = Meas
 makeImTerm env (P.TVar (P.Var "measure")) = Meas
-makeImTerm env (P.TVar var) = case M.lookup (name var) env of
+makeImTerm env (P.TVar var) =  case M.lookup (name var) env of
     Just idx -> Idx idx
     Nothing  -> Fun (name var)
 makeImTerm env (P.TIfEl cond true false) = 
@@ -130,18 +133,41 @@ makeImFunction :: P.FunDec -> Function
 makeImFunction (P.FDecl _ t function) = Func name (convertType t) term --(unfun n) (convertType t) (makeImTerm M.empty $ lambdaize fun)
     where
         (P.FDef (P.Var name) args body) = function
-        term = makeImTerm M.empty $ lambdaize function
-        
+        term = makeImTerm M.empty $ lambdaize (debangFunc t) args body
+         
     -- where unfun (P.FunVar x) = init $ filter (/=' ') x
 
--- | Convert all functions to lambda abstractions
-lambdaize :: P.Function -> P.Term
-lambdaize (P.FDef _ [] term) = term
-lambdaize (P.FDef n (a:args) body) = P.TLamb lambda name type' term --(unArg a) type' (lambdaize (P.FDef _n args term))
-    where 
-        lambda = P.Lambda "//"
-        (P.FArg name type') = a
-        term = lambdaize (P.FDef n args body)
+-- f : B
+-- f = \x : A . (\y : A . y) x 
+
+-- f : A -> B -> C
+-- f x y = f x y
+-- \\y.\\x.aoeu
+
+-- aboba : !(B -> C) -> D
+-- f : !(A -> !(B -> C) -> D)
+-- f x = aboba
+
+-- | Debangs outer level of a type.
+debangFunc :: P.Type -> P.Type
+debangFunc (P.TypeDup t@(P.TypeFunc n p)) = t
+debangFunc t = t
+
+-- | Lambdaizes and types the argument types based on the type signature.
+lambdaize :: P.Type -> [P.Arg] -> P.Term -> P.Term
+lambdaize _t [] body                            = body 
+lambdaize (P.TypeFunc n p) (P.FArg (P.Var v) : vs) body = P.TLamb (P.Lambda "\\") (P.FunVar v) n (lambdaize p vs body)
+
+
+
+-- -- | Convert all functions to lambda abstractions
+-- lambdaize :: P.Function -> P.Term
+-- lambdaize (P.FDef _ [] term) = term
+-- lambdaize (P.FDef n (a:args) body) = P.TLamb lambda name type' term --(unArg a) type' (lambdaize (P.FDef _n args term))
+--     where 
+--         lambda = P.Lambda "//"
+--         (P.FArg name) = a
+--         term = lambdaize (P.FDef n args body)
 
     -- where unArg (P.FArg v) = v
     --       lambda = P.Lambda "\\"
@@ -170,7 +196,7 @@ reverseImTerm env (Tup l r)    = P.TTup $ P.Tuple (reverseImTerm env l) [reverse
 reverseImTerm env (App  t1 t2) = P.TApp (reverseImTerm env t1) (reverseImTerm env t2)
 reverseImTerm env (IfEl c t e) = P.TIfEl (reverseImTerm env c) (reverseImTerm env t) (reverseImTerm env e)
 reverseImTerm env (Let eq inn) = P.TLet (P.Var ('x' : show (env + 1))) (P.Var ('x' : show env)) (reverseImTerm env eq) (reverseImTerm (env + 2) inn)
-reverseImTerm env (Abs type' term)  = P.TLamb (P.Lambda "\\") (P.Var ('x' : show env)) (reverseType type') (reverseImTerm (env+1) term)
+reverseImTerm env (Abs type' term)  = P.TLamb (P.Lambda "\\") (P.FunVar ('x' : show env)) (reverseType type') (reverseImTerm (env+1) term)
 reverseImTerm env New          = P.TVar (P.Var "new")
 reverseImTerm env Meas         = P.TVar (P.Var "meas")
 reverseImTerm env Unit         = P.TStar

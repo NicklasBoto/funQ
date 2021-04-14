@@ -42,9 +42,8 @@ The reserved words used in Parser are the following:
 
 The symbols used in Parser are the following:
   | * | ( | , | )
-  | = | @ | . | 0
-  | 1 | : | ! | ><
-  | -o |  |  |
+  | = | ; | . | 0
+  | 1 | ! | >< | -o
 
 ===Comments===
 Single-line comments begin with --.There are no multiple-line comments in the grammar.
@@ -66,7 +65,7 @@ All other symbols are terminals.
   |  |  **|**  | //Term3//
   | //Term1// | -> | ``if`` //Term2// ``then`` //Term// ``else`` //Term//
   |  |  **|**  | ``let`` ``(`` //Var// ``,`` //Var// ``)`` ``=`` //Term// ``in`` //Term//
-  |  |  **|**  | //Lambda// //Var// ``@`` //Type// ``.`` //Term//
+  |  |  **|**  | //Lambda// //Arg// ``;`` //Type// ``.`` //Term//
   |  |  **|**  | //Term2//
   | //Term// | -> | //Term1//
   | //Tup// | -> | ``(`` //Term// ``,`` //[Term]// ``)``
@@ -78,7 +77,7 @@ All other symbols are terminals.
   | //[FunDec]// | -> | **eps**
   |  |  **|**  | //FunDec// //[FunDec]//
   | //Function// | -> | //Var// //[Arg]// ``=`` //Term//
-  | //Arg// | -> | //Var// ``:`` //Type//
+  | //Arg// | -> | //Var//
   | //[Arg]// | -> | **eps**
   |  |  **|**  | //Arg// //[Arg]//
   | //Type2// | -> | //Var//

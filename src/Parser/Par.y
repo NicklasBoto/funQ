@@ -50,34 +50,33 @@ import Parser.Lex
   '!' { PT _ (TS _ 1) }
   '(' { PT _ (TS _ 2) }
   ')' { PT _ (TS _ 3) }
-  ').' { PT _ (TS _ 4) }
-  '*' { PT _ (TS _ 5) }
-  ',' { PT _ (TS _ 6) }
-  '-o' { PT _ (TS _ 7) }
+  '*' { PT _ (TS _ 4) }
+  ',' { PT _ (TS _ 5) }
+  '-o' { PT _ (TS _ 6) }
+  '.' { PT _ (TS _ 7) }
   '0' { PT _ (TS _ 8) }
   '1' { PT _ (TS _ 9) }
-  ':' { PT _ (TS _ 10) }
-  '=' { PT _ (TS _ 11) }
-  '><' { PT _ (TS _ 12) }
-  'Bit' { PT _ (TS _ 13) }
-  'CNOT' { PT _ (TS _ 14) }
-  'FREDKIN' { PT _ (TS _ 15) }
-  'H' { PT _ (TS _ 16) }
-  'I' { PT _ (TS _ 17) }
-  'QBit' { PT _ (TS _ 18) }
-  'QFT' { PT _ (TS _ 19) }
-  'S' { PT _ (TS _ 20) }
-  'SWAP' { PT _ (TS _ 21) }
-  'T' { PT _ (TS _ 22) }
-  'TOFFOLI' { PT _ (TS _ 23) }
-  'X' { PT _ (TS _ 24) }
-  'Y' { PT _ (TS _ 25) }
-  'Z' { PT _ (TS _ 26) }
-  'else' { PT _ (TS _ 27) }
-  'if' { PT _ (TS _ 28) }
-  'in' { PT _ (TS _ 29) }
-  'let' { PT _ (TS _ 30) }
-  'then' { PT _ (TS _ 31) }
+  '=' { PT _ (TS _ 10) }
+  '><' { PT _ (TS _ 11) }
+  'Bit' { PT _ (TS _ 12) }
+  'CNOT' { PT _ (TS _ 13) }
+  'FREDKIN' { PT _ (TS _ 14) }
+  'H' { PT _ (TS _ 15) }
+  'I' { PT _ (TS _ 16) }
+  'QBit' { PT _ (TS _ 17) }
+  'QFT' { PT _ (TS _ 18) }
+  'S' { PT _ (TS _ 19) }
+  'SWAP' { PT _ (TS _ 20) }
+  'T' { PT _ (TS _ 21) }
+  'TOFFOLI' { PT _ (TS _ 22) }
+  'X' { PT _ (TS _ 23) }
+  'Y' { PT _ (TS _ 24) }
+  'Z' { PT _ (TS _ 25) }
+  'else' { PT _ (TS _ 26) }
+  'if' { PT _ (TS _ 27) }
+  'in' { PT _ (TS _ 28) }
+  'let' { PT _ (TS _ 29) }
+  'then' { PT _ (TS _ 30) }
   L_FunVar { PT _ (T_FunVar $$) }
   L_Var { PT _ (T_Var $$) }
   L_GateIdent { PT _ (T_GateIdent $$) }
@@ -114,7 +113,7 @@ Term2 : Term2 Term3 { Parser.Abs.TApp $1 $2 } | Term3 { $1 }
 Term1 :: { Parser.Abs.Term }
 Term1 : 'if' Term2 'then' Term 'else' Term { Parser.Abs.TIfEl $2 $4 $6 }
       | 'let' '(' Var ',' Var ')' '=' Term 'in' Term { Parser.Abs.TLet $3 $5 $8 $10 }
-      | Lambda Var '(' Type ').' Term { Parser.Abs.TLamb $1 $2 $4 $6 }
+      | Lambda FunVar Type '.' Term { Parser.Abs.TLamb $1 $2 $3 $5 }
       | Term2 { $1 }
 
 Term :: { Parser.Abs.Term }
@@ -139,7 +138,7 @@ Function :: { Parser.Abs.Function }
 Function : Var ListArg '=' Term { Parser.Abs.FDef $1 $2 $4 }
 
 Arg :: { Parser.Abs.Arg }
-Arg : Var ':' Type { Parser.Abs.FArg $1 $3 }
+Arg : Var { Parser.Abs.FArg $1 }
 
 ListArg :: { [Parser.Abs.Arg] }
 ListArg : {- empty -} { [] } | Arg ListArg { (:) $1 $2 }
