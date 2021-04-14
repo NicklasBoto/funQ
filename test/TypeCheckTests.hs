@@ -4,10 +4,14 @@
 
 module TypeCheckTests where 
 import Type.TypeChecker
-import Test.QuickCheck (quickCheckAll, (===), Property, Testable(property), quickCheck, Arbitrary(..), Gen(..), frequency, elements, generate, sample, withMaxSuccess, (==>))
+import Test.QuickCheck (quickCheckAll, (===), Property, Testable(property), quickCheck, Arbitrary(..), Gen(..), frequency, elements, generate, sample, withMaxSuccess, (==>), expectFailure)
 import Data.Either (lefts,rights, isLeft, isRight)
 import AST.AST ( Type(TypeDup, (:=>), (:><)) )
 import Control.Monad.Except
+import Control.Monad.Reader 
+import Control.Monad.State 
+import qualified Data.Set as Set
+import qualified Data.Map as Map
 
 instance Arbitrary Type where
     arbitrary = frequency 
@@ -25,10 +29,10 @@ expectSuccess = property . isRight
 expectError :: Either e t -> Property
 expectError = property . isLeft
 
-testSup f = case runExcept f of
+testSup :: Check Type -> Maybe Type
+testSup f = case evalState (runReaderT (runExceptT f) Map.empty) Set.empty of
     Right t -> Just t
-    Left _ -> Nothing
-
+    Left _  -> Nothing
 
 prop_ArgId = expectSuccess $ tcStr "f : !(Bit -o Bit) f x = x"
 prop_LamId = expectSuccess $ tcStr "f : !(Bit -o Bit) f = \\x:Bit.x"
@@ -38,27 +42,38 @@ prop_Create0Qbit2 = expectSuccess $ tcStr "f: T -o QBit f = \\x:T. new 0"
 prop_NullaryBit = expectSuccess $ tcStr "f: Bit f = 0"
 prop_NullaryBit2 = expectSuccess $ tcStr "f: !Bit f = 0"
 prop_NullaryQBit = expectError $ tcStr "f: !QBit f = new 0"
-prop_NullaryQBit2 = expectError $ tcStr "f: QBit f = new 0"
+prop_NullaryQBit2 = expectSuccess $ tcStr "f: QBit f = new 0"
 
 prop_IfGenTyp = expectSuccess $ tcStr "f: Bit f = ((\\a:Bit.\\b:!Bit.if 1 then a else b)0)0"
 
+prop_topLin = expectError $ tcStr $
+    "f : QBit f = new 0 " ++
+    "g : QBit g = f " ++
+    "main : QBit >< QBit main = (f,g)"
 
-prop_supBits = runExcept (sup "Bit" "!Bit") === Right "Bit"
-prop_supBits2 = testSup (sup "!Bit" "Bit") === Just "Bit"
-prop_supCom t1 t2 = testSup (sup t1 t2) === testSup (sup t2 t1)
-prop_infCom t1 t2 = testSup (inf t1 t2) === testSup (inf t2 t1)
-prop_supAss t1 t2 t3 = testSup (assTest sup t1 t2 t3) === testSup (assTest sup t2 t3 t1)
-prop_infAss t1 t2 t3 = testSup (assTest inf t1 t2 t3) === testSup (assTest inf t2 t3 t1)
-prop_supIdp t = testSup (sup t t) === Just t
-prop_infIdp t = testSup (inf t t) === Just t
+prop_linIf = expectSuccess $ tcStr $
+    "q : QBit q = new 0 " ++
+    "main : QBit main = if 0 then q else q"
 
--- A <: B ==> sup A B == A
-prop_subSup t1 t2 = t1 <: t2 ==> (testSup (sup t1 t2) === Just t2)
--- A <: B ==> inf A B == A
-prop_subInf t1 t2 = t1 <: t2 ==> (testSup (inf t1 t2) === Just t1)
+prop_linIf2 = expectError $ tcStr $ "q : QBit q = new 0 " ++ "main : QBit main = if measure q then q else new 1"
 
-x = testSup (sup "Bit -o QBit" "!Bit -o QBit")
+prop_supremumBits = testSup (supremum "Bit" "!Bit") === Just "Bit"
+prop_supremumBits2 = testSup (supremum "!Bit" "Bit") === Just "Bit"
+prop_supremumCom t1 t2 = testSup (supremum t1 t2) === testSup (supremum t2 t1)
+prop_infimumCom t1 t2 = testSup (infimum t1 t2) === testSup (infimum t2 t1)
+prop_supremumAss t1 t2 t3 = testSup (assTest supremum t1 t2 t3) === testSup (assTest supremum t2 t3 t1)
+prop_infimumAss t1 t2 t3 = testSup (assTest infimum t1 t2 t3) === testSup (assTest infimum t2 t3 t1)
+prop_supremumIdp t = testSup (supremum t t) === Just t
+prop_infimumIdp t = testSup (infimum t t) === Just t
 
+-- A <: B ==> supremum A B == A
+prop_subSup t1 t2 = t1 <: t2 ==> (testSup (supremum t1 t2) === Just t2)
+-- A <: B ==> infimum A B == A
+prop_subInf t1 t2 = t1 <: t2 ==> (testSup (infimum t1 t2) === Just t1)
+
+x = testSup (supremum "Bit -o QBit" "!Bit -o QBit")
+
+assTest :: Monad m => (t1 -> t2 -> m t2) -> t1 -> t2 -> t1 -> m t2
 assTest f a b c = f a b >>= f c
 -- !Bit <: !!Bit
 -- !!Bit <: !Bit

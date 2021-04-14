@@ -1,6 +1,8 @@
 module Type.TypeChecker where
 import AST.AST
 import Control.Monad.Except
+import Control.Monad.Reader
+import Control.Monad.State
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.String
@@ -8,7 +10,10 @@ import Data.String
 -- | Typecheck a program.
 --   Returns TypeError on failure an unit on success.
 typecheck :: Program -> Either TypeError ()
-typecheck program = runExcept (typecheckP program)
+typecheck program = evalState (runReaderT (runExceptT (typecheckP program)) top) lin
+    where
+        top = buildTopEnv program
+        lin = S.empty
 
 -- | Parse a typecheck a program encoded as a string.
 tcStr :: String -> Either TypeError ()
@@ -19,12 +24,34 @@ data TypeError
     = NotFunction Type         -- ^ A type was expected to be a function but was not.
     | Mismatch Type Type       -- ^ Expected a type but found another type.
     | NotProduct Type          -- ^ A type was expected to be a product but was not.
-    | LinearNotAllowed String  -- ^ A function that should not be linear was linear.
     | NotLinear String         -- ^ A function that is linear used many times.
     | NoCommonSuper Type Type  -- ^ No common supertype was found
     | NotInScope String        -- ^ A function was not in scope.
     | DuplicateFunction String -- ^ A function was defined multiple times.
-    deriving (Show, Eq)
+    deriving Eq
+
+instance Show TypeError where
+    show (NotFunction t) = 
+        show t ++ " is not a function!"
+
+    show (Mismatch e a) =
+        "Couldn't match expected type '" ++ show e ++
+        "' with actual type '" ++ show a ++ "'"
+
+    show (NotProduct t) =
+        "Not a factorizable type '" ++ show t ++ "'"
+
+    show (NotLinear f) =
+        "Linear function " ++ f ++ " is used more than once"
+
+    show (NoCommonSuper a b) =
+        "Could not find common type for type '" ++ show a ++ "' and type '" ++ show b ++ "'"
+
+    show (NotInScope v) =
+        "Variable not in scope: " ++ v
+
+    show (DuplicateFunction f) =
+        "Function '" ++ f ++ "' declared multiple times"
 
 instance IsString Type where
     fromString t = t'
@@ -34,25 +61,18 @@ instance IsString Type where
 typecheckP :: Program -> Check ()
 typecheckP program = do
     checkNamesUnique program
-    checkTopLevelUnlinear top
-    mapM_ (typecheckF top) program
-    where
-        top = buildTopEnv program
+    mapM_ typecheckF program
 
 -- Typechecks the function inside the check monad.
-typecheckF :: TopEnv -> Function -> Check ()
-typecheckF top (Func name type' term) = do
-    t <- inferTerm [] top term
-    if t <: type' then
-        return ()
-    else
-        throwError (Mismatch type' t)
+typecheckF :: Function -> Check ()
+typecheckF (Func name type' term) = do
+    t <- inferTerm [] term
+    if t <: type'
+        then return ()
+        else throwError (Mismatch type' t)
 
-data Env
-    = Env
-    { linEnv :: S.Set String
-    , topEnv :: M.Map String Type
-    }
+type LinEnv = S.Set String
+type TopEnv = M.Map String Type
 
 -- | Builds map between top level names and types.
 buildTopEnv :: Program -> TopEnv
@@ -71,17 +91,8 @@ checkNamesUnique = foldM_ f S.empty
             | otherwise          = return (S.insert n visited)
 
 
--- | Check that all top level names are unlinear.
-checkTopLevelUnlinear :: TopEnv -> Check ()
-checkTopLevelUnlinear env = mapM_ checkFuncUnlinear (M.toList env)
-    where
-        checkFuncUnlinear :: (String, Type) -> Check ()
-        checkFuncUnlinear (name, TypeDup a) = return ()
-        checkFuncUnlinear (name, a) = throwError $ LinearNotAllowed name
-
-
 -- | Ability to throw type errors when type checking.
-type Check a = ExceptT TypeError (Reader Env) a
+type Check a = ExceptT TypeError (ReaderT TopEnv (State LinEnv)) a
 
 -- | Whether a type is a subtype of another type.
 (<:) :: Type -> Type -> Bool
@@ -107,120 +118,89 @@ headCount = headCount' 0
 
 -- | Infer the type of a term.
 inferTerm :: [Type] -> Term -> Check Type
-inferTerm _ _ _ Unit      = return $ TypeDup TypeUnit
-inferTerm _ _ _ (Bit _)   = return $ TypeDup TypeBit
-inferTerm _ _ _ New       = return $ TypeDup (TypeBit :=> TypeQBit)
-inferTerm _ _ _ Meas      = return $ TypeDup (TypeQBit :=> TypeDup TypeBit)
-inferTerm _ _ _ (Gate g)  = return $ inferGate g
-inferTerm ctx top lenv (Abs t e) = do
-    et <- inferTerm (t:ctx) top lenv e
+inferTerm _ Unit      = return $ TypeDup TypeUnit
+inferTerm _ (Bit _)   = return $ TypeDup TypeBit
+inferTerm _ New       = return $ TypeDup (TypeBit :=> TypeQBit)
+inferTerm _ Meas      = return $ TypeDup (TypeQBit :=> TypeDup TypeBit)
+inferTerm _ (Gate g)  = return $ inferGate g
+inferTerm ctx (Abs t e) = do
+    top <- ask
+    et <- inferTerm (t:ctx) e
     if any (\idx -> isLinear (ctx !! fromIntegral idx)) (freeVars (Abs t e)) then
         return (t :=> et)
     else
         return $ TypeDup (t :=> et)
-inferTerm ctx top lenv (Let eq inn) = do
-    teq <- inferTerm ctx top lenv eq
+inferTerm ctx (Let eq inn) = do
+    teq <- inferTerm ctx eq
     let nBangs = numBangs teq
     case debangg teq of
         (a1 :>< a2) -> do
             let a1t = addBangs nBangs a1
             let a2t = addBangs nBangs a2
-            inferTerm (a2t : a1t : ctx) top lenv inn
+            inferTerm (a2t : a1t : ctx) inn
         _ -> throwError $ NotProduct teq
-inferTerm ctx top lenv (App f arg) = do
-    tf <- inferTerm ctx top lenv f
-    argT <- inferTerm ctx top lenv arg
+inferTerm ctx (App f arg) = do
+    tf <- inferTerm ctx f
+    argT <- inferTerm ctx arg
 
     -- tf must be a function and the passed argument must be a subtype of the function argument.
     case debangg tf of
         (fArg :=> fRet) | argT <: fArg -> return fRet
                         | otherwise -> throwError $ Mismatch fArg argT
         _ -> throwError $ NotFunction tf
-inferTerm ctx top lenv (Tup l r) = do
-    lt <- inferTerm ctx top lenv l
-    rt <- inferTerm ctx top lenv r
+inferTerm ctx (Tup l r) = do
+    lt <- inferTerm ctx l
+    rt <- inferTerm ctx r
     return $ shiftBang (lt :>< rt)
-inferTerm ctx _ lenv (Idx i) = return $ ctx !! fromIntegral i
-inferTerm _ top lenv (Fun fun) = case M.lookup fun top of
-    Nothing -> throwError $ NotInScope fun
-    Just t | isLinear t -> if Set.member fun linenv
-                                then throwError $ NotLinear t
-                                else 
-inferTerm ctx top lenv (IfEl c t f) = do
-    tc <- inferTerm ctx top lenv c
-    tt <- inferTerm ctx top lenv t
-    tf <- inferTerm ctx top lenv f
+inferTerm ctx (Idx i) = return $ ctx !! fromIntegral i
+inferTerm _ (Fun fun) = do
+    top <- ask
+    lin <- get
+    case M.lookup fun top of
+        Nothing -> throwError $ NotInScope fun
+        Just t | isLinear t -> if S.member fun lin
+                                then throwError $ NotLinear fun
+                                else modify (S.insert fun) >> return t
+               | otherwise -> return t
+inferTerm ctx (IfEl c t f) = do
+    tc <- inferTerm ctx c
+    linc <- get
+
+    tt <- inferTerm ctx t
+    lint <- get
+    put linc
+
+    tf <- inferTerm ctx f
+    linf <- get
+
+    put (S.union lint linf)
+
     if tc <: TypeBit 
-        then sup tt tf
+        then supremum tt tf
         else throwError $ Mismatch TypeBit tc
 
 
--- sup : Type -> Type -> Type
--- sup alpha beta = if alpha == beta alpha else fail
--- sup alpha !A = ! (sup alpha A)
--- sup alpha A = fail
-
--- sup !A !B = ! (sup A B)
-
--- sup (A x B) !C = sup !(A x B) !C
---                = ! (sup (A x B) C)
--- sup (A x B) (C x D) = (sup A C) x (sup B D)
-
--- sup (A -> B) (C -> D) = (inf A C) -> (sup B D)
-
--- inf : Type -> Type -> Type
--- ...
--- inf alpha !A = inf alpha A
--- inf (A x B) !C = inf (A x B) C
-
--- inf (A x B) (C x D) = (inf A C) x (inf B D)
--- inf (A -> B) (C -> D) = (sup A C) -> (inf B D)
-
--- sup A A = A
--- sup A B = sup B A
--- sup A (sup B C) = sup (sup A B) C
--- A <: B <-> sup A B = B
---        <-> inf A B = A
-
--- !A ^ !B = !(A ^ B)
--- !A ^  B = !(A ^ B)
-
 -- | Find the largest commont subtype (greatest lower bound).
 --   Throws error if no common subtype exists.
-inf :: Type -> Type -> Check Type
-inf a b | a == b    = return a
-inf (TypeDup a) (TypeDup b) = TypeDup <$> inf a b
-inf (TypeDup a) b = TypeDup <$> inf a b
-inf a (TypeDup b) = TypeDup <$> inf a b
-inf (a :>< b) (c :>< d) = (:><) <$> inf a c <*> inf b d
-inf (a :=> b) (c :=> d) = (:=>) <$> sup a c <*> inf b d -- NOTE: contravariance of negative type
-inf a b = throwError (NoCommonSuper a b)
+infimum :: Type -> Type -> Check Type
+infimum a b | a == b    = return a
+infimum (TypeDup a) (TypeDup b) = TypeDup <$> infimum a b
+infimum (TypeDup a) b = TypeDup <$> infimum a b
+infimum a (TypeDup b) = TypeDup <$> infimum a b
+infimum (a :>< b) (c :>< d) = (:><) <$> infimum a c <*> infimum b d
+infimum (a :=> b) (c :=> d) = (:=>) <$> supremum a c <*> infimum b d -- NOTE: contravariance of negative type
+infimum a b = throwError (NoCommonSuper a b)
 
--- | Finds the smallest common supertype (least upper bound).
---   Throws error if no common supertype exists.
-sup :: Type -> Type -> Check Type
-sup a b | a == b = return a
-sup (TypeDup a) (TypeDup b) = sup a b
-sup (TypeDup a) b = sup a b
-sup a (TypeDup b) = sup a b
-sup (a :>< b) (c :>< d) = (:><) <$> sup a c <*> sup b d
-sup (a :=> b) (c :=> d) = (:=>) <$> inf a c <*> sup b d -- NOTE: contravariance of negative type
-sup a b = throwError (NoCommonSuper a b)
-
--- sup !QBit QBit
--- ! (sup QBit QBit)
--- ! QBit
-
--- !QBit <: QBit
--- Expects QBit since it is the supertype.
-
-
--- sup (TypeVar a) (TypeVar b) = if a == b 
---             then return (TypeVar a)
---             else throwError $ NoCommonSuper (TypeVar a) (TypeVar b)
-
-
-
+-- | Finds the smallest common supremumertype (least upper bound).
+--   Throws error if no common supremumertype exists.
+supremum :: Type -> Type -> Check Type
+supremum a b | a == b = return a
+supremum (TypeDup a) (TypeDup b) = supremum a b
+supremum (TypeDup a) b = supremum a b
+supremum a (TypeDup b) = supremum a b
+supremum (a :>< b) (c :>< d) = (:><) <$> supremum a c <*> supremum b d
+supremum (a :=> b) (c :=> d) = (:=>) <$> infimum a c <*> supremum b d -- NOTE: contravariance of negative type
+supremum a b = throwError (NoCommonSuper a b)
 
 -- | Unwraps as many ! as possible from a type.
 debangg :: Type -> Type
