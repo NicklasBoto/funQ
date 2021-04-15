@@ -1,3 +1,5 @@
+{-# LANGUAGE LambdaCase #-}
+
 module Type.TypeChecker where
 import AST.AST
 import Control.Monad.Except
@@ -19,12 +21,18 @@ typecheck program = evalState (runReaderT (runExceptT (typecheckP program)) top)
 tcStr :: String -> Either TypeError ()
 tcStr = typecheck . run
 
+inferExp :: String -> Either TypeError Type
+inferExp s = evalState (runReaderT (runExceptT (infer p)) M.empty) S.empty
+    where [Func _ _ p] = run $ "f : a f = " ++ s
+
+
 -- | All type errors that can occur.
 data TypeError
     = NotFunction Type         -- ^ A type was expected to be a function but was not.
     | Mismatch Type Type       -- ^ Expected a type but found another type.
     | NotProduct Type          -- ^ A type was expected to be a product but was not.
-    | NotLinear String         -- ^ A function that is linear used many times.
+    | NotLinearTop String      -- ^ A function that is linear used many times.
+    | NotLinearTerm Term Type  -- ^ A term that breaks a linearity constraint
     | NoCommonSuper Type Type  -- ^ No common supertype was found
     | NotInScope String        -- ^ A function was not in scope.
     | DuplicateFunction String -- ^ A function was defined multiple times.
@@ -41,8 +49,11 @@ instance Show TypeError where
     show (NotProduct t) =
         "Not a factorizable type '" ++ show t ++ "'"
 
-    show (NotLinear f) =
-        "Linear function " ++ f ++ " is used more than once"
+    show (NotLinearTop f) =
+        "Linear function '" ++ f ++ "' is used more than once"
+        
+    show (NotLinearTerm e t) =
+        "Expression breaks linearity constraint: " ++ show (Abs t e)
 
     show (NoCommonSuper a b) =
         "Could not find common type for type '" ++ show a ++ "' and type '" ++ show b ++ "'"
@@ -108,13 +119,23 @@ headCount = headCount' 0
     where
         headCount' :: Integer -> Term -> Integer
         headCount' absl term = case term of
-            Idx i      -> if absl == i then 0 else 1
+            Idx i      -> if absl == i then 1 else 0
             Abs _ e    -> headCount' (absl+1) e
             App f arg  -> headCount' absl f + headCount' absl arg
             IfEl c t f -> headCount' absl c + max (headCount' absl t) (headCount' absl f)
             Tup l r    -> headCount' absl l + headCount' absl r
             Let eq inn -> headCount' absl eq + headCount' (absl+2) inn
             _          -> 0
+
+checkLinear :: Term -> Type -> Check ()
+checkLinear e = \case
+    TypeDup t -> return ()
+    t         -> if headCount e <= 1
+                    then return ()
+                    else throwError $ NotLinearTerm e t
+
+infer :: Term -> Check Type
+infer = inferTerm []
 
 -- | Infer the type of a term.
 inferTerm :: [Type] -> Term -> Check Type
@@ -125,11 +146,11 @@ inferTerm _ Meas      = return $ TypeDup (TypeQBit :=> TypeDup TypeBit)
 inferTerm _ (Gate g)  = return $ inferGate g
 inferTerm ctx (Abs t e) = do
     top <- ask
+    checkLinear e t
     et <- inferTerm (t:ctx) e
-    if any (\idx -> isLinear (ctx !! fromIntegral idx)) (freeVars (Abs t e)) then
-        return (t :=> et)
-    else
-        return $ TypeDup (t :=> et)
+    if any (\idx -> isLinear (ctx !! fromIntegral idx)) (freeVars (Abs t e)) 
+        then return (t :=> et)
+        else return $ TypeDup (t :=> et)
 inferTerm ctx (Let eq inn) = do
     teq <- inferTerm ctx eq
     let nBangs = numBangs teq
@@ -137,13 +158,13 @@ inferTerm ctx (Let eq inn) = do
         (a1 :>< a2) -> do
             let a1t = addBangs nBangs a1
             let a2t = addBangs nBangs a2
+            checkLinear inn a2
+            checkLinear (Abs a2 inn) a1
             inferTerm (a2t : a1t : ctx) inn
         _ -> throwError $ NotProduct teq
 inferTerm ctx (App f arg) = do
     tf <- inferTerm ctx f
     argT <- inferTerm ctx arg
-
-    -- tf must be a function and the passed argument must be a subtype of the function argument.
     case debangg tf of
         (fArg :=> fRet) | argT <: fArg -> return fRet
                         | otherwise -> throwError $ Mismatch fArg argT
@@ -159,7 +180,7 @@ inferTerm _ (Fun fun) = do
     case M.lookup fun top of
         Nothing -> throwError $ NotInScope fun
         Just t | isLinear t -> if S.member fun lin
-                                then throwError $ NotLinear fun
+                                then throwError $ NotLinearTop fun
                                 else modify (S.insert fun) >> return t
                | otherwise -> return t
 inferTerm ctx (IfEl c t f) = do
@@ -191,8 +212,8 @@ infimum (a :>< b) (c :>< d) = (:><) <$> infimum a c <*> infimum b d
 infimum (a :=> b) (c :=> d) = (:=>) <$> supremum a c <*> infimum b d -- NOTE: contravariance of negative type
 infimum a b = throwError (NoCommonSuper a b)
 
--- | Finds the smallest common supremumertype (least upper bound).
---   Throws error if no common supremumertype exists.
+-- | Finds the smallest common supertype (least upper bound).
+--   Throws error if no common supertype exists.
 supremum :: Type -> Type -> Check Type
 supremum a b | a == b = return a
 supremum (TypeDup a) (TypeDup b) = supremum a b
