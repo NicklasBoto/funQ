@@ -34,11 +34,14 @@ Lambda literals are recognized by the regular expression
 The set of reserved words is the set of terminals appearing in the grammar. Those reserved words that consist of non-letter characters are called symbols, and they are treated in a different way from those that are similar to identifiers. The lexer follows rules familiar from languages like Haskell, C, and Java, including longest match and spacing conventions.
 
 The reserved words used in Parser are the following:
-  | ``Bit`` | ``CNOT`` | ``CT`` | ``FREDKIN``
+  | ``Bit`` | ``CNOT`` | ``CR2`` | ``CR2D``
+  | ``CR3`` | ``CR3D`` | ``CR4`` | ``CR4D``
+  | ``CR8`` | ``CR8D`` | ``CT`` | ``FREDKIN``
   | ``H`` | ``I`` | ``QBit`` | ``QFT``
-  | ``S`` | ``SWAP`` | ``T`` | ``TOFFOLI``
-  | ``X`` | ``Y`` | ``Z`` | ``else``
-  | ``if`` | ``in`` | ``let`` | ``then``
+  | ``QFTI`` | ``S`` | ``SWAP`` | ``T``
+  | ``TOFFOLI`` | ``X`` | ``Y`` | ``Z``
+  | ``else`` | ``if`` | ``in`` | ``let``
+  | ``then`` |  |  |
 
 The symbols used in Parser are the following:
   | * | ( | , | )
@@ -65,7 +68,7 @@ All other symbols are terminals.
   |  |  **|**  | //Term3//
   | //Term1// | -> | ``if`` //Term2// ``then`` //Term// ``else`` //Term//
   |  |  **|**  | ``let`` ``(`` //LetVar// ``,`` //[LetVar]// ``)`` ``=`` //Term// ``in`` //Term//
-  |  |  **|**  | //Lambda// //Var// ``.`` //Term//
+  |  |  **|**  | //Lambda// //FunVar// //Type// ``.`` //Term//
   |  |  **|**  | //Term2//
   | //Term// | -> | //Term1//
   | //LetVar// | -> | //Var//
@@ -105,7 +108,16 @@ All other symbols are terminals.
   |  |  **|**  | ``SWAP``
   |  |  **|**  | ``FREDKIN``
   |  |  **|**  | ``QFT``
+  |  |  **|**  | ``QFTI``
   |  |  **|**  | ``CT``
+  |  |  **|**  | ``CR2``
+  |  |  **|**  | ``CR2D``
+  |  |  **|**  | ``CR3``
+  |  |  **|**  | ``CR3D``
+  |  |  **|**  | ``CR4``
+  |  |  **|**  | ``CR4D``
+  |  |  **|**  | ``CR8``
+  |  |  **|**  | ``CR8D``
   |  |  **|**  | //GateIdent//
 
 

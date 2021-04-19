@@ -165,7 +165,8 @@ ListArg :: { [Parser.Abs.Arg] }
 ListArg : {- empty -} { [] } | Arg ListArg { (:) $1 $2 }
 
 Type2 :: { Parser.Abs.Type }
-Type2 : 'Bit' { Parser.Abs.TypeBit }
+Type2 : Var { Parser.Abs.TypeVar $1 }
+      | 'Bit' { Parser.Abs.TypeBit }
       | 'QBit' { Parser.Abs.TypeQbit }
       | 'T' { Parser.Abs.TypeVoid }
       | '!' Type2 { Parser.Abs.TypeDup $2 }

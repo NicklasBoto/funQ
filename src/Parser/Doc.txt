@@ -35,12 +35,13 @@ The set of reserved words is the set of terminals appearing in the grammar. Thos
 
 The reserved words used in Parser are the following:
   | ``Bit`` | ``CNOT`` | ``CR2`` | ``CR2D``
-  | ``CR3`` | ``CR4`` | ``CR4D`` | ``CR8``
-  | ``CR8D`` | ``CT`` | ``FREDKIN`` | ``H``
-  | ``I`` | ``QBit`` | ``QFT`` | ``QFTI``
-  | ``S`` | ``SWAP`` | ``T`` | ``TOFFOLI``
-  | ``X`` | ``Y`` | ``Z`` | ``else``
-  | ``if`` | ``in`` | ``let`` | ``then``
+  | ``CR3`` | ``CR3D`` | ``CR4`` | ``CR4D``
+  | ``CR8`` | ``CR8D`` | ``CT`` | ``FREDKIN``
+  | ``H`` | ``I`` | ``QBit`` | ``QFT``
+  | ``QFTI`` | ``S`` | ``SWAP`` | ``T``
+  | ``TOFFOLI`` | ``X`` | ``Y`` | ``Z``
+  | ``else`` | ``if`` | ``in`` | ``let``
+  | ``then`` |  |  |
 
 The symbols used in Parser are the following:
   | * | ( | , | )
@@ -67,7 +68,7 @@ All other symbols are terminals.
   |  |  **|**  | //Term3//
   | //Term1// | -> | ``if`` //Term2// ``then`` //Term// ``else`` //Term//
   |  |  **|**  | ``let`` ``(`` //LetVar// ``,`` //[LetVar]// ``)`` ``=`` //Term// ``in`` //Term//
-  |  |  **|**  | //Lambda// //Var// ``.`` //Term//
+  |  |  **|**  | //Lambda// //FunVar// //Type// ``.`` //Term//
   |  |  **|**  | //Term2//
   | //Term// | -> | //Term1//
   | //LetVar// | -> | //Var//
@@ -85,8 +86,7 @@ All other symbols are terminals.
   | //Arg// | -> | //Var//
   | //[Arg]// | -> | **eps**
   |  |  **|**  | //Arg// //[Arg]//
-  | //Type2// | -> | //Var//
-  |  |  **|**  | ``Bit``
+  | //Type2// | -> | ``Bit``
   |  |  **|**  | ``QBit``
   |  |  **|**  | ``T``
   |  |  **|**  | ``!`` //Type2//
@@ -112,7 +112,7 @@ All other symbols are terminals.
   |  |  **|**  | ``CR2``
   |  |  **|**  | ``CR2D``
   |  |  **|**  | ``CR3``
-  |  |  **|**  | ``CR3``
+  |  |  **|**  | ``CR3D``
   |  |  **|**  | ``CR4``
   |  |  **|**  | ``CR4D``
   |  |  **|**  | ``CR8``

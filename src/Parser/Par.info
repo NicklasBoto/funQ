@@ -11,70 +11,85 @@ Grammar
 	%start_pTerm2 -> Term2                             (2)
 	%start_pTerm1 -> Term1                             (3)
 	%start_pTerm -> Term                               (4)
-	%start_pTup -> Tup                                 (5)
-	%start_pListTerm -> ListTerm                       (6)
-	%start_pBit -> Bit                                 (7)
-	%start_pFunDec -> FunDec                           (8)
-	%start_pListFunDec -> ListFunDec                   (9)
-	%start_pFunction -> Function                       (10)
-	%start_pArg -> Arg                                 (11)
-	%start_pListArg -> ListArg                         (12)
-	%start_pType2 -> Type2                             (13)
-	%start_pType1 -> Type1                             (14)
-	%start_pType -> Type                               (15)
-	%start_pGate -> Gate                               (16)
-	FunVar -> L_FunVar                                 (17)
-	Var -> L_Var                                       (18)
-	GateIdent -> L_GateIdent                           (19)
-	Lambda -> L_Lambda                                 (20)
-	Program -> ListFunDec                              (21)
-	Term3 -> Var                                       (22)
-	Term3 -> Bit                                       (23)
-	Term3 -> Gate                                      (24)
-	Term3 -> Tup                                       (25)
-	Term3 -> '*'                                       (26)
-	Term3 -> '(' Term ')'                              (27)
-	Term2 -> Term2 Term3                               (28)
-	Term2 -> Term3                                     (29)
-	Term1 -> 'if' Term2 'then' Term2 'else' Term       (30)
-	Term1 -> 'let' '(' Var ',' Var ')' '=' Term2 'in' Term   (31)
-	Term1 -> Lambda Var '.' Term                       (32)
-	Term1 -> Term2                                     (33)
-	Term -> Term1                                      (34)
-	Tup -> '(' Term ',' ListTerm ')'                   (35)
-	ListTerm -> Term                                   (36)
-	ListTerm -> Term ',' ListTerm                      (37)
-	Bit -> '0'                                         (38)
-	Bit -> '1'                                         (39)
-	FunDec -> FunVar Type Function                     (40)
-	ListFunDec ->                                      (41)
-	ListFunDec -> FunDec ListFunDec                    (42)
-	Function -> Var ListArg '=' Term                   (43)
-	Arg -> Var                                         (44)
-	ListArg ->                                         (45)
-	ListArg -> Arg ListArg                             (46)
-	Type2 -> Var                                       (47)
-	Type2 -> 'Bit'                                     (48)
-	Type2 -> 'QBit'                                    (49)
-	Type2 -> 'T'                                       (50)
-	Type2 -> '!' Type2                                 (51)
-	Type2 -> '(' Type ')'                              (52)
-	Type1 -> Type2 '><' Type1                          (53)
-	Type1 -> Type2 '-o' Type1                          (54)
-	Type1 -> Type2                                     (55)
-	Type -> Type1                                      (56)
-	Gate -> 'H'                                        (57)
-	Gate -> 'X'                                        (58)
-	Gate -> 'Y'                                        (59)
-	Gate -> 'Z'                                        (60)
-	Gate -> 'I'                                        (61)
-	Gate -> 'S'                                        (62)
-	Gate -> 'T'                                        (63)
-	Gate -> 'CNOT'                                     (64)
-	Gate -> 'TOFFOLI'                                  (65)
-	Gate -> 'SWAP'                                     (66)
-	Gate -> 'FREDKIN'                                  (67)
-	Gate -> GateIdent                                  (68)
+	%start_pLetVar -> LetVar                           (5)
+	%start_pListLetVar -> ListLetVar                   (6)
+	%start_pTup -> Tup                                 (7)
+	%start_pListTerm -> ListTerm                       (8)
+	%start_pBit -> Bit                                 (9)
+	%start_pFunDec -> FunDec                           (10)
+	%start_pListFunDec -> ListFunDec                   (11)
+	%start_pFunction -> Function                       (12)
+	%start_pArg -> Arg                                 (13)
+	%start_pListArg -> ListArg                         (14)
+	%start_pType2 -> Type2                             (15)
+	%start_pType1 -> Type1                             (16)
+	%start_pType -> Type                               (17)
+	%start_pGate -> Gate                               (18)
+	FunVar -> L_FunVar                                 (19)
+	Var -> L_Var                                       (20)
+	GateIdent -> L_GateIdent                           (21)
+	Lambda -> L_Lambda                                 (22)
+	Program -> ListFunDec                              (23)
+	Term3 -> Var                                       (24)
+	Term3 -> Bit                                       (25)
+	Term3 -> Gate                                      (26)
+	Term3 -> Tup                                       (27)
+	Term3 -> '*'                                       (28)
+	Term3 -> '(' Term ')'                              (29)
+	Term2 -> Term2 Term3                               (30)
+	Term2 -> Term3                                     (31)
+	Term1 -> 'if' Term2 'then' Term 'else' Term        (32)
+	Term1 -> 'let' '(' LetVar ',' ListLetVar ')' '=' Term 'in' Term   (33)
+	Term1 -> Lambda FunVar Type '.' Term               (34)
+	Term1 -> Term2                                     (35)
+	Term -> Term1                                      (36)
+	LetVar -> Var                                      (37)
+	ListLetVar -> LetVar                               (38)
+	ListLetVar -> LetVar ',' ListLetVar                (39)
+	Tup -> '(' Term ',' ListTerm ')'                   (40)
+	ListTerm -> Term                                   (41)
+	ListTerm -> Term ',' ListTerm                      (42)
+	Bit -> '0'                                         (43)
+	Bit -> '1'                                         (44)
+	FunDec -> FunVar Type Function                     (45)
+	ListFunDec ->                                      (46)
+	ListFunDec -> FunDec ListFunDec                    (47)
+	Function -> Var ListArg '=' Term                   (48)
+	Arg -> Var                                         (49)
+	ListArg ->                                         (50)
+	ListArg -> Arg ListArg                             (51)
+	Type2 -> 'Bit'                                     (52)
+	Type2 -> 'QBit'                                    (53)
+	Type2 -> 'T'                                       (54)
+	Type2 -> '!' Type2                                 (55)
+	Type2 -> '(' Type ')'                              (56)
+	Type1 -> Type2 '><' Type1                          (57)
+	Type1 -> Type2 '-o' Type1                          (58)
+	Type1 -> Type2                                     (59)
+	Type -> Type1                                      (60)
+	Gate -> 'H'                                        (61)
+	Gate -> 'X'                                        (62)
+	Gate -> 'Y'                                        (63)
+	Gate -> 'Z'                                        (64)
+	Gate -> 'I'                                        (65)
+	Gate -> 'S'                                        (66)
+	Gate -> 'T'                                        (67)
+	Gate -> 'CNOT'                                     (68)
+	Gate -> 'TOFFOLI'                                  (69)
+	Gate -> 'SWAP'                                     (70)
+	Gate -> 'FREDKIN'                                  (71)
+	Gate -> 'QFT'                                      (72)
+	Gate -> 'QFTI'                                     (73)
+	Gate -> 'CT'                                       (74)
+	Gate -> 'CR2'                                      (75)
+	Gate -> 'CR2D'                                     (76)
+	Gate -> 'CR3'                                      (77)
+	Gate -> 'CR3D'                                     (78)
+	Gate -> 'CR4'                                      (79)
+	Gate -> 'CR4D'                                     (80)
+	Gate -> 'CR8'                                      (81)
+	Gate -> 'CR8D'                                     (82)
+	Gate -> GateIdent                                  (83)
 
 -----------------------------------------------------------------------------
 Terminals
@@ -92,22 +107,33 @@ Terminals
 	'><'           { PT _ (TS _ 11) }
 	'Bit'          { PT _ (TS _ 12) }
 	'CNOT'         { PT _ (TS _ 13) }
-	'FREDKIN'      { PT _ (TS _ 14) }
-	'H'            { PT _ (TS _ 15) }
-	'I'            { PT _ (TS _ 16) }
-	'QBit'         { PT _ (TS _ 17) }
-	'S'            { PT _ (TS _ 18) }
-	'SWAP'         { PT _ (TS _ 19) }
-	'T'            { PT _ (TS _ 20) }
-	'TOFFOLI'      { PT _ (TS _ 21) }
-	'X'            { PT _ (TS _ 22) }
-	'Y'            { PT _ (TS _ 23) }
-	'Z'            { PT _ (TS _ 24) }
-	'else'         { PT _ (TS _ 25) }
-	'if'           { PT _ (TS _ 26) }
-	'in'           { PT _ (TS _ 27) }
-	'let'          { PT _ (TS _ 28) }
-	'then'         { PT _ (TS _ 29) }
+	'CR2'          { PT _ (TS _ 14) }
+	'CR2D'         { PT _ (TS _ 15) }
+	'CR3'          { PT _ (TS _ 16) }
+	'CR3D'         { PT _ (TS _ 17) }
+	'CR4'          { PT _ (TS _ 18) }
+	'CR4D'         { PT _ (TS _ 19) }
+	'CR8'          { PT _ (TS _ 20) }
+	'CR8D'         { PT _ (TS _ 21) }
+	'CT'           { PT _ (TS _ 22) }
+	'FREDKIN'      { PT _ (TS _ 23) }
+	'H'            { PT _ (TS _ 24) }
+	'I'            { PT _ (TS _ 25) }
+	'QBit'         { PT _ (TS _ 26) }
+	'QFT'          { PT _ (TS _ 27) }
+	'QFTI'         { PT _ (TS _ 28) }
+	'S'            { PT _ (TS _ 29) }
+	'SWAP'         { PT _ (TS _ 30) }
+	'T'            { PT _ (TS _ 31) }
+	'TOFFOLI'      { PT _ (TS _ 32) }
+	'X'            { PT _ (TS _ 33) }
+	'Y'            { PT _ (TS _ 34) }
+	'Z'            { PT _ (TS _ 35) }
+	'else'         { PT _ (TS _ 36) }
+	'if'           { PT _ (TS _ 37) }
+	'in'           { PT _ (TS _ 38) }
+	'let'          { PT _ (TS _ 39) }
+	'then'         { PT _ (TS _ 40) }
 	L_FunVar       { PT _ (T_FunVar $$) }
 	L_Var          { PT _ (T_Var $$) }
 	L_GateIdent    { PT _ (T_GateIdent $$) }
@@ -121,39 +147,43 @@ Non-terminals
 	%start_pTerm2   rule  2
 	%start_pTerm1   rule  3
 	%start_pTerm    rule  4
-	%start_pTup     rule  5
-	%start_pListTerm rule  6
-	%start_pBit     rule  7
-	%start_pFunDec  rule  8
-	%start_pListFunDec rule  9
-	%start_pFunction rule  10
-	%start_pArg     rule  11
-	%start_pListArg rule  12
-	%start_pType2   rule  13
-	%start_pType1   rule  14
-	%start_pType    rule  15
-	%start_pGate    rule  16
-	FunVar          rule  17
-	Var             rule  18
-	GateIdent       rule  19
-	Lambda          rule  20
-	Program         rule  21
-	Term3           rules 22, 23, 24, 25, 26, 27
-	Term2           rules 28, 29
-	Term1           rules 30, 31, 32, 33
-	Term            rule  34
-	Tup             rule  35
-	ListTerm        rules 36, 37
-	Bit             rules 38, 39
-	FunDec          rule  40
-	ListFunDec      rules 41, 42
-	Function        rule  43
-	Arg             rule  44
-	ListArg         rules 45, 46
-	Type2           rules 47, 48, 49, 50, 51, 52
-	Type1           rules 53, 54, 55
-	Type            rule  56
-	Gate            rules 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68
+	%start_pLetVar  rule  5
+	%start_pListLetVar rule  6
+	%start_pTup     rule  7
+	%start_pListTerm rule  8
+	%start_pBit     rule  9
+	%start_pFunDec  rule  10
+	%start_pListFunDec rule  11
+	%start_pFunction rule  12
+	%start_pArg     rule  13
+	%start_pListArg rule  14
+	%start_pType2   rule  15
+	%start_pType1   rule  16
+	%start_pType    rule  17
+	%start_pGate    rule  18
+	FunVar          rule  19
+	Var             rule  20
+	GateIdent       rule  21
+	Lambda          rule  22
+	Program         rule  23
+	Term3           rules 24, 25, 26, 27, 28, 29
+	Term2           rules 30, 31
+	Term1           rules 32, 33, 34, 35
+	Term            rule  36
+	LetVar          rule  37
+	ListLetVar      rules 38, 39
+	Tup             rule  40
+	ListTerm        rules 41, 42
+	Bit             rules 43, 44
+	FunDec          rule  45
+	ListFunDec      rules 46, 47
+	Function        rule  48
+	Arg             rule  49
+	ListArg         rules 50, 51
+	Type2           rules 52, 53, 54, 55, 56
+	Type1           rules 57, 58, 59
+	Type            rule  60
+	Gate            rules 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83
 
 -----------------------------------------------------------------------------
 States
@@ -162,334 +192,460 @@ State 0
 
 	%start_pProgram -> . Program                        (rule 0)
 
-	L_FunVar       shift, and enter state 18
-	%eof           reduce using rule 41
+	L_FunVar       shift, and enter state 20
+	%eof           reduce using rule 46
 
-	FunVar         goto state 51
-	Program        goto state 79
-	FunDec         goto state 52
-	ListFunDec     goto state 80
+	FunVar         goto state 63
+	Program        goto state 95
+	FunDec         goto state 64
+	ListFunDec     goto state 96
 
 State 1
 
 	%start_pTerm3 -> . Term3                            (rule 1)
 
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
+	'('            shift, and enter state 80
+	'*'            shift, and enter state 81
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
 
-	Var            goto state 58
-	GateIdent      goto state 19
-	Term3          goto state 78
-	Tup            goto state 64
-	Bit            goto state 66
-	Gate           goto state 67
+	Var            goto state 70
+	GateIdent      goto state 21
+	Term3          goto state 94
+	Tup            goto state 76
+	Bit            goto state 78
+	Gate           goto state 79
 
 State 2
 
 	%start_pTerm2 -> . Term2                            (rule 2)
 
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
+	'('            shift, and enter state 80
+	'*'            shift, and enter state 81
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
 
-	Var            goto state 58
-	GateIdent      goto state 19
-	Term3          goto state 60
-	Term2          goto state 77
-	Tup            goto state 64
-	Bit            goto state 66
-	Gate           goto state 67
+	Var            goto state 70
+	GateIdent      goto state 21
+	Term3          goto state 72
+	Term2          goto state 93
+	Tup            goto state 76
+	Bit            goto state 78
+	Gate           goto state 79
 
 State 3
 
 	%start_pTerm1 -> . Term1                            (rule 3)
 
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	'if'           shift, and enter state 70
-	'let'          shift, and enter state 71
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
-	L_Lambda       shift, and enter state 72
+	'('            shift, and enter state 80
+	'*'            shift, and enter state 81
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	'if'           shift, and enter state 82
+	'let'          shift, and enter state 83
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
+	L_Lambda       shift, and enter state 84
 
-	Var            goto state 58
-	GateIdent      goto state 19
-	Lambda         goto state 59
-	Term3          goto state 60
-	Term2          goto state 61
-	Term1          goto state 76
-	Tup            goto state 64
-	Bit            goto state 66
-	Gate           goto state 67
+	Var            goto state 70
+	GateIdent      goto state 21
+	Lambda         goto state 71
+	Term3          goto state 72
+	Term2          goto state 73
+	Term1          goto state 92
+	Tup            goto state 76
+	Bit            goto state 78
+	Gate           goto state 79
 
 State 4
 
 	%start_pTerm -> . Term                              (rule 4)
 
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	'if'           shift, and enter state 70
-	'let'          shift, and enter state 71
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
-	L_Lambda       shift, and enter state 72
+	'('            shift, and enter state 80
+	'*'            shift, and enter state 81
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	'if'           shift, and enter state 82
+	'let'          shift, and enter state 83
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
+	L_Lambda       shift, and enter state 84
 
-	Var            goto state 58
-	GateIdent      goto state 19
-	Lambda         goto state 59
-	Term3          goto state 60
-	Term2          goto state 61
-	Term1          goto state 62
-	Term           goto state 75
-	Tup            goto state 64
-	Bit            goto state 66
-	Gate           goto state 67
+	Var            goto state 70
+	GateIdent      goto state 21
+	Lambda         goto state 71
+	Term3          goto state 72
+	Term2          goto state 73
+	Term1          goto state 74
+	Term           goto state 91
+	Tup            goto state 76
+	Bit            goto state 78
+	Gate           goto state 79
 
 State 5
 
-	%start_pTup -> . Tup                                (rule 5)
+	%start_pLetVar -> . LetVar                          (rule 5)
 
-	'('            shift, and enter state 74
+	L_Var          shift, and enter state 59
 
-	Tup            goto state 73
+	Var            goto state 87
+	LetVar         goto state 90
 
 State 6
 
-	%start_pListTerm -> . ListTerm                      (rule 6)
+	%start_pListLetVar -> . ListLetVar                  (rule 6)
 
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	'if'           shift, and enter state 70
-	'let'          shift, and enter state 71
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
-	L_Lambda       shift, and enter state 72
+	L_Var          shift, and enter state 59
 
-	Var            goto state 58
-	GateIdent      goto state 19
-	Lambda         goto state 59
-	Term3          goto state 60
-	Term2          goto state 61
-	Term1          goto state 62
-	Term           goto state 63
-	Tup            goto state 64
-	ListTerm       goto state 65
-	Bit            goto state 66
-	Gate           goto state 67
+	Var            goto state 87
+	LetVar         goto state 88
+	ListLetVar     goto state 89
 
 State 7
 
-	%start_pBit -> . Bit                                (rule 7)
+	%start_pTup -> . Tup                                (rule 7)
 
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
+	'('            shift, and enter state 86
 
-	Bit            goto state 55
+	Tup            goto state 85
 
 State 8
 
-	%start_pFunDec -> . FunDec                          (rule 8)
+	%start_pListTerm -> . ListTerm                      (rule 8)
 
-	L_FunVar       shift, and enter state 18
+	'('            shift, and enter state 80
+	'*'            shift, and enter state 81
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	'if'           shift, and enter state 82
+	'let'          shift, and enter state 83
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
+	L_Lambda       shift, and enter state 84
 
-	FunVar         goto state 51
-	FunDec         goto state 54
+	Var            goto state 70
+	GateIdent      goto state 21
+	Lambda         goto state 71
+	Term3          goto state 72
+	Term2          goto state 73
+	Term1          goto state 74
+	Term           goto state 75
+	Tup            goto state 76
+	ListTerm       goto state 77
+	Bit            goto state 78
+	Gate           goto state 79
 
 State 9
 
-	%start_pListFunDec -> . ListFunDec                  (rule 9)
+	%start_pBit -> . Bit                                (rule 9)
 
-	L_FunVar       shift, and enter state 18
-	%eof           reduce using rule 41
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
 
-	FunVar         goto state 51
-	FunDec         goto state 52
-	ListFunDec     goto state 53
+	Bit            goto state 67
 
 State 10
 
-	%start_pFunction -> . Function                      (rule 10)
+	%start_pFunDec -> . FunDec                          (rule 10)
 
-	L_Var          shift, and enter state 42
+	L_FunVar       shift, and enter state 20
 
-	Var            goto state 49
-	Function       goto state 50
+	FunVar         goto state 63
+	FunDec         goto state 66
 
 State 11
 
-	%start_pArg -> . Arg                                (rule 11)
+	%start_pListFunDec -> . ListFunDec                  (rule 11)
 
-	L_Var          shift, and enter state 42
+	L_FunVar       shift, and enter state 20
+	%eof           reduce using rule 46
 
-	Var            goto state 45
-	Arg            goto state 48
+	FunVar         goto state 63
+	FunDec         goto state 64
+	ListFunDec     goto state 65
 
 State 12
 
-	%start_pListArg -> . ListArg                        (rule 12)
+	%start_pFunction -> . Function                      (rule 12)
 
-	L_Var          shift, and enter state 42
-	%eof           reduce using rule 45
+	L_Var          shift, and enter state 59
 
-	Var            goto state 45
-	Arg            goto state 46
-	ListArg        goto state 47
+	Var            goto state 61
+	Function       goto state 62
 
 State 13
 
-	%start_pType2 -> . Type2                            (rule 13)
+	%start_pArg -> . Arg                                (rule 13)
 
-	'!'            shift, and enter state 37
-	'('            shift, and enter state 38
-	'Bit'          shift, and enter state 39
-	'QBit'         shift, and enter state 40
-	'T'            shift, and enter state 41
-	L_Var          shift, and enter state 42
+	L_Var          shift, and enter state 59
 
-	Var            goto state 33
-	Type2          goto state 44
+	Var            goto state 56
+	Arg            goto state 60
 
 State 14
 
-	%start_pType1 -> . Type1                            (rule 14)
+	%start_pListArg -> . ListArg                        (rule 14)
 
-	'!'            shift, and enter state 37
-	'('            shift, and enter state 38
-	'Bit'          shift, and enter state 39
-	'QBit'         shift, and enter state 40
-	'T'            shift, and enter state 41
-	L_Var          shift, and enter state 42
+	L_Var          shift, and enter state 59
+	%eof           reduce using rule 50
 
-	Var            goto state 33
-	Type2          goto state 34
-	Type1          goto state 43
+	Var            goto state 56
+	Arg            goto state 57
+	ListArg        goto state 58
 
 State 15
 
-	%start_pType -> . Type                              (rule 15)
+	%start_pType2 -> . Type2                            (rule 15)
 
-	'!'            shift, and enter state 37
-	'('            shift, and enter state 38
-	'Bit'          shift, and enter state 39
-	'QBit'         shift, and enter state 40
-	'T'            shift, and enter state 41
-	L_Var          shift, and enter state 42
+	'!'            shift, and enter state 49
+	'('            shift, and enter state 50
+	'Bit'          shift, and enter state 51
+	'QBit'         shift, and enter state 52
+	'T'            shift, and enter state 53
 
-	Var            goto state 33
-	Type2          goto state 34
-	Type1          goto state 35
-	Type           goto state 36
+	Type2          goto state 55
 
 State 16
 
-	%start_pGate -> . Gate                              (rule 16)
+	%start_pType1 -> . Type1                            (rule 16)
 
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	L_GateIdent    shift, and enter state 32
+	'!'            shift, and enter state 49
+	'('            shift, and enter state 50
+	'Bit'          shift, and enter state 51
+	'QBit'         shift, and enter state 52
+	'T'            shift, and enter state 53
 
-	GateIdent      goto state 19
-	Gate           goto state 20
+	Type2          goto state 46
+	Type1          goto state 54
 
 State 17
 
-	FunVar -> . L_FunVar                                (rule 17)
+	%start_pType -> . Type                              (rule 17)
 
-	L_FunVar       shift, and enter state 18
+	'!'            shift, and enter state 49
+	'('            shift, and enter state 50
+	'Bit'          shift, and enter state 51
+	'QBit'         shift, and enter state 52
+	'T'            shift, and enter state 53
 
+	Type2          goto state 46
+	Type1          goto state 47
+	Type           goto state 48
 
 State 18
 
-	FunVar -> L_FunVar .                                (rule 17)
+	%start_pGate -> . Gate                              (rule 18)
 
-	'!'            reduce using rule 17
-	'('            reduce using rule 17
-	'Bit'          reduce using rule 17
-	'QBit'         reduce using rule 17
-	'T'            reduce using rule 17
-	L_Var          reduce using rule 17
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	L_GateIdent    shift, and enter state 45
 
+	GateIdent      goto state 21
+	Gate           goto state 22
 
 State 19
 
-	Gate -> GateIdent .                                 (rule 68)
+	FunVar -> . L_FunVar                                (rule 19)
+
+	L_FunVar       shift, and enter state 20
+
+
+State 20
+
+	FunVar -> L_FunVar .                                (rule 19)
+
+	'!'            reduce using rule 19
+	'('            reduce using rule 19
+	'Bit'          reduce using rule 19
+	'QBit'         reduce using rule 19
+	'T'            reduce using rule 19
+
+
+State 21
+
+	Gate -> GateIdent .                                 (rule 83)
+
+	'('            reduce using rule 83
+	')'            reduce using rule 83
+	'*'            reduce using rule 83
+	','            reduce using rule 83
+	'0'            reduce using rule 83
+	'1'            reduce using rule 83
+	'CNOT'         reduce using rule 83
+	'CR2'          reduce using rule 83
+	'CR2D'         reduce using rule 83
+	'CR3'          reduce using rule 83
+	'CR3D'         reduce using rule 83
+	'CR4'          reduce using rule 83
+	'CR4D'         reduce using rule 83
+	'CR8'          reduce using rule 83
+	'CR8D'         reduce using rule 83
+	'CT'           reduce using rule 83
+	'FREDKIN'      reduce using rule 83
+	'H'            reduce using rule 83
+	'I'            reduce using rule 83
+	'QFT'          reduce using rule 83
+	'QFTI'         reduce using rule 83
+	'S'            reduce using rule 83
+	'SWAP'         reduce using rule 83
+	'T'            reduce using rule 83
+	'TOFFOLI'      reduce using rule 83
+	'X'            reduce using rule 83
+	'Y'            reduce using rule 83
+	'Z'            reduce using rule 83
+	'else'         reduce using rule 83
+	'in'           reduce using rule 83
+	'then'         reduce using rule 83
+	L_FunVar       reduce using rule 83
+	L_Var          reduce using rule 83
+	L_GateIdent    reduce using rule 83
+	%eof           reduce using rule 83
+
+
+State 22
+
+	%start_pGate -> Gate .                              (rule 18)
+
+	%eof           accept
+
+
+State 23
+
+	Gate -> 'CNOT' .                                    (rule 68)
 
 	'('            reduce using rule 68
 	')'            reduce using rule 68
@@ -498,9 +654,20 @@ State 19
 	'0'            reduce using rule 68
 	'1'            reduce using rule 68
 	'CNOT'         reduce using rule 68
+	'CR2'          reduce using rule 68
+	'CR2D'         reduce using rule 68
+	'CR3'          reduce using rule 68
+	'CR3D'         reduce using rule 68
+	'CR4'          reduce using rule 68
+	'CR4D'         reduce using rule 68
+	'CR8'          reduce using rule 68
+	'CR8D'         reduce using rule 68
+	'CT'           reduce using rule 68
 	'FREDKIN'      reduce using rule 68
 	'H'            reduce using rule 68
 	'I'            reduce using rule 68
+	'QFT'          reduce using rule 68
+	'QFTI'         reduce using rule 68
 	'S'            reduce using rule 68
 	'SWAP'         reduce using rule 68
 	'T'            reduce using rule 68
@@ -517,106 +684,419 @@ State 19
 	%eof           reduce using rule 68
 
 
-State 20
-
-	%start_pGate -> Gate .                              (rule 16)
-
-	%eof           accept
-
-
-State 21
-
-	Gate -> 'CNOT' .                                    (rule 64)
-
-	'('            reduce using rule 64
-	')'            reduce using rule 64
-	'*'            reduce using rule 64
-	','            reduce using rule 64
-	'0'            reduce using rule 64
-	'1'            reduce using rule 64
-	'CNOT'         reduce using rule 64
-	'FREDKIN'      reduce using rule 64
-	'H'            reduce using rule 64
-	'I'            reduce using rule 64
-	'S'            reduce using rule 64
-	'SWAP'         reduce using rule 64
-	'T'            reduce using rule 64
-	'TOFFOLI'      reduce using rule 64
-	'X'            reduce using rule 64
-	'Y'            reduce using rule 64
-	'Z'            reduce using rule 64
-	'else'         reduce using rule 64
-	'in'           reduce using rule 64
-	'then'         reduce using rule 64
-	L_FunVar       reduce using rule 64
-	L_Var          reduce using rule 64
-	L_GateIdent    reduce using rule 64
-	%eof           reduce using rule 64
-
-
-State 22
-
-	Gate -> 'FREDKIN' .                                 (rule 67)
-
-	'('            reduce using rule 67
-	')'            reduce using rule 67
-	'*'            reduce using rule 67
-	','            reduce using rule 67
-	'0'            reduce using rule 67
-	'1'            reduce using rule 67
-	'CNOT'         reduce using rule 67
-	'FREDKIN'      reduce using rule 67
-	'H'            reduce using rule 67
-	'I'            reduce using rule 67
-	'S'            reduce using rule 67
-	'SWAP'         reduce using rule 67
-	'T'            reduce using rule 67
-	'TOFFOLI'      reduce using rule 67
-	'X'            reduce using rule 67
-	'Y'            reduce using rule 67
-	'Z'            reduce using rule 67
-	'else'         reduce using rule 67
-	'in'           reduce using rule 67
-	'then'         reduce using rule 67
-	L_FunVar       reduce using rule 67
-	L_Var          reduce using rule 67
-	L_GateIdent    reduce using rule 67
-	%eof           reduce using rule 67
-
-
-State 23
-
-	Gate -> 'H' .                                       (rule 57)
-
-	'('            reduce using rule 57
-	')'            reduce using rule 57
-	'*'            reduce using rule 57
-	','            reduce using rule 57
-	'0'            reduce using rule 57
-	'1'            reduce using rule 57
-	'CNOT'         reduce using rule 57
-	'FREDKIN'      reduce using rule 57
-	'H'            reduce using rule 57
-	'I'            reduce using rule 57
-	'S'            reduce using rule 57
-	'SWAP'         reduce using rule 57
-	'T'            reduce using rule 57
-	'TOFFOLI'      reduce using rule 57
-	'X'            reduce using rule 57
-	'Y'            reduce using rule 57
-	'Z'            reduce using rule 57
-	'else'         reduce using rule 57
-	'in'           reduce using rule 57
-	'then'         reduce using rule 57
-	L_FunVar       reduce using rule 57
-	L_Var          reduce using rule 57
-	L_GateIdent    reduce using rule 57
-	%eof           reduce using rule 57
-
-
 State 24
 
-	Gate -> 'I' .                                       (rule 61)
+	Gate -> 'CR2' .                                     (rule 75)
+
+	'('            reduce using rule 75
+	')'            reduce using rule 75
+	'*'            reduce using rule 75
+	','            reduce using rule 75
+	'0'            reduce using rule 75
+	'1'            reduce using rule 75
+	'CNOT'         reduce using rule 75
+	'CR2'          reduce using rule 75
+	'CR2D'         reduce using rule 75
+	'CR3'          reduce using rule 75
+	'CR3D'         reduce using rule 75
+	'CR4'          reduce using rule 75
+	'CR4D'         reduce using rule 75
+	'CR8'          reduce using rule 75
+	'CR8D'         reduce using rule 75
+	'CT'           reduce using rule 75
+	'FREDKIN'      reduce using rule 75
+	'H'            reduce using rule 75
+	'I'            reduce using rule 75
+	'QFT'          reduce using rule 75
+	'QFTI'         reduce using rule 75
+	'S'            reduce using rule 75
+	'SWAP'         reduce using rule 75
+	'T'            reduce using rule 75
+	'TOFFOLI'      reduce using rule 75
+	'X'            reduce using rule 75
+	'Y'            reduce using rule 75
+	'Z'            reduce using rule 75
+	'else'         reduce using rule 75
+	'in'           reduce using rule 75
+	'then'         reduce using rule 75
+	L_FunVar       reduce using rule 75
+	L_Var          reduce using rule 75
+	L_GateIdent    reduce using rule 75
+	%eof           reduce using rule 75
+
+
+State 25
+
+	Gate -> 'CR2D' .                                    (rule 76)
+
+	'('            reduce using rule 76
+	')'            reduce using rule 76
+	'*'            reduce using rule 76
+	','            reduce using rule 76
+	'0'            reduce using rule 76
+	'1'            reduce using rule 76
+	'CNOT'         reduce using rule 76
+	'CR2'          reduce using rule 76
+	'CR2D'         reduce using rule 76
+	'CR3'          reduce using rule 76
+	'CR3D'         reduce using rule 76
+	'CR4'          reduce using rule 76
+	'CR4D'         reduce using rule 76
+	'CR8'          reduce using rule 76
+	'CR8D'         reduce using rule 76
+	'CT'           reduce using rule 76
+	'FREDKIN'      reduce using rule 76
+	'H'            reduce using rule 76
+	'I'            reduce using rule 76
+	'QFT'          reduce using rule 76
+	'QFTI'         reduce using rule 76
+	'S'            reduce using rule 76
+	'SWAP'         reduce using rule 76
+	'T'            reduce using rule 76
+	'TOFFOLI'      reduce using rule 76
+	'X'            reduce using rule 76
+	'Y'            reduce using rule 76
+	'Z'            reduce using rule 76
+	'else'         reduce using rule 76
+	'in'           reduce using rule 76
+	'then'         reduce using rule 76
+	L_FunVar       reduce using rule 76
+	L_Var          reduce using rule 76
+	L_GateIdent    reduce using rule 76
+	%eof           reduce using rule 76
+
+
+State 26
+
+	Gate -> 'CR3' .                                     (rule 77)
+
+	'('            reduce using rule 77
+	')'            reduce using rule 77
+	'*'            reduce using rule 77
+	','            reduce using rule 77
+	'0'            reduce using rule 77
+	'1'            reduce using rule 77
+	'CNOT'         reduce using rule 77
+	'CR2'          reduce using rule 77
+	'CR2D'         reduce using rule 77
+	'CR3'          reduce using rule 77
+	'CR3D'         reduce using rule 77
+	'CR4'          reduce using rule 77
+	'CR4D'         reduce using rule 77
+	'CR8'          reduce using rule 77
+	'CR8D'         reduce using rule 77
+	'CT'           reduce using rule 77
+	'FREDKIN'      reduce using rule 77
+	'H'            reduce using rule 77
+	'I'            reduce using rule 77
+	'QFT'          reduce using rule 77
+	'QFTI'         reduce using rule 77
+	'S'            reduce using rule 77
+	'SWAP'         reduce using rule 77
+	'T'            reduce using rule 77
+	'TOFFOLI'      reduce using rule 77
+	'X'            reduce using rule 77
+	'Y'            reduce using rule 77
+	'Z'            reduce using rule 77
+	'else'         reduce using rule 77
+	'in'           reduce using rule 77
+	'then'         reduce using rule 77
+	L_FunVar       reduce using rule 77
+	L_Var          reduce using rule 77
+	L_GateIdent    reduce using rule 77
+	%eof           reduce using rule 77
+
+
+State 27
+
+	Gate -> 'CR3D' .                                    (rule 78)
+
+	'('            reduce using rule 78
+	')'            reduce using rule 78
+	'*'            reduce using rule 78
+	','            reduce using rule 78
+	'0'            reduce using rule 78
+	'1'            reduce using rule 78
+	'CNOT'         reduce using rule 78
+	'CR2'          reduce using rule 78
+	'CR2D'         reduce using rule 78
+	'CR3'          reduce using rule 78
+	'CR3D'         reduce using rule 78
+	'CR4'          reduce using rule 78
+	'CR4D'         reduce using rule 78
+	'CR8'          reduce using rule 78
+	'CR8D'         reduce using rule 78
+	'CT'           reduce using rule 78
+	'FREDKIN'      reduce using rule 78
+	'H'            reduce using rule 78
+	'I'            reduce using rule 78
+	'QFT'          reduce using rule 78
+	'QFTI'         reduce using rule 78
+	'S'            reduce using rule 78
+	'SWAP'         reduce using rule 78
+	'T'            reduce using rule 78
+	'TOFFOLI'      reduce using rule 78
+	'X'            reduce using rule 78
+	'Y'            reduce using rule 78
+	'Z'            reduce using rule 78
+	'else'         reduce using rule 78
+	'in'           reduce using rule 78
+	'then'         reduce using rule 78
+	L_FunVar       reduce using rule 78
+	L_Var          reduce using rule 78
+	L_GateIdent    reduce using rule 78
+	%eof           reduce using rule 78
+
+
+State 28
+
+	Gate -> 'CR4' .                                     (rule 79)
+
+	'('            reduce using rule 79
+	')'            reduce using rule 79
+	'*'            reduce using rule 79
+	','            reduce using rule 79
+	'0'            reduce using rule 79
+	'1'            reduce using rule 79
+	'CNOT'         reduce using rule 79
+	'CR2'          reduce using rule 79
+	'CR2D'         reduce using rule 79
+	'CR3'          reduce using rule 79
+	'CR3D'         reduce using rule 79
+	'CR4'          reduce using rule 79
+	'CR4D'         reduce using rule 79
+	'CR8'          reduce using rule 79
+	'CR8D'         reduce using rule 79
+	'CT'           reduce using rule 79
+	'FREDKIN'      reduce using rule 79
+	'H'            reduce using rule 79
+	'I'            reduce using rule 79
+	'QFT'          reduce using rule 79
+	'QFTI'         reduce using rule 79
+	'S'            reduce using rule 79
+	'SWAP'         reduce using rule 79
+	'T'            reduce using rule 79
+	'TOFFOLI'      reduce using rule 79
+	'X'            reduce using rule 79
+	'Y'            reduce using rule 79
+	'Z'            reduce using rule 79
+	'else'         reduce using rule 79
+	'in'           reduce using rule 79
+	'then'         reduce using rule 79
+	L_FunVar       reduce using rule 79
+	L_Var          reduce using rule 79
+	L_GateIdent    reduce using rule 79
+	%eof           reduce using rule 79
+
+
+State 29
+
+	Gate -> 'CR4D' .                                    (rule 80)
+
+	'('            reduce using rule 80
+	')'            reduce using rule 80
+	'*'            reduce using rule 80
+	','            reduce using rule 80
+	'0'            reduce using rule 80
+	'1'            reduce using rule 80
+	'CNOT'         reduce using rule 80
+	'CR2'          reduce using rule 80
+	'CR2D'         reduce using rule 80
+	'CR3'          reduce using rule 80
+	'CR3D'         reduce using rule 80
+	'CR4'          reduce using rule 80
+	'CR4D'         reduce using rule 80
+	'CR8'          reduce using rule 80
+	'CR8D'         reduce using rule 80
+	'CT'           reduce using rule 80
+	'FREDKIN'      reduce using rule 80
+	'H'            reduce using rule 80
+	'I'            reduce using rule 80
+	'QFT'          reduce using rule 80
+	'QFTI'         reduce using rule 80
+	'S'            reduce using rule 80
+	'SWAP'         reduce using rule 80
+	'T'            reduce using rule 80
+	'TOFFOLI'      reduce using rule 80
+	'X'            reduce using rule 80
+	'Y'            reduce using rule 80
+	'Z'            reduce using rule 80
+	'else'         reduce using rule 80
+	'in'           reduce using rule 80
+	'then'         reduce using rule 80
+	L_FunVar       reduce using rule 80
+	L_Var          reduce using rule 80
+	L_GateIdent    reduce using rule 80
+	%eof           reduce using rule 80
+
+
+State 30
+
+	Gate -> 'CR8' .                                     (rule 81)
+
+	'('            reduce using rule 81
+	')'            reduce using rule 81
+	'*'            reduce using rule 81
+	','            reduce using rule 81
+	'0'            reduce using rule 81
+	'1'            reduce using rule 81
+	'CNOT'         reduce using rule 81
+	'CR2'          reduce using rule 81
+	'CR2D'         reduce using rule 81
+	'CR3'          reduce using rule 81
+	'CR3D'         reduce using rule 81
+	'CR4'          reduce using rule 81
+	'CR4D'         reduce using rule 81
+	'CR8'          reduce using rule 81
+	'CR8D'         reduce using rule 81
+	'CT'           reduce using rule 81
+	'FREDKIN'      reduce using rule 81
+	'H'            reduce using rule 81
+	'I'            reduce using rule 81
+	'QFT'          reduce using rule 81
+	'QFTI'         reduce using rule 81
+	'S'            reduce using rule 81
+	'SWAP'         reduce using rule 81
+	'T'            reduce using rule 81
+	'TOFFOLI'      reduce using rule 81
+	'X'            reduce using rule 81
+	'Y'            reduce using rule 81
+	'Z'            reduce using rule 81
+	'else'         reduce using rule 81
+	'in'           reduce using rule 81
+	'then'         reduce using rule 81
+	L_FunVar       reduce using rule 81
+	L_Var          reduce using rule 81
+	L_GateIdent    reduce using rule 81
+	%eof           reduce using rule 81
+
+
+State 31
+
+	Gate -> 'CR8D' .                                    (rule 82)
+
+	'('            reduce using rule 82
+	')'            reduce using rule 82
+	'*'            reduce using rule 82
+	','            reduce using rule 82
+	'0'            reduce using rule 82
+	'1'            reduce using rule 82
+	'CNOT'         reduce using rule 82
+	'CR2'          reduce using rule 82
+	'CR2D'         reduce using rule 82
+	'CR3'          reduce using rule 82
+	'CR3D'         reduce using rule 82
+	'CR4'          reduce using rule 82
+	'CR4D'         reduce using rule 82
+	'CR8'          reduce using rule 82
+	'CR8D'         reduce using rule 82
+	'CT'           reduce using rule 82
+	'FREDKIN'      reduce using rule 82
+	'H'            reduce using rule 82
+	'I'            reduce using rule 82
+	'QFT'          reduce using rule 82
+	'QFTI'         reduce using rule 82
+	'S'            reduce using rule 82
+	'SWAP'         reduce using rule 82
+	'T'            reduce using rule 82
+	'TOFFOLI'      reduce using rule 82
+	'X'            reduce using rule 82
+	'Y'            reduce using rule 82
+	'Z'            reduce using rule 82
+	'else'         reduce using rule 82
+	'in'           reduce using rule 82
+	'then'         reduce using rule 82
+	L_FunVar       reduce using rule 82
+	L_Var          reduce using rule 82
+	L_GateIdent    reduce using rule 82
+	%eof           reduce using rule 82
+
+
+State 32
+
+	Gate -> 'CT' .                                      (rule 74)
+
+	'('            reduce using rule 74
+	')'            reduce using rule 74
+	'*'            reduce using rule 74
+	','            reduce using rule 74
+	'0'            reduce using rule 74
+	'1'            reduce using rule 74
+	'CNOT'         reduce using rule 74
+	'CR2'          reduce using rule 74
+	'CR2D'         reduce using rule 74
+	'CR3'          reduce using rule 74
+	'CR3D'         reduce using rule 74
+	'CR4'          reduce using rule 74
+	'CR4D'         reduce using rule 74
+	'CR8'          reduce using rule 74
+	'CR8D'         reduce using rule 74
+	'CT'           reduce using rule 74
+	'FREDKIN'      reduce using rule 74
+	'H'            reduce using rule 74
+	'I'            reduce using rule 74
+	'QFT'          reduce using rule 74
+	'QFTI'         reduce using rule 74
+	'S'            reduce using rule 74
+	'SWAP'         reduce using rule 74
+	'T'            reduce using rule 74
+	'TOFFOLI'      reduce using rule 74
+	'X'            reduce using rule 74
+	'Y'            reduce using rule 74
+	'Z'            reduce using rule 74
+	'else'         reduce using rule 74
+	'in'           reduce using rule 74
+	'then'         reduce using rule 74
+	L_FunVar       reduce using rule 74
+	L_Var          reduce using rule 74
+	L_GateIdent    reduce using rule 74
+	%eof           reduce using rule 74
+
+
+State 33
+
+	Gate -> 'FREDKIN' .                                 (rule 71)
+
+	'('            reduce using rule 71
+	')'            reduce using rule 71
+	'*'            reduce using rule 71
+	','            reduce using rule 71
+	'0'            reduce using rule 71
+	'1'            reduce using rule 71
+	'CNOT'         reduce using rule 71
+	'CR2'          reduce using rule 71
+	'CR2D'         reduce using rule 71
+	'CR3'          reduce using rule 71
+	'CR3D'         reduce using rule 71
+	'CR4'          reduce using rule 71
+	'CR4D'         reduce using rule 71
+	'CR8'          reduce using rule 71
+	'CR8D'         reduce using rule 71
+	'CT'           reduce using rule 71
+	'FREDKIN'      reduce using rule 71
+	'H'            reduce using rule 71
+	'I'            reduce using rule 71
+	'QFT'          reduce using rule 71
+	'QFTI'         reduce using rule 71
+	'S'            reduce using rule 71
+	'SWAP'         reduce using rule 71
+	'T'            reduce using rule 71
+	'TOFFOLI'      reduce using rule 71
+	'X'            reduce using rule 71
+	'Y'            reduce using rule 71
+	'Z'            reduce using rule 71
+	'else'         reduce using rule 71
+	'in'           reduce using rule 71
+	'then'         reduce using rule 71
+	L_FunVar       reduce using rule 71
+	L_Var          reduce using rule 71
+	L_GateIdent    reduce using rule 71
+	%eof           reduce using rule 71
+
+
+State 34
+
+	Gate -> 'H' .                                       (rule 61)
 
 	'('            reduce using rule 61
 	')'            reduce using rule 61
@@ -625,9 +1105,20 @@ State 24
 	'0'            reduce using rule 61
 	'1'            reduce using rule 61
 	'CNOT'         reduce using rule 61
+	'CR2'          reduce using rule 61
+	'CR2D'         reduce using rule 61
+	'CR3'          reduce using rule 61
+	'CR3D'         reduce using rule 61
+	'CR4'          reduce using rule 61
+	'CR4D'         reduce using rule 61
+	'CR8'          reduce using rule 61
+	'CR8D'         reduce using rule 61
+	'CT'           reduce using rule 61
 	'FREDKIN'      reduce using rule 61
 	'H'            reduce using rule 61
 	'I'            reduce using rule 61
+	'QFT'          reduce using rule 61
+	'QFTI'         reduce using rule 61
 	'S'            reduce using rule 61
 	'SWAP'         reduce using rule 61
 	'T'            reduce using rule 61
@@ -644,99 +1135,9 @@ State 24
 	%eof           reduce using rule 61
 
 
-State 25
+State 35
 
-	Gate -> 'S' .                                       (rule 62)
-
-	'('            reduce using rule 62
-	')'            reduce using rule 62
-	'*'            reduce using rule 62
-	','            reduce using rule 62
-	'0'            reduce using rule 62
-	'1'            reduce using rule 62
-	'CNOT'         reduce using rule 62
-	'FREDKIN'      reduce using rule 62
-	'H'            reduce using rule 62
-	'I'            reduce using rule 62
-	'S'            reduce using rule 62
-	'SWAP'         reduce using rule 62
-	'T'            reduce using rule 62
-	'TOFFOLI'      reduce using rule 62
-	'X'            reduce using rule 62
-	'Y'            reduce using rule 62
-	'Z'            reduce using rule 62
-	'else'         reduce using rule 62
-	'in'           reduce using rule 62
-	'then'         reduce using rule 62
-	L_FunVar       reduce using rule 62
-	L_Var          reduce using rule 62
-	L_GateIdent    reduce using rule 62
-	%eof           reduce using rule 62
-
-
-State 26
-
-	Gate -> 'SWAP' .                                    (rule 66)
-
-	'('            reduce using rule 66
-	')'            reduce using rule 66
-	'*'            reduce using rule 66
-	','            reduce using rule 66
-	'0'            reduce using rule 66
-	'1'            reduce using rule 66
-	'CNOT'         reduce using rule 66
-	'FREDKIN'      reduce using rule 66
-	'H'            reduce using rule 66
-	'I'            reduce using rule 66
-	'S'            reduce using rule 66
-	'SWAP'         reduce using rule 66
-	'T'            reduce using rule 66
-	'TOFFOLI'      reduce using rule 66
-	'X'            reduce using rule 66
-	'Y'            reduce using rule 66
-	'Z'            reduce using rule 66
-	'else'         reduce using rule 66
-	'in'           reduce using rule 66
-	'then'         reduce using rule 66
-	L_FunVar       reduce using rule 66
-	L_Var          reduce using rule 66
-	L_GateIdent    reduce using rule 66
-	%eof           reduce using rule 66
-
-
-State 27
-
-	Gate -> 'T' .                                       (rule 63)
-
-	'('            reduce using rule 63
-	')'            reduce using rule 63
-	'*'            reduce using rule 63
-	','            reduce using rule 63
-	'0'            reduce using rule 63
-	'1'            reduce using rule 63
-	'CNOT'         reduce using rule 63
-	'FREDKIN'      reduce using rule 63
-	'H'            reduce using rule 63
-	'I'            reduce using rule 63
-	'S'            reduce using rule 63
-	'SWAP'         reduce using rule 63
-	'T'            reduce using rule 63
-	'TOFFOLI'      reduce using rule 63
-	'X'            reduce using rule 63
-	'Y'            reduce using rule 63
-	'Z'            reduce using rule 63
-	'else'         reduce using rule 63
-	'in'           reduce using rule 63
-	'then'         reduce using rule 63
-	L_FunVar       reduce using rule 63
-	L_Var          reduce using rule 63
-	L_GateIdent    reduce using rule 63
-	%eof           reduce using rule 63
-
-
-State 28
-
-	Gate -> 'TOFFOLI' .                                 (rule 65)
+	Gate -> 'I' .                                       (rule 65)
 
 	'('            reduce using rule 65
 	')'            reduce using rule 65
@@ -745,9 +1146,20 @@ State 28
 	'0'            reduce using rule 65
 	'1'            reduce using rule 65
 	'CNOT'         reduce using rule 65
+	'CR2'          reduce using rule 65
+	'CR2D'         reduce using rule 65
+	'CR3'          reduce using rule 65
+	'CR3D'         reduce using rule 65
+	'CR4'          reduce using rule 65
+	'CR4D'         reduce using rule 65
+	'CR8'          reduce using rule 65
+	'CR8D'         reduce using rule 65
+	'CT'           reduce using rule 65
 	'FREDKIN'      reduce using rule 65
 	'H'            reduce using rule 65
 	'I'            reduce using rule 65
+	'QFT'          reduce using rule 65
+	'QFTI'         reduce using rule 65
 	'S'            reduce using rule 65
 	'SWAP'         reduce using rule 65
 	'T'            reduce using rule 65
@@ -764,630 +1176,749 @@ State 28
 	%eof           reduce using rule 65
 
 
-State 29
-
-	Gate -> 'X' .                                       (rule 58)
-
-	'('            reduce using rule 58
-	')'            reduce using rule 58
-	'*'            reduce using rule 58
-	','            reduce using rule 58
-	'0'            reduce using rule 58
-	'1'            reduce using rule 58
-	'CNOT'         reduce using rule 58
-	'FREDKIN'      reduce using rule 58
-	'H'            reduce using rule 58
-	'I'            reduce using rule 58
-	'S'            reduce using rule 58
-	'SWAP'         reduce using rule 58
-	'T'            reduce using rule 58
-	'TOFFOLI'      reduce using rule 58
-	'X'            reduce using rule 58
-	'Y'            reduce using rule 58
-	'Z'            reduce using rule 58
-	'else'         reduce using rule 58
-	'in'           reduce using rule 58
-	'then'         reduce using rule 58
-	L_FunVar       reduce using rule 58
-	L_Var          reduce using rule 58
-	L_GateIdent    reduce using rule 58
-	%eof           reduce using rule 58
-
-
-State 30
-
-	Gate -> 'Y' .                                       (rule 59)
-
-	'('            reduce using rule 59
-	')'            reduce using rule 59
-	'*'            reduce using rule 59
-	','            reduce using rule 59
-	'0'            reduce using rule 59
-	'1'            reduce using rule 59
-	'CNOT'         reduce using rule 59
-	'FREDKIN'      reduce using rule 59
-	'H'            reduce using rule 59
-	'I'            reduce using rule 59
-	'S'            reduce using rule 59
-	'SWAP'         reduce using rule 59
-	'T'            reduce using rule 59
-	'TOFFOLI'      reduce using rule 59
-	'X'            reduce using rule 59
-	'Y'            reduce using rule 59
-	'Z'            reduce using rule 59
-	'else'         reduce using rule 59
-	'in'           reduce using rule 59
-	'then'         reduce using rule 59
-	L_FunVar       reduce using rule 59
-	L_Var          reduce using rule 59
-	L_GateIdent    reduce using rule 59
-	%eof           reduce using rule 59
-
-
-State 31
-
-	Gate -> 'Z' .                                       (rule 60)
-
-	'('            reduce using rule 60
-	')'            reduce using rule 60
-	'*'            reduce using rule 60
-	','            reduce using rule 60
-	'0'            reduce using rule 60
-	'1'            reduce using rule 60
-	'CNOT'         reduce using rule 60
-	'FREDKIN'      reduce using rule 60
-	'H'            reduce using rule 60
-	'I'            reduce using rule 60
-	'S'            reduce using rule 60
-	'SWAP'         reduce using rule 60
-	'T'            reduce using rule 60
-	'TOFFOLI'      reduce using rule 60
-	'X'            reduce using rule 60
-	'Y'            reduce using rule 60
-	'Z'            reduce using rule 60
-	'else'         reduce using rule 60
-	'in'           reduce using rule 60
-	'then'         reduce using rule 60
-	L_FunVar       reduce using rule 60
-	L_Var          reduce using rule 60
-	L_GateIdent    reduce using rule 60
-	%eof           reduce using rule 60
-
-
-State 32
-
-	GateIdent -> L_GateIdent .                          (rule 19)
-
-	'('            reduce using rule 19
-	')'            reduce using rule 19
-	'*'            reduce using rule 19
-	','            reduce using rule 19
-	'0'            reduce using rule 19
-	'1'            reduce using rule 19
-	'CNOT'         reduce using rule 19
-	'FREDKIN'      reduce using rule 19
-	'H'            reduce using rule 19
-	'I'            reduce using rule 19
-	'S'            reduce using rule 19
-	'SWAP'         reduce using rule 19
-	'T'            reduce using rule 19
-	'TOFFOLI'      reduce using rule 19
-	'X'            reduce using rule 19
-	'Y'            reduce using rule 19
-	'Z'            reduce using rule 19
-	'else'         reduce using rule 19
-	'in'           reduce using rule 19
-	'then'         reduce using rule 19
-	L_FunVar       reduce using rule 19
-	L_Var          reduce using rule 19
-	L_GateIdent    reduce using rule 19
-	%eof           reduce using rule 19
-
-
-State 33
-
-	Type2 -> Var .                                      (rule 47)
-
-	')'            reduce using rule 47
-	'-o'           reduce using rule 47
-	'><'           reduce using rule 47
-	L_Var          reduce using rule 47
-	%eof           reduce using rule 47
-
-
-State 34
-
-	Type1 -> Type2 . '><' Type1                         (rule 53)
-	Type1 -> Type2 . '-o' Type1                         (rule 54)
-	Type1 -> Type2 .                                    (rule 55)
-
-	')'            reduce using rule 55
-	'-o'           shift, and enter state 94
-	'><'           shift, and enter state 95
-	L_Var          reduce using rule 55
-	%eof           reduce using rule 55
-
-
-State 35
-
-	Type -> Type1 .                                     (rule 56)
-
-	')'            reduce using rule 56
-	L_Var          reduce using rule 56
-	%eof           reduce using rule 56
-
-
 State 36
 
-	%start_pType -> Type .                              (rule 15)
+	Gate -> 'QFT' .                                     (rule 72)
 
-	%eof           accept
+	'('            reduce using rule 72
+	')'            reduce using rule 72
+	'*'            reduce using rule 72
+	','            reduce using rule 72
+	'0'            reduce using rule 72
+	'1'            reduce using rule 72
+	'CNOT'         reduce using rule 72
+	'CR2'          reduce using rule 72
+	'CR2D'         reduce using rule 72
+	'CR3'          reduce using rule 72
+	'CR3D'         reduce using rule 72
+	'CR4'          reduce using rule 72
+	'CR4D'         reduce using rule 72
+	'CR8'          reduce using rule 72
+	'CR8D'         reduce using rule 72
+	'CT'           reduce using rule 72
+	'FREDKIN'      reduce using rule 72
+	'H'            reduce using rule 72
+	'I'            reduce using rule 72
+	'QFT'          reduce using rule 72
+	'QFTI'         reduce using rule 72
+	'S'            reduce using rule 72
+	'SWAP'         reduce using rule 72
+	'T'            reduce using rule 72
+	'TOFFOLI'      reduce using rule 72
+	'X'            reduce using rule 72
+	'Y'            reduce using rule 72
+	'Z'            reduce using rule 72
+	'else'         reduce using rule 72
+	'in'           reduce using rule 72
+	'then'         reduce using rule 72
+	L_FunVar       reduce using rule 72
+	L_Var          reduce using rule 72
+	L_GateIdent    reduce using rule 72
+	%eof           reduce using rule 72
 
 
 State 37
 
-	Type2 -> '!' . Type2                                (rule 51)
+	Gate -> 'QFTI' .                                    (rule 73)
 
-	'!'            shift, and enter state 37
-	'('            shift, and enter state 38
-	'Bit'          shift, and enter state 39
-	'QBit'         shift, and enter state 40
-	'T'            shift, and enter state 41
-	L_Var          shift, and enter state 42
+	'('            reduce using rule 73
+	')'            reduce using rule 73
+	'*'            reduce using rule 73
+	','            reduce using rule 73
+	'0'            reduce using rule 73
+	'1'            reduce using rule 73
+	'CNOT'         reduce using rule 73
+	'CR2'          reduce using rule 73
+	'CR2D'         reduce using rule 73
+	'CR3'          reduce using rule 73
+	'CR3D'         reduce using rule 73
+	'CR4'          reduce using rule 73
+	'CR4D'         reduce using rule 73
+	'CR8'          reduce using rule 73
+	'CR8D'         reduce using rule 73
+	'CT'           reduce using rule 73
+	'FREDKIN'      reduce using rule 73
+	'H'            reduce using rule 73
+	'I'            reduce using rule 73
+	'QFT'          reduce using rule 73
+	'QFTI'         reduce using rule 73
+	'S'            reduce using rule 73
+	'SWAP'         reduce using rule 73
+	'T'            reduce using rule 73
+	'TOFFOLI'      reduce using rule 73
+	'X'            reduce using rule 73
+	'Y'            reduce using rule 73
+	'Z'            reduce using rule 73
+	'else'         reduce using rule 73
+	'in'           reduce using rule 73
+	'then'         reduce using rule 73
+	L_FunVar       reduce using rule 73
+	L_Var          reduce using rule 73
+	L_GateIdent    reduce using rule 73
+	%eof           reduce using rule 73
 
-	Var            goto state 33
-	Type2          goto state 93
 
 State 38
 
-	Type2 -> '(' . Type ')'                             (rule 52)
+	Gate -> 'S' .                                       (rule 66)
 
-	'!'            shift, and enter state 37
-	'('            shift, and enter state 38
-	'Bit'          shift, and enter state 39
-	'QBit'         shift, and enter state 40
-	'T'            shift, and enter state 41
-	L_Var          shift, and enter state 42
+	'('            reduce using rule 66
+	')'            reduce using rule 66
+	'*'            reduce using rule 66
+	','            reduce using rule 66
+	'0'            reduce using rule 66
+	'1'            reduce using rule 66
+	'CNOT'         reduce using rule 66
+	'CR2'          reduce using rule 66
+	'CR2D'         reduce using rule 66
+	'CR3'          reduce using rule 66
+	'CR3D'         reduce using rule 66
+	'CR4'          reduce using rule 66
+	'CR4D'         reduce using rule 66
+	'CR8'          reduce using rule 66
+	'CR8D'         reduce using rule 66
+	'CT'           reduce using rule 66
+	'FREDKIN'      reduce using rule 66
+	'H'            reduce using rule 66
+	'I'            reduce using rule 66
+	'QFT'          reduce using rule 66
+	'QFTI'         reduce using rule 66
+	'S'            reduce using rule 66
+	'SWAP'         reduce using rule 66
+	'T'            reduce using rule 66
+	'TOFFOLI'      reduce using rule 66
+	'X'            reduce using rule 66
+	'Y'            reduce using rule 66
+	'Z'            reduce using rule 66
+	'else'         reduce using rule 66
+	'in'           reduce using rule 66
+	'then'         reduce using rule 66
+	L_FunVar       reduce using rule 66
+	L_Var          reduce using rule 66
+	L_GateIdent    reduce using rule 66
+	%eof           reduce using rule 66
 
-	Var            goto state 33
-	Type2          goto state 34
-	Type1          goto state 35
-	Type           goto state 92
 
 State 39
 
-	Type2 -> 'Bit' .                                    (rule 48)
+	Gate -> 'SWAP' .                                    (rule 70)
 
-	')'            reduce using rule 48
-	'-o'           reduce using rule 48
-	'><'           reduce using rule 48
-	L_Var          reduce using rule 48
-	%eof           reduce using rule 48
+	'('            reduce using rule 70
+	')'            reduce using rule 70
+	'*'            reduce using rule 70
+	','            reduce using rule 70
+	'0'            reduce using rule 70
+	'1'            reduce using rule 70
+	'CNOT'         reduce using rule 70
+	'CR2'          reduce using rule 70
+	'CR2D'         reduce using rule 70
+	'CR3'          reduce using rule 70
+	'CR3D'         reduce using rule 70
+	'CR4'          reduce using rule 70
+	'CR4D'         reduce using rule 70
+	'CR8'          reduce using rule 70
+	'CR8D'         reduce using rule 70
+	'CT'           reduce using rule 70
+	'FREDKIN'      reduce using rule 70
+	'H'            reduce using rule 70
+	'I'            reduce using rule 70
+	'QFT'          reduce using rule 70
+	'QFTI'         reduce using rule 70
+	'S'            reduce using rule 70
+	'SWAP'         reduce using rule 70
+	'T'            reduce using rule 70
+	'TOFFOLI'      reduce using rule 70
+	'X'            reduce using rule 70
+	'Y'            reduce using rule 70
+	'Z'            reduce using rule 70
+	'else'         reduce using rule 70
+	'in'           reduce using rule 70
+	'then'         reduce using rule 70
+	L_FunVar       reduce using rule 70
+	L_Var          reduce using rule 70
+	L_GateIdent    reduce using rule 70
+	%eof           reduce using rule 70
 
 
 State 40
 
-	Type2 -> 'QBit' .                                   (rule 49)
+	Gate -> 'T' .                                       (rule 67)
 
-	')'            reduce using rule 49
-	'-o'           reduce using rule 49
-	'><'           reduce using rule 49
-	L_Var          reduce using rule 49
-	%eof           reduce using rule 49
+	'('            reduce using rule 67
+	')'            reduce using rule 67
+	'*'            reduce using rule 67
+	','            reduce using rule 67
+	'0'            reduce using rule 67
+	'1'            reduce using rule 67
+	'CNOT'         reduce using rule 67
+	'CR2'          reduce using rule 67
+	'CR2D'         reduce using rule 67
+	'CR3'          reduce using rule 67
+	'CR3D'         reduce using rule 67
+	'CR4'          reduce using rule 67
+	'CR4D'         reduce using rule 67
+	'CR8'          reduce using rule 67
+	'CR8D'         reduce using rule 67
+	'CT'           reduce using rule 67
+	'FREDKIN'      reduce using rule 67
+	'H'            reduce using rule 67
+	'I'            reduce using rule 67
+	'QFT'          reduce using rule 67
+	'QFTI'         reduce using rule 67
+	'S'            reduce using rule 67
+	'SWAP'         reduce using rule 67
+	'T'            reduce using rule 67
+	'TOFFOLI'      reduce using rule 67
+	'X'            reduce using rule 67
+	'Y'            reduce using rule 67
+	'Z'            reduce using rule 67
+	'else'         reduce using rule 67
+	'in'           reduce using rule 67
+	'then'         reduce using rule 67
+	L_FunVar       reduce using rule 67
+	L_Var          reduce using rule 67
+	L_GateIdent    reduce using rule 67
+	%eof           reduce using rule 67
 
 
 State 41
 
-	Type2 -> 'T' .                                      (rule 50)
+	Gate -> 'TOFFOLI' .                                 (rule 69)
 
-	')'            reduce using rule 50
-	'-o'           reduce using rule 50
-	'><'           reduce using rule 50
-	L_Var          reduce using rule 50
-	%eof           reduce using rule 50
+	'('            reduce using rule 69
+	')'            reduce using rule 69
+	'*'            reduce using rule 69
+	','            reduce using rule 69
+	'0'            reduce using rule 69
+	'1'            reduce using rule 69
+	'CNOT'         reduce using rule 69
+	'CR2'          reduce using rule 69
+	'CR2D'         reduce using rule 69
+	'CR3'          reduce using rule 69
+	'CR3D'         reduce using rule 69
+	'CR4'          reduce using rule 69
+	'CR4D'         reduce using rule 69
+	'CR8'          reduce using rule 69
+	'CR8D'         reduce using rule 69
+	'CT'           reduce using rule 69
+	'FREDKIN'      reduce using rule 69
+	'H'            reduce using rule 69
+	'I'            reduce using rule 69
+	'QFT'          reduce using rule 69
+	'QFTI'         reduce using rule 69
+	'S'            reduce using rule 69
+	'SWAP'         reduce using rule 69
+	'T'            reduce using rule 69
+	'TOFFOLI'      reduce using rule 69
+	'X'            reduce using rule 69
+	'Y'            reduce using rule 69
+	'Z'            reduce using rule 69
+	'else'         reduce using rule 69
+	'in'           reduce using rule 69
+	'then'         reduce using rule 69
+	L_FunVar       reduce using rule 69
+	L_Var          reduce using rule 69
+	L_GateIdent    reduce using rule 69
+	%eof           reduce using rule 69
 
 
 State 42
 
-	Var -> L_Var .                                      (rule 18)
+	Gate -> 'X' .                                       (rule 62)
 
-	'('            reduce using rule 18
-	')'            reduce using rule 18
-	'*'            reduce using rule 18
-	','            reduce using rule 18
-	'-o'           reduce using rule 18
-	'.'            reduce using rule 18
-	'0'            reduce using rule 18
-	'1'            reduce using rule 18
-	'='            reduce using rule 18
-	'><'           reduce using rule 18
-	'CNOT'         reduce using rule 18
-	'FREDKIN'      reduce using rule 18
-	'H'            reduce using rule 18
-	'I'            reduce using rule 18
-	'S'            reduce using rule 18
-	'SWAP'         reduce using rule 18
-	'T'            reduce using rule 18
-	'TOFFOLI'      reduce using rule 18
-	'X'            reduce using rule 18
-	'Y'            reduce using rule 18
-	'Z'            reduce using rule 18
-	'else'         reduce using rule 18
-	'in'           reduce using rule 18
-	'then'         reduce using rule 18
-	L_FunVar       reduce using rule 18
-	L_Var          reduce using rule 18
-	L_GateIdent    reduce using rule 18
-	%eof           reduce using rule 18
+	'('            reduce using rule 62
+	')'            reduce using rule 62
+	'*'            reduce using rule 62
+	','            reduce using rule 62
+	'0'            reduce using rule 62
+	'1'            reduce using rule 62
+	'CNOT'         reduce using rule 62
+	'CR2'          reduce using rule 62
+	'CR2D'         reduce using rule 62
+	'CR3'          reduce using rule 62
+	'CR3D'         reduce using rule 62
+	'CR4'          reduce using rule 62
+	'CR4D'         reduce using rule 62
+	'CR8'          reduce using rule 62
+	'CR8D'         reduce using rule 62
+	'CT'           reduce using rule 62
+	'FREDKIN'      reduce using rule 62
+	'H'            reduce using rule 62
+	'I'            reduce using rule 62
+	'QFT'          reduce using rule 62
+	'QFTI'         reduce using rule 62
+	'S'            reduce using rule 62
+	'SWAP'         reduce using rule 62
+	'T'            reduce using rule 62
+	'TOFFOLI'      reduce using rule 62
+	'X'            reduce using rule 62
+	'Y'            reduce using rule 62
+	'Z'            reduce using rule 62
+	'else'         reduce using rule 62
+	'in'           reduce using rule 62
+	'then'         reduce using rule 62
+	L_FunVar       reduce using rule 62
+	L_Var          reduce using rule 62
+	L_GateIdent    reduce using rule 62
+	%eof           reduce using rule 62
 
 
 State 43
 
-	%start_pType1 -> Type1 .                            (rule 14)
+	Gate -> 'Y' .                                       (rule 63)
 
-	%eof           accept
+	'('            reduce using rule 63
+	')'            reduce using rule 63
+	'*'            reduce using rule 63
+	','            reduce using rule 63
+	'0'            reduce using rule 63
+	'1'            reduce using rule 63
+	'CNOT'         reduce using rule 63
+	'CR2'          reduce using rule 63
+	'CR2D'         reduce using rule 63
+	'CR3'          reduce using rule 63
+	'CR3D'         reduce using rule 63
+	'CR4'          reduce using rule 63
+	'CR4D'         reduce using rule 63
+	'CR8'          reduce using rule 63
+	'CR8D'         reduce using rule 63
+	'CT'           reduce using rule 63
+	'FREDKIN'      reduce using rule 63
+	'H'            reduce using rule 63
+	'I'            reduce using rule 63
+	'QFT'          reduce using rule 63
+	'QFTI'         reduce using rule 63
+	'S'            reduce using rule 63
+	'SWAP'         reduce using rule 63
+	'T'            reduce using rule 63
+	'TOFFOLI'      reduce using rule 63
+	'X'            reduce using rule 63
+	'Y'            reduce using rule 63
+	'Z'            reduce using rule 63
+	'else'         reduce using rule 63
+	'in'           reduce using rule 63
+	'then'         reduce using rule 63
+	L_FunVar       reduce using rule 63
+	L_Var          reduce using rule 63
+	L_GateIdent    reduce using rule 63
+	%eof           reduce using rule 63
 
 
 State 44
 
-	%start_pType2 -> Type2 .                            (rule 13)
+	Gate -> 'Z' .                                       (rule 64)
 
-	%eof           accept
+	'('            reduce using rule 64
+	')'            reduce using rule 64
+	'*'            reduce using rule 64
+	','            reduce using rule 64
+	'0'            reduce using rule 64
+	'1'            reduce using rule 64
+	'CNOT'         reduce using rule 64
+	'CR2'          reduce using rule 64
+	'CR2D'         reduce using rule 64
+	'CR3'          reduce using rule 64
+	'CR3D'         reduce using rule 64
+	'CR4'          reduce using rule 64
+	'CR4D'         reduce using rule 64
+	'CR8'          reduce using rule 64
+	'CR8D'         reduce using rule 64
+	'CT'           reduce using rule 64
+	'FREDKIN'      reduce using rule 64
+	'H'            reduce using rule 64
+	'I'            reduce using rule 64
+	'QFT'          reduce using rule 64
+	'QFTI'         reduce using rule 64
+	'S'            reduce using rule 64
+	'SWAP'         reduce using rule 64
+	'T'            reduce using rule 64
+	'TOFFOLI'      reduce using rule 64
+	'X'            reduce using rule 64
+	'Y'            reduce using rule 64
+	'Z'            reduce using rule 64
+	'else'         reduce using rule 64
+	'in'           reduce using rule 64
+	'then'         reduce using rule 64
+	L_FunVar       reduce using rule 64
+	L_Var          reduce using rule 64
+	L_GateIdent    reduce using rule 64
+	%eof           reduce using rule 64
 
 
 State 45
 
-	Arg -> Var .                                        (rule 44)
+	GateIdent -> L_GateIdent .                          (rule 21)
 
-	'='            reduce using rule 44
-	L_Var          reduce using rule 44
-	%eof           reduce using rule 44
+	'('            reduce using rule 21
+	')'            reduce using rule 21
+	'*'            reduce using rule 21
+	','            reduce using rule 21
+	'0'            reduce using rule 21
+	'1'            reduce using rule 21
+	'CNOT'         reduce using rule 21
+	'CR2'          reduce using rule 21
+	'CR2D'         reduce using rule 21
+	'CR3'          reduce using rule 21
+	'CR3D'         reduce using rule 21
+	'CR4'          reduce using rule 21
+	'CR4D'         reduce using rule 21
+	'CR8'          reduce using rule 21
+	'CR8D'         reduce using rule 21
+	'CT'           reduce using rule 21
+	'FREDKIN'      reduce using rule 21
+	'H'            reduce using rule 21
+	'I'            reduce using rule 21
+	'QFT'          reduce using rule 21
+	'QFTI'         reduce using rule 21
+	'S'            reduce using rule 21
+	'SWAP'         reduce using rule 21
+	'T'            reduce using rule 21
+	'TOFFOLI'      reduce using rule 21
+	'X'            reduce using rule 21
+	'Y'            reduce using rule 21
+	'Z'            reduce using rule 21
+	'else'         reduce using rule 21
+	'in'           reduce using rule 21
+	'then'         reduce using rule 21
+	L_FunVar       reduce using rule 21
+	L_Var          reduce using rule 21
+	L_GateIdent    reduce using rule 21
+	%eof           reduce using rule 21
 
 
 State 46
 
-	ListArg -> Arg . ListArg                            (rule 46)
+	Type1 -> Type2 . '><' Type1                         (rule 57)
+	Type1 -> Type2 . '-o' Type1                         (rule 58)
+	Type1 -> Type2 .                                    (rule 59)
 
-	'='            reduce using rule 45
-	L_Var          shift, and enter state 42
-	%eof           reduce using rule 45
+	')'            reduce using rule 59
+	'-o'           shift, and enter state 111
+	'.'            reduce using rule 59
+	'><'           shift, and enter state 112
+	L_Var          reduce using rule 59
+	%eof           reduce using rule 59
 
-	Var            goto state 45
-	Arg            goto state 46
-	ListArg        goto state 91
 
 State 47
 
-	%start_pListArg -> ListArg .                        (rule 12)
+	Type -> Type1 .                                     (rule 60)
 
-	%eof           accept
+	')'            reduce using rule 60
+	'.'            reduce using rule 60
+	L_Var          reduce using rule 60
+	%eof           reduce using rule 60
 
 
 State 48
 
-	%start_pArg -> Arg .                                (rule 11)
+	%start_pType -> Type .                              (rule 17)
 
 	%eof           accept
 
 
 State 49
 
-	Function -> Var . ListArg '=' Term                  (rule 43)
+	Type2 -> '!' . Type2                                (rule 55)
 
-	'='            reduce using rule 45
-	L_Var          shift, and enter state 42
+	'!'            shift, and enter state 49
+	'('            shift, and enter state 50
+	'Bit'          shift, and enter state 51
+	'QBit'         shift, and enter state 52
+	'T'            shift, and enter state 53
 
-	Var            goto state 45
-	Arg            goto state 46
-	ListArg        goto state 90
+	Type2          goto state 110
 
 State 50
 
-	%start_pFunction -> Function .                      (rule 10)
+	Type2 -> '(' . Type ')'                             (rule 56)
 
-	%eof           accept
+	'!'            shift, and enter state 49
+	'('            shift, and enter state 50
+	'Bit'          shift, and enter state 51
+	'QBit'         shift, and enter state 52
+	'T'            shift, and enter state 53
 
+	Type2          goto state 46
+	Type1          goto state 47
+	Type           goto state 109
 
 State 51
 
-	FunDec -> FunVar . Type Function                    (rule 40)
+	Type2 -> 'Bit' .                                    (rule 52)
 
-	'!'            shift, and enter state 37
-	'('            shift, and enter state 38
-	'Bit'          shift, and enter state 39
-	'QBit'         shift, and enter state 40
-	'T'            shift, and enter state 41
-	L_Var          shift, and enter state 42
+	')'            reduce using rule 52
+	'-o'           reduce using rule 52
+	'.'            reduce using rule 52
+	'><'           reduce using rule 52
+	L_Var          reduce using rule 52
+	%eof           reduce using rule 52
 
-	Var            goto state 33
-	Type2          goto state 34
-	Type1          goto state 35
-	Type           goto state 89
 
 State 52
 
-	ListFunDec -> FunDec . ListFunDec                   (rule 42)
+	Type2 -> 'QBit' .                                   (rule 53)
 
-	L_FunVar       shift, and enter state 18
-	%eof           reduce using rule 41
+	')'            reduce using rule 53
+	'-o'           reduce using rule 53
+	'.'            reduce using rule 53
+	'><'           reduce using rule 53
+	L_Var          reduce using rule 53
+	%eof           reduce using rule 53
 
-	FunVar         goto state 51
-	FunDec         goto state 52
-	ListFunDec     goto state 88
 
 State 53
 
-	%start_pListFunDec -> ListFunDec .                  (rule 9)
+	Type2 -> 'T' .                                      (rule 54)
 
-	%eof           accept
+	')'            reduce using rule 54
+	'-o'           reduce using rule 54
+	'.'            reduce using rule 54
+	'><'           reduce using rule 54
+	L_Var          reduce using rule 54
+	%eof           reduce using rule 54
 
 
 State 54
 
-	%start_pFunDec -> FunDec .                          (rule 8)
+	%start_pType1 -> Type1 .                            (rule 16)
 
 	%eof           accept
 
 
 State 55
 
-	%start_pBit -> Bit .                                (rule 7)
+	%start_pType2 -> Type2 .                            (rule 15)
 
 	%eof           accept
 
 
 State 56
 
-	Bit -> '0' .                                        (rule 38)
+	Arg -> Var .                                        (rule 49)
 
-	'('            reduce using rule 38
-	')'            reduce using rule 38
-	'*'            reduce using rule 38
-	','            reduce using rule 38
-	'0'            reduce using rule 38
-	'1'            reduce using rule 38
-	'CNOT'         reduce using rule 38
-	'FREDKIN'      reduce using rule 38
-	'H'            reduce using rule 38
-	'I'            reduce using rule 38
-	'S'            reduce using rule 38
-	'SWAP'         reduce using rule 38
-	'T'            reduce using rule 38
-	'TOFFOLI'      reduce using rule 38
-	'X'            reduce using rule 38
-	'Y'            reduce using rule 38
-	'Z'            reduce using rule 38
-	'else'         reduce using rule 38
-	'in'           reduce using rule 38
-	'then'         reduce using rule 38
-	L_FunVar       reduce using rule 38
-	L_Var          reduce using rule 38
-	L_GateIdent    reduce using rule 38
-	%eof           reduce using rule 38
+	'='            reduce using rule 49
+	L_Var          reduce using rule 49
+	%eof           reduce using rule 49
 
 
 State 57
 
-	Bit -> '1' .                                        (rule 39)
+	ListArg -> Arg . ListArg                            (rule 51)
 
-	'('            reduce using rule 39
-	')'            reduce using rule 39
-	'*'            reduce using rule 39
-	','            reduce using rule 39
-	'0'            reduce using rule 39
-	'1'            reduce using rule 39
-	'CNOT'         reduce using rule 39
-	'FREDKIN'      reduce using rule 39
-	'H'            reduce using rule 39
-	'I'            reduce using rule 39
-	'S'            reduce using rule 39
-	'SWAP'         reduce using rule 39
-	'T'            reduce using rule 39
-	'TOFFOLI'      reduce using rule 39
-	'X'            reduce using rule 39
-	'Y'            reduce using rule 39
-	'Z'            reduce using rule 39
-	'else'         reduce using rule 39
-	'in'           reduce using rule 39
-	'then'         reduce using rule 39
-	L_FunVar       reduce using rule 39
-	L_Var          reduce using rule 39
-	L_GateIdent    reduce using rule 39
-	%eof           reduce using rule 39
+	'='            reduce using rule 50
+	L_Var          shift, and enter state 59
+	%eof           reduce using rule 50
 
+	Var            goto state 56
+	Arg            goto state 57
+	ListArg        goto state 108
 
 State 58
 
-	Term3 -> Var .                                      (rule 22)
+	%start_pListArg -> ListArg .                        (rule 14)
 
-	'('            reduce using rule 22
-	')'            reduce using rule 22
-	'*'            reduce using rule 22
-	','            reduce using rule 22
-	'0'            reduce using rule 22
-	'1'            reduce using rule 22
-	'CNOT'         reduce using rule 22
-	'FREDKIN'      reduce using rule 22
-	'H'            reduce using rule 22
-	'I'            reduce using rule 22
-	'S'            reduce using rule 22
-	'SWAP'         reduce using rule 22
-	'T'            reduce using rule 22
-	'TOFFOLI'      reduce using rule 22
-	'X'            reduce using rule 22
-	'Y'            reduce using rule 22
-	'Z'            reduce using rule 22
-	'else'         reduce using rule 22
-	'in'           reduce using rule 22
-	'then'         reduce using rule 22
-	L_FunVar       reduce using rule 22
-	L_Var          reduce using rule 22
-	L_GateIdent    reduce using rule 22
-	%eof           reduce using rule 22
+	%eof           accept
 
 
 State 59
 
-	Term1 -> Lambda . Var '.' Term                      (rule 32)
+	Var -> L_Var .                                      (rule 20)
 
-	L_Var          shift, and enter state 42
+	'('            reduce using rule 20
+	')'            reduce using rule 20
+	'*'            reduce using rule 20
+	','            reduce using rule 20
+	'0'            reduce using rule 20
+	'1'            reduce using rule 20
+	'='            reduce using rule 20
+	'CNOT'         reduce using rule 20
+	'CR2'          reduce using rule 20
+	'CR2D'         reduce using rule 20
+	'CR3'          reduce using rule 20
+	'CR3D'         reduce using rule 20
+	'CR4'          reduce using rule 20
+	'CR4D'         reduce using rule 20
+	'CR8'          reduce using rule 20
+	'CR8D'         reduce using rule 20
+	'CT'           reduce using rule 20
+	'FREDKIN'      reduce using rule 20
+	'H'            reduce using rule 20
+	'I'            reduce using rule 20
+	'QFT'          reduce using rule 20
+	'QFTI'         reduce using rule 20
+	'S'            reduce using rule 20
+	'SWAP'         reduce using rule 20
+	'T'            reduce using rule 20
+	'TOFFOLI'      reduce using rule 20
+	'X'            reduce using rule 20
+	'Y'            reduce using rule 20
+	'Z'            reduce using rule 20
+	'else'         reduce using rule 20
+	'in'           reduce using rule 20
+	'then'         reduce using rule 20
+	L_FunVar       reduce using rule 20
+	L_Var          reduce using rule 20
+	L_GateIdent    reduce using rule 20
+	%eof           reduce using rule 20
 
-	Var            goto state 87
 
 State 60
 
-	Term2 -> Term3 .                                    (rule 29)
+	%start_pArg -> Arg .                                (rule 13)
 
-	'('            reduce using rule 29
-	')'            reduce using rule 29
-	'*'            reduce using rule 29
-	','            reduce using rule 29
-	'0'            reduce using rule 29
-	'1'            reduce using rule 29
-	'CNOT'         reduce using rule 29
-	'FREDKIN'      reduce using rule 29
-	'H'            reduce using rule 29
-	'I'            reduce using rule 29
-	'S'            reduce using rule 29
-	'SWAP'         reduce using rule 29
-	'T'            reduce using rule 29
-	'TOFFOLI'      reduce using rule 29
-	'X'            reduce using rule 29
-	'Y'            reduce using rule 29
-	'Z'            reduce using rule 29
-	'else'         reduce using rule 29
-	'in'           reduce using rule 29
-	'then'         reduce using rule 29
-	L_FunVar       reduce using rule 29
-	L_Var          reduce using rule 29
-	L_GateIdent    reduce using rule 29
-	%eof           reduce using rule 29
+	%eof           accept
 
 
 State 61
 
-	Term2 -> Term2 . Term3                              (rule 28)
-	Term1 -> Term2 .                                    (rule 33)
+	Function -> Var . ListArg '=' Term                  (rule 48)
 
-	'('            shift, and enter state 68
-	')'            reduce using rule 33
-	'*'            shift, and enter state 69
-	','            reduce using rule 33
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	L_FunVar       reduce using rule 33
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
-	%eof           reduce using rule 33
+	'='            reduce using rule 50
+	L_Var          shift, and enter state 59
 
-	Var            goto state 58
-	GateIdent      goto state 19
-	Term3          goto state 81
-	Tup            goto state 64
-	Bit            goto state 66
-	Gate           goto state 67
+	Var            goto state 56
+	Arg            goto state 57
+	ListArg        goto state 107
 
 State 62
 
-	Term -> Term1 .                                     (rule 34)
+	%start_pFunction -> Function .                      (rule 12)
 
-	')'            reduce using rule 34
-	','            reduce using rule 34
-	L_FunVar       reduce using rule 34
-	%eof           reduce using rule 34
+	%eof           accept
 
 
 State 63
 
-	ListTerm -> Term .                                  (rule 36)
-	ListTerm -> Term . ',' ListTerm                     (rule 37)
+	FunDec -> FunVar . Type Function                    (rule 45)
 
-	')'            reduce using rule 36
-	','            shift, and enter state 86
-	%eof           reduce using rule 36
+	'!'            shift, and enter state 49
+	'('            shift, and enter state 50
+	'Bit'          shift, and enter state 51
+	'QBit'         shift, and enter state 52
+	'T'            shift, and enter state 53
 
+	Type2          goto state 46
+	Type1          goto state 47
+	Type           goto state 106
 
 State 64
 
-	Term3 -> Tup .                                      (rule 25)
+	ListFunDec -> FunDec . ListFunDec                   (rule 47)
 
-	'('            reduce using rule 25
-	')'            reduce using rule 25
-	'*'            reduce using rule 25
-	','            reduce using rule 25
-	'0'            reduce using rule 25
-	'1'            reduce using rule 25
-	'CNOT'         reduce using rule 25
-	'FREDKIN'      reduce using rule 25
-	'H'            reduce using rule 25
-	'I'            reduce using rule 25
-	'S'            reduce using rule 25
-	'SWAP'         reduce using rule 25
-	'T'            reduce using rule 25
-	'TOFFOLI'      reduce using rule 25
-	'X'            reduce using rule 25
-	'Y'            reduce using rule 25
-	'Z'            reduce using rule 25
-	'else'         reduce using rule 25
-	'in'           reduce using rule 25
-	'then'         reduce using rule 25
-	L_FunVar       reduce using rule 25
-	L_Var          reduce using rule 25
-	L_GateIdent    reduce using rule 25
-	%eof           reduce using rule 25
+	L_FunVar       shift, and enter state 20
+	%eof           reduce using rule 46
 
+	FunVar         goto state 63
+	FunDec         goto state 64
+	ListFunDec     goto state 105
 
 State 65
 
-	%start_pListTerm -> ListTerm .                      (rule 6)
+	%start_pListFunDec -> ListFunDec .                  (rule 11)
 
 	%eof           accept
 
 
 State 66
 
-	Term3 -> Bit .                                      (rule 23)
+	%start_pFunDec -> FunDec .                          (rule 10)
 
-	'('            reduce using rule 23
-	')'            reduce using rule 23
-	'*'            reduce using rule 23
-	','            reduce using rule 23
-	'0'            reduce using rule 23
-	'1'            reduce using rule 23
-	'CNOT'         reduce using rule 23
-	'FREDKIN'      reduce using rule 23
-	'H'            reduce using rule 23
-	'I'            reduce using rule 23
-	'S'            reduce using rule 23
-	'SWAP'         reduce using rule 23
-	'T'            reduce using rule 23
-	'TOFFOLI'      reduce using rule 23
-	'X'            reduce using rule 23
-	'Y'            reduce using rule 23
-	'Z'            reduce using rule 23
-	'else'         reduce using rule 23
-	'in'           reduce using rule 23
-	'then'         reduce using rule 23
-	L_FunVar       reduce using rule 23
-	L_Var          reduce using rule 23
-	L_GateIdent    reduce using rule 23
-	%eof           reduce using rule 23
+	%eof           accept
 
 
 State 67
 
-	Term3 -> Gate .                                     (rule 24)
+	%start_pBit -> Bit .                                (rule 9)
+
+	%eof           accept
+
+
+State 68
+
+	Bit -> '0' .                                        (rule 43)
+
+	'('            reduce using rule 43
+	')'            reduce using rule 43
+	'*'            reduce using rule 43
+	','            reduce using rule 43
+	'0'            reduce using rule 43
+	'1'            reduce using rule 43
+	'CNOT'         reduce using rule 43
+	'CR2'          reduce using rule 43
+	'CR2D'         reduce using rule 43
+	'CR3'          reduce using rule 43
+	'CR3D'         reduce using rule 43
+	'CR4'          reduce using rule 43
+	'CR4D'         reduce using rule 43
+	'CR8'          reduce using rule 43
+	'CR8D'         reduce using rule 43
+	'CT'           reduce using rule 43
+	'FREDKIN'      reduce using rule 43
+	'H'            reduce using rule 43
+	'I'            reduce using rule 43
+	'QFT'          reduce using rule 43
+	'QFTI'         reduce using rule 43
+	'S'            reduce using rule 43
+	'SWAP'         reduce using rule 43
+	'T'            reduce using rule 43
+	'TOFFOLI'      reduce using rule 43
+	'X'            reduce using rule 43
+	'Y'            reduce using rule 43
+	'Z'            reduce using rule 43
+	'else'         reduce using rule 43
+	'in'           reduce using rule 43
+	'then'         reduce using rule 43
+	L_FunVar       reduce using rule 43
+	L_Var          reduce using rule 43
+	L_GateIdent    reduce using rule 43
+	%eof           reduce using rule 43
+
+
+State 69
+
+	Bit -> '1' .                                        (rule 44)
+
+	'('            reduce using rule 44
+	')'            reduce using rule 44
+	'*'            reduce using rule 44
+	','            reduce using rule 44
+	'0'            reduce using rule 44
+	'1'            reduce using rule 44
+	'CNOT'         reduce using rule 44
+	'CR2'          reduce using rule 44
+	'CR2D'         reduce using rule 44
+	'CR3'          reduce using rule 44
+	'CR3D'         reduce using rule 44
+	'CR4'          reduce using rule 44
+	'CR4D'         reduce using rule 44
+	'CR8'          reduce using rule 44
+	'CR8D'         reduce using rule 44
+	'CT'           reduce using rule 44
+	'FREDKIN'      reduce using rule 44
+	'H'            reduce using rule 44
+	'I'            reduce using rule 44
+	'QFT'          reduce using rule 44
+	'QFTI'         reduce using rule 44
+	'S'            reduce using rule 44
+	'SWAP'         reduce using rule 44
+	'T'            reduce using rule 44
+	'TOFFOLI'      reduce using rule 44
+	'X'            reduce using rule 44
+	'Y'            reduce using rule 44
+	'Z'            reduce using rule 44
+	'else'         reduce using rule 44
+	'in'           reduce using rule 44
+	'then'         reduce using rule 44
+	L_FunVar       reduce using rule 44
+	L_Var          reduce using rule 44
+	L_GateIdent    reduce using rule 44
+	%eof           reduce using rule 44
+
+
+State 70
+
+	Term3 -> Var .                                      (rule 24)
 
 	'('            reduce using rule 24
 	')'            reduce using rule 24
@@ -1396,9 +1927,20 @@ State 67
 	'0'            reduce using rule 24
 	'1'            reduce using rule 24
 	'CNOT'         reduce using rule 24
+	'CR2'          reduce using rule 24
+	'CR2D'         reduce using rule 24
+	'CR3'          reduce using rule 24
+	'CR3D'         reduce using rule 24
+	'CR4'          reduce using rule 24
+	'CR4D'         reduce using rule 24
+	'CR8'          reduce using rule 24
+	'CR8D'         reduce using rule 24
+	'CT'           reduce using rule 24
 	'FREDKIN'      reduce using rule 24
 	'H'            reduce using rule 24
 	'I'            reduce using rule 24
+	'QFT'          reduce using rule 24
+	'QFTI'         reduce using rule 24
 	'S'            reduce using rule 24
 	'SWAP'         reduce using rule 24
 	'T'            reduce using rule 24
@@ -1415,46 +1957,216 @@ State 67
 	%eof           reduce using rule 24
 
 
-State 68
+State 71
 
-	Term3 -> '(' . Term ')'                             (rule 27)
-	Tup -> '(' . Term ',' ListTerm ')'                  (rule 35)
+	Term1 -> Lambda . FunVar Type '.' Term              (rule 34)
 
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	'if'           shift, and enter state 70
-	'let'          shift, and enter state 71
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
-	L_Lambda       shift, and enter state 72
+	L_FunVar       shift, and enter state 20
 
-	Var            goto state 58
-	GateIdent      goto state 19
-	Lambda         goto state 59
-	Term3          goto state 60
-	Term2          goto state 61
-	Term1          goto state 62
-	Term           goto state 85
-	Tup            goto state 64
-	Bit            goto state 66
-	Gate           goto state 67
+	FunVar         goto state 104
 
-State 69
+State 72
 
-	Term3 -> '*' .                                      (rule 26)
+	Term2 -> Term3 .                                    (rule 31)
+
+	'('            reduce using rule 31
+	')'            reduce using rule 31
+	'*'            reduce using rule 31
+	','            reduce using rule 31
+	'0'            reduce using rule 31
+	'1'            reduce using rule 31
+	'CNOT'         reduce using rule 31
+	'CR2'          reduce using rule 31
+	'CR2D'         reduce using rule 31
+	'CR3'          reduce using rule 31
+	'CR3D'         reduce using rule 31
+	'CR4'          reduce using rule 31
+	'CR4D'         reduce using rule 31
+	'CR8'          reduce using rule 31
+	'CR8D'         reduce using rule 31
+	'CT'           reduce using rule 31
+	'FREDKIN'      reduce using rule 31
+	'H'            reduce using rule 31
+	'I'            reduce using rule 31
+	'QFT'          reduce using rule 31
+	'QFTI'         reduce using rule 31
+	'S'            reduce using rule 31
+	'SWAP'         reduce using rule 31
+	'T'            reduce using rule 31
+	'TOFFOLI'      reduce using rule 31
+	'X'            reduce using rule 31
+	'Y'            reduce using rule 31
+	'Z'            reduce using rule 31
+	'else'         reduce using rule 31
+	'in'           reduce using rule 31
+	'then'         reduce using rule 31
+	L_FunVar       reduce using rule 31
+	L_Var          reduce using rule 31
+	L_GateIdent    reduce using rule 31
+	%eof           reduce using rule 31
+
+
+State 73
+
+	Term2 -> Term2 . Term3                              (rule 30)
+	Term1 -> Term2 .                                    (rule 35)
+
+	'('            shift, and enter state 80
+	')'            reduce using rule 35
+	'*'            shift, and enter state 81
+	','            reduce using rule 35
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	'else'         reduce using rule 35
+	'in'           reduce using rule 35
+	L_FunVar       reduce using rule 35
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
+	%eof           reduce using rule 35
+
+	Var            goto state 70
+	GateIdent      goto state 21
+	Term3          goto state 97
+	Tup            goto state 76
+	Bit            goto state 78
+	Gate           goto state 79
+
+State 74
+
+	Term -> Term1 .                                     (rule 36)
+
+	')'            reduce using rule 36
+	','            reduce using rule 36
+	'else'         reduce using rule 36
+	'in'           reduce using rule 36
+	L_FunVar       reduce using rule 36
+	%eof           reduce using rule 36
+
+
+State 75
+
+	ListTerm -> Term .                                  (rule 41)
+	ListTerm -> Term . ',' ListTerm                     (rule 42)
+
+	')'            reduce using rule 41
+	','            shift, and enter state 103
+	%eof           reduce using rule 41
+
+
+State 76
+
+	Term3 -> Tup .                                      (rule 27)
+
+	'('            reduce using rule 27
+	')'            reduce using rule 27
+	'*'            reduce using rule 27
+	','            reduce using rule 27
+	'0'            reduce using rule 27
+	'1'            reduce using rule 27
+	'CNOT'         reduce using rule 27
+	'CR2'          reduce using rule 27
+	'CR2D'         reduce using rule 27
+	'CR3'          reduce using rule 27
+	'CR3D'         reduce using rule 27
+	'CR4'          reduce using rule 27
+	'CR4D'         reduce using rule 27
+	'CR8'          reduce using rule 27
+	'CR8D'         reduce using rule 27
+	'CT'           reduce using rule 27
+	'FREDKIN'      reduce using rule 27
+	'H'            reduce using rule 27
+	'I'            reduce using rule 27
+	'QFT'          reduce using rule 27
+	'QFTI'         reduce using rule 27
+	'S'            reduce using rule 27
+	'SWAP'         reduce using rule 27
+	'T'            reduce using rule 27
+	'TOFFOLI'      reduce using rule 27
+	'X'            reduce using rule 27
+	'Y'            reduce using rule 27
+	'Z'            reduce using rule 27
+	'else'         reduce using rule 27
+	'in'           reduce using rule 27
+	'then'         reduce using rule 27
+	L_FunVar       reduce using rule 27
+	L_Var          reduce using rule 27
+	L_GateIdent    reduce using rule 27
+	%eof           reduce using rule 27
+
+
+State 77
+
+	%start_pListTerm -> ListTerm .                      (rule 8)
+
+	%eof           accept
+
+
+State 78
+
+	Term3 -> Bit .                                      (rule 25)
+
+	'('            reduce using rule 25
+	')'            reduce using rule 25
+	'*'            reduce using rule 25
+	','            reduce using rule 25
+	'0'            reduce using rule 25
+	'1'            reduce using rule 25
+	'CNOT'         reduce using rule 25
+	'CR2'          reduce using rule 25
+	'CR2D'         reduce using rule 25
+	'CR3'          reduce using rule 25
+	'CR3D'         reduce using rule 25
+	'CR4'          reduce using rule 25
+	'CR4D'         reduce using rule 25
+	'CR8'          reduce using rule 25
+	'CR8D'         reduce using rule 25
+	'CT'           reduce using rule 25
+	'FREDKIN'      reduce using rule 25
+	'H'            reduce using rule 25
+	'I'            reduce using rule 25
+	'QFT'          reduce using rule 25
+	'QFTI'         reduce using rule 25
+	'S'            reduce using rule 25
+	'SWAP'         reduce using rule 25
+	'T'            reduce using rule 25
+	'TOFFOLI'      reduce using rule 25
+	'X'            reduce using rule 25
+	'Y'            reduce using rule 25
+	'Z'            reduce using rule 25
+	'else'         reduce using rule 25
+	'in'           reduce using rule 25
+	'then'         reduce using rule 25
+	L_FunVar       reduce using rule 25
+	L_Var          reduce using rule 25
+	L_GateIdent    reduce using rule 25
+	%eof           reduce using rule 25
+
+
+State 79
+
+	Term3 -> Gate .                                     (rule 26)
 
 	'('            reduce using rule 26
 	')'            reduce using rule 26
@@ -1463,9 +2175,20 @@ State 69
 	'0'            reduce using rule 26
 	'1'            reduce using rule 26
 	'CNOT'         reduce using rule 26
+	'CR2'          reduce using rule 26
+	'CR2D'         reduce using rule 26
+	'CR3'          reduce using rule 26
+	'CR3D'         reduce using rule 26
+	'CR4'          reduce using rule 26
+	'CR4D'         reduce using rule 26
+	'CR8'          reduce using rule 26
+	'CR8D'         reduce using rule 26
+	'CT'           reduce using rule 26
 	'FREDKIN'      reduce using rule 26
 	'H'            reduce using rule 26
 	'I'            reduce using rule 26
+	'QFT'          reduce using rule 26
+	'QFTI'         reduce using rule 26
 	'S'            reduce using rule 26
 	'SWAP'         reduce using rule 26
 	'T'            reduce using rule 26
@@ -1482,162 +2205,57 @@ State 69
 	%eof           reduce using rule 26
 
 
-State 70
-
-	Term1 -> 'if' . Term2 'then' Term2 'else' Term      (rule 30)
-
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
-
-	Var            goto state 58
-	GateIdent      goto state 19
-	Term3          goto state 60
-	Term2          goto state 84
-	Tup            goto state 64
-	Bit            goto state 66
-	Gate           goto state 67
-
-State 71
-
-	Term1 -> 'let' . '(' Var ',' Var ')' '=' Term2 'in' Term    (rule 31)
-
-	'('            shift, and enter state 83
-
-
-State 72
-
-	Lambda -> L_Lambda .                                (rule 20)
-
-	L_Var          reduce using rule 20
-
-
-State 73
-
-	%start_pTup -> Tup .                                (rule 5)
-
-	%eof           accept
-
-
-State 74
-
-	Tup -> '(' . Term ',' ListTerm ')'                  (rule 35)
-
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	'if'           shift, and enter state 70
-	'let'          shift, and enter state 71
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
-	L_Lambda       shift, and enter state 72
-
-	Var            goto state 58
-	GateIdent      goto state 19
-	Lambda         goto state 59
-	Term3          goto state 60
-	Term2          goto state 61
-	Term1          goto state 62
-	Term           goto state 82
-	Tup            goto state 64
-	Bit            goto state 66
-	Gate           goto state 67
-
-State 75
-
-	%start_pTerm -> Term .                              (rule 4)
-
-	%eof           accept
-
-
-State 76
-
-	%start_pTerm1 -> Term1 .                            (rule 3)
-
-	%eof           accept
-
-
-State 77
-
-	%start_pTerm2 -> Term2 .                            (rule 2)
-	Term2 -> Term2 . Term3                              (rule 28)
-
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
-	%eof           accept
-
-	Var            goto state 58
-	GateIdent      goto state 19
-	Term3          goto state 81
-	Tup            goto state 64
-	Bit            goto state 66
-	Gate           goto state 67
-
-State 78
-
-	%start_pTerm3 -> Term3 .                            (rule 1)
-
-	%eof           accept
-
-
-State 79
-
-	%start_pProgram -> Program .                        (rule 0)
-
-	%eof           accept
-
-
 State 80
 
-	Program -> ListFunDec .                             (rule 21)
+	Term3 -> '(' . Term ')'                             (rule 29)
+	Tup -> '(' . Term ',' ListTerm ')'                  (rule 40)
 
-	%eof           reduce using rule 21
+	'('            shift, and enter state 80
+	'*'            shift, and enter state 81
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	'if'           shift, and enter state 82
+	'let'          shift, and enter state 83
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
+	L_Lambda       shift, and enter state 84
 
+	Var            goto state 70
+	GateIdent      goto state 21
+	Lambda         goto state 71
+	Term3          goto state 72
+	Term2          goto state 73
+	Term1          goto state 74
+	Term           goto state 102
+	Tup            goto state 76
+	Bit            goto state 78
+	Gate           goto state 79
 
 State 81
 
-	Term2 -> Term2 Term3 .                              (rule 28)
+	Term3 -> '*' .                                      (rule 28)
 
 	'('            reduce using rule 28
 	')'            reduce using rule 28
@@ -1646,9 +2264,20 @@ State 81
 	'0'            reduce using rule 28
 	'1'            reduce using rule 28
 	'CNOT'         reduce using rule 28
+	'CR2'          reduce using rule 28
+	'CR2D'         reduce using rule 28
+	'CR3'          reduce using rule 28
+	'CR3D'         reduce using rule 28
+	'CR4'          reduce using rule 28
+	'CR4D'         reduce using rule 28
+	'CR8'          reduce using rule 28
+	'CR8D'         reduce using rule 28
+	'CT'           reduce using rule 28
 	'FREDKIN'      reduce using rule 28
 	'H'            reduce using rule 28
 	'I'            reduce using rule 28
+	'QFT'          reduce using rule 28
+	'QFTI'         reduce using rule 28
 	'S'            reduce using rule 28
 	'SWAP'         reduce using rule 28
 	'T'            reduce using rule 28
@@ -1667,668 +2296,1054 @@ State 81
 
 State 82
 
-	Tup -> '(' Term . ',' ListTerm ')'                  (rule 35)
+	Term1 -> 'if' . Term2 'then' Term 'else' Term       (rule 32)
 
-	','            shift, and enter state 104
+	'('            shift, and enter state 80
+	'*'            shift, and enter state 81
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
 
+	Var            goto state 70
+	GateIdent      goto state 21
+	Term3          goto state 72
+	Term2          goto state 101
+	Tup            goto state 76
+	Bit            goto state 78
+	Gate           goto state 79
 
 State 83
 
-	Term1 -> 'let' '(' . Var ',' Var ')' '=' Term2 'in' Term    (rule 31)
+	Term1 -> 'let' . '(' LetVar ',' ListLetVar ')' '=' Term 'in' Term    (rule 33)
 
-	L_Var          shift, and enter state 42
+	'('            shift, and enter state 100
 
-	Var            goto state 106
 
 State 84
 
-	Term2 -> Term2 . Term3                              (rule 28)
-	Term1 -> 'if' Term2 . 'then' Term2 'else' Term      (rule 30)
+	Lambda -> L_Lambda .                                (rule 22)
 
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	'then'         shift, and enter state 105
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
+	L_FunVar       reduce using rule 22
 
-	Var            goto state 58
-	GateIdent      goto state 19
-	Term3          goto state 81
-	Tup            goto state 64
-	Bit            goto state 66
-	Gate           goto state 67
 
 State 85
 
-	Term3 -> '(' Term . ')'                             (rule 27)
-	Tup -> '(' Term . ',' ListTerm ')'                  (rule 35)
+	%start_pTup -> Tup .                                (rule 7)
 
-	')'            shift, and enter state 103
-	','            shift, and enter state 104
+	%eof           accept
 
 
 State 86
 
-	ListTerm -> Term ',' . ListTerm                     (rule 37)
+	Tup -> '(' . Term ',' ListTerm ')'                  (rule 40)
 
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	'if'           shift, and enter state 70
-	'let'          shift, and enter state 71
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
-	L_Lambda       shift, and enter state 72
+	'('            shift, and enter state 80
+	'*'            shift, and enter state 81
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	'if'           shift, and enter state 82
+	'let'          shift, and enter state 83
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
+	L_Lambda       shift, and enter state 84
 
-	Var            goto state 58
-	GateIdent      goto state 19
-	Lambda         goto state 59
-	Term3          goto state 60
-	Term2          goto state 61
-	Term1          goto state 62
-	Term           goto state 63
-	Tup            goto state 64
-	ListTerm       goto state 102
-	Bit            goto state 66
-	Gate           goto state 67
+	Var            goto state 70
+	GateIdent      goto state 21
+	Lambda         goto state 71
+	Term3          goto state 72
+	Term2          goto state 73
+	Term1          goto state 74
+	Term           goto state 99
+	Tup            goto state 76
+	Bit            goto state 78
+	Gate           goto state 79
 
 State 87
 
-	Term1 -> Lambda Var . '.' Term                      (rule 32)
+	LetVar -> Var .                                     (rule 37)
 
-	'.'            shift, and enter state 101
+	')'            reduce using rule 37
+	','            reduce using rule 37
+	%eof           reduce using rule 37
 
 
 State 88
 
-	ListFunDec -> FunDec ListFunDec .                   (rule 42)
+	ListLetVar -> LetVar .                              (rule 38)
+	ListLetVar -> LetVar . ',' ListLetVar               (rule 39)
 
-	%eof           reduce using rule 42
+	')'            reduce using rule 38
+	','            shift, and enter state 98
+	%eof           reduce using rule 38
 
 
 State 89
 
-	FunDec -> FunVar Type . Function                    (rule 40)
+	%start_pListLetVar -> ListLetVar .                  (rule 6)
 
-	L_Var          shift, and enter state 42
+	%eof           accept
 
-	Var            goto state 49
-	Function       goto state 100
 
 State 90
 
-	Function -> Var ListArg . '=' Term                  (rule 43)
+	%start_pLetVar -> LetVar .                          (rule 5)
 
-	'='            shift, and enter state 99
+	%eof           accept
 
 
 State 91
 
-	ListArg -> Arg ListArg .                            (rule 46)
+	%start_pTerm -> Term .                              (rule 4)
 
-	'='            reduce using rule 46
-	%eof           reduce using rule 46
+	%eof           accept
 
 
 State 92
 
-	Type2 -> '(' Type . ')'                             (rule 52)
+	%start_pTerm1 -> Term1 .                            (rule 3)
 
-	')'            shift, and enter state 98
+	%eof           accept
 
 
 State 93
 
-	Type2 -> '!' Type2 .                                (rule 51)
+	%start_pTerm2 -> Term2 .                            (rule 2)
+	Term2 -> Term2 . Term3                              (rule 30)
 
-	')'            reduce using rule 51
-	'-o'           reduce using rule 51
-	'><'           reduce using rule 51
-	L_Var          reduce using rule 51
-	%eof           reduce using rule 51
+	'('            shift, and enter state 80
+	'*'            shift, and enter state 81
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
+	%eof           accept
 
+	Var            goto state 70
+	GateIdent      goto state 21
+	Term3          goto state 97
+	Tup            goto state 76
+	Bit            goto state 78
+	Gate           goto state 79
 
 State 94
 
-	Type1 -> Type2 '-o' . Type1                         (rule 54)
+	%start_pTerm3 -> Term3 .                            (rule 1)
 
-	'!'            shift, and enter state 37
-	'('            shift, and enter state 38
-	'Bit'          shift, and enter state 39
-	'QBit'         shift, and enter state 40
-	'T'            shift, and enter state 41
-	L_Var          shift, and enter state 42
+	%eof           accept
 
-	Var            goto state 33
-	Type2          goto state 34
-	Type1          goto state 97
 
 State 95
 
-	Type1 -> Type2 '><' . Type1                         (rule 53)
+	%start_pProgram -> Program .                        (rule 0)
 
-	'!'            shift, and enter state 37
-	'('            shift, and enter state 38
-	'Bit'          shift, and enter state 39
-	'QBit'         shift, and enter state 40
-	'T'            shift, and enter state 41
-	L_Var          shift, and enter state 42
+	%eof           accept
 
-	Var            goto state 33
-	Type2          goto state 34
-	Type1          goto state 96
 
 State 96
 
-	Type1 -> Type2 '><' Type1 .                         (rule 53)
+	Program -> ListFunDec .                             (rule 23)
 
-	')'            reduce using rule 53
-	L_Var          reduce using rule 53
-	%eof           reduce using rule 53
+	%eof           reduce using rule 23
 
 
 State 97
 
-	Type1 -> Type2 '-o' Type1 .                         (rule 54)
+	Term2 -> Term2 Term3 .                              (rule 30)
 
-	')'            reduce using rule 54
-	L_Var          reduce using rule 54
-	%eof           reduce using rule 54
+	'('            reduce using rule 30
+	')'            reduce using rule 30
+	'*'            reduce using rule 30
+	','            reduce using rule 30
+	'0'            reduce using rule 30
+	'1'            reduce using rule 30
+	'CNOT'         reduce using rule 30
+	'CR2'          reduce using rule 30
+	'CR2D'         reduce using rule 30
+	'CR3'          reduce using rule 30
+	'CR3D'         reduce using rule 30
+	'CR4'          reduce using rule 30
+	'CR4D'         reduce using rule 30
+	'CR8'          reduce using rule 30
+	'CR8D'         reduce using rule 30
+	'CT'           reduce using rule 30
+	'FREDKIN'      reduce using rule 30
+	'H'            reduce using rule 30
+	'I'            reduce using rule 30
+	'QFT'          reduce using rule 30
+	'QFTI'         reduce using rule 30
+	'S'            reduce using rule 30
+	'SWAP'         reduce using rule 30
+	'T'            reduce using rule 30
+	'TOFFOLI'      reduce using rule 30
+	'X'            reduce using rule 30
+	'Y'            reduce using rule 30
+	'Z'            reduce using rule 30
+	'else'         reduce using rule 30
+	'in'           reduce using rule 30
+	'then'         reduce using rule 30
+	L_FunVar       reduce using rule 30
+	L_Var          reduce using rule 30
+	L_GateIdent    reduce using rule 30
+	%eof           reduce using rule 30
 
 
 State 98
 
-	Type2 -> '(' Type ')' .                             (rule 52)
+	ListLetVar -> LetVar ',' . ListLetVar               (rule 39)
 
-	')'            reduce using rule 52
-	'-o'           reduce using rule 52
-	'><'           reduce using rule 52
-	L_Var          reduce using rule 52
-	%eof           reduce using rule 52
+	L_Var          shift, and enter state 59
 
+	Var            goto state 87
+	LetVar         goto state 88
+	ListLetVar     goto state 124
 
 State 99
 
-	Function -> Var ListArg '=' . Term                  (rule 43)
+	Tup -> '(' Term . ',' ListTerm ')'                  (rule 40)
 
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	'if'           shift, and enter state 70
-	'let'          shift, and enter state 71
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
-	L_Lambda       shift, and enter state 72
+	','            shift, and enter state 121
 
-	Var            goto state 58
-	GateIdent      goto state 19
-	Lambda         goto state 59
-	Term3          goto state 60
-	Term2          goto state 61
-	Term1          goto state 62
-	Term           goto state 111
-	Tup            goto state 64
-	Bit            goto state 66
-	Gate           goto state 67
 
 State 100
 
-	FunDec -> FunVar Type Function .                    (rule 40)
+	Term1 -> 'let' '(' . LetVar ',' ListLetVar ')' '=' Term 'in' Term    (rule 33)
 
-	L_FunVar       reduce using rule 40
-	%eof           reduce using rule 40
+	L_Var          shift, and enter state 59
 
+	Var            goto state 87
+	LetVar         goto state 123
 
 State 101
 
-	Term1 -> Lambda Var '.' . Term                      (rule 32)
+	Term2 -> Term2 . Term3                              (rule 30)
+	Term1 -> 'if' Term2 . 'then' Term 'else' Term       (rule 32)
 
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	'if'           shift, and enter state 70
-	'let'          shift, and enter state 71
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
-	L_Lambda       shift, and enter state 72
+	'('            shift, and enter state 80
+	'*'            shift, and enter state 81
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	'then'         shift, and enter state 122
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
 
-	Var            goto state 58
-	GateIdent      goto state 19
-	Lambda         goto state 59
-	Term3          goto state 60
-	Term2          goto state 61
-	Term1          goto state 62
-	Term           goto state 110
-	Tup            goto state 64
-	Bit            goto state 66
-	Gate           goto state 67
+	Var            goto state 70
+	GateIdent      goto state 21
+	Term3          goto state 97
+	Tup            goto state 76
+	Bit            goto state 78
+	Gate           goto state 79
 
 State 102
 
-	ListTerm -> Term ',' ListTerm .                     (rule 37)
+	Term3 -> '(' Term . ')'                             (rule 29)
+	Tup -> '(' Term . ',' ListTerm ')'                  (rule 40)
 
-	')'            reduce using rule 37
-	%eof           reduce using rule 37
+	')'            shift, and enter state 120
+	','            shift, and enter state 121
 
 
 State 103
 
-	Term3 -> '(' Term ')' .                             (rule 27)
+	ListTerm -> Term ',' . ListTerm                     (rule 42)
 
-	'('            reduce using rule 27
-	')'            reduce using rule 27
-	'*'            reduce using rule 27
-	','            reduce using rule 27
-	'0'            reduce using rule 27
-	'1'            reduce using rule 27
-	'CNOT'         reduce using rule 27
-	'FREDKIN'      reduce using rule 27
-	'H'            reduce using rule 27
-	'I'            reduce using rule 27
-	'S'            reduce using rule 27
-	'SWAP'         reduce using rule 27
-	'T'            reduce using rule 27
-	'TOFFOLI'      reduce using rule 27
-	'X'            reduce using rule 27
-	'Y'            reduce using rule 27
-	'Z'            reduce using rule 27
-	'else'         reduce using rule 27
-	'in'           reduce using rule 27
-	'then'         reduce using rule 27
-	L_FunVar       reduce using rule 27
-	L_Var          reduce using rule 27
-	L_GateIdent    reduce using rule 27
-	%eof           reduce using rule 27
+	'('            shift, and enter state 80
+	'*'            shift, and enter state 81
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	'if'           shift, and enter state 82
+	'let'          shift, and enter state 83
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
+	L_Lambda       shift, and enter state 84
 
+	Var            goto state 70
+	GateIdent      goto state 21
+	Lambda         goto state 71
+	Term3          goto state 72
+	Term2          goto state 73
+	Term1          goto state 74
+	Term           goto state 75
+	Tup            goto state 76
+	ListTerm       goto state 119
+	Bit            goto state 78
+	Gate           goto state 79
 
 State 104
 
-	Tup -> '(' Term ',' . ListTerm ')'                  (rule 35)
+	Term1 -> Lambda FunVar . Type '.' Term              (rule 34)
 
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	'if'           shift, and enter state 70
-	'let'          shift, and enter state 71
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
-	L_Lambda       shift, and enter state 72
+	'!'            shift, and enter state 49
+	'('            shift, and enter state 50
+	'Bit'          shift, and enter state 51
+	'QBit'         shift, and enter state 52
+	'T'            shift, and enter state 53
 
-	Var            goto state 58
-	GateIdent      goto state 19
-	Lambda         goto state 59
-	Term3          goto state 60
-	Term2          goto state 61
-	Term1          goto state 62
-	Term           goto state 63
-	Tup            goto state 64
-	ListTerm       goto state 109
-	Bit            goto state 66
-	Gate           goto state 67
+	Type2          goto state 46
+	Type1          goto state 47
+	Type           goto state 118
 
 State 105
 
-	Term1 -> 'if' Term2 'then' . Term2 'else' Term      (rule 30)
+	ListFunDec -> FunDec ListFunDec .                   (rule 47)
 
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
+	%eof           reduce using rule 47
 
-	Var            goto state 58
-	GateIdent      goto state 19
-	Term3          goto state 60
-	Term2          goto state 108
-	Tup            goto state 64
-	Bit            goto state 66
-	Gate           goto state 67
 
 State 106
 
-	Term1 -> 'let' '(' Var . ',' Var ')' '=' Term2 'in' Term    (rule 31)
+	FunDec -> FunVar Type . Function                    (rule 45)
 
-	','            shift, and enter state 107
+	L_Var          shift, and enter state 59
 
+	Var            goto state 61
+	Function       goto state 117
 
 State 107
 
-	Term1 -> 'let' '(' Var ',' . Var ')' '=' Term2 'in' Term    (rule 31)
+	Function -> Var ListArg . '=' Term                  (rule 48)
 
-	L_Var          shift, and enter state 42
+	'='            shift, and enter state 116
 
-	Var            goto state 114
 
 State 108
 
-	Term2 -> Term2 . Term3                              (rule 28)
-	Term1 -> 'if' Term2 'then' Term2 . 'else' Term      (rule 30)
+	ListArg -> Arg ListArg .                            (rule 51)
 
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	'else'         shift, and enter state 113
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
+	'='            reduce using rule 51
+	%eof           reduce using rule 51
 
-	Var            goto state 58
-	GateIdent      goto state 19
-	Term3          goto state 81
-	Tup            goto state 64
-	Bit            goto state 66
-	Gate           goto state 67
 
 State 109
 
-	Tup -> '(' Term ',' ListTerm . ')'                  (rule 35)
-
-	')'            shift, and enter state 112
-
-
-State 110
-
-	Term1 -> Lambda Var '.' Term .                      (rule 32)
-
-	')'            reduce using rule 32
-	','            reduce using rule 32
-	L_FunVar       reduce using rule 32
-	%eof           reduce using rule 32
-
-
-State 111
-
-	Function -> Var ListArg '=' Term .                  (rule 43)
-
-	L_FunVar       reduce using rule 43
-	%eof           reduce using rule 43
-
-
-State 112
-
-	Tup -> '(' Term ',' ListTerm ')' .                  (rule 35)
-
-	'('            reduce using rule 35
-	')'            reduce using rule 35
-	'*'            reduce using rule 35
-	','            reduce using rule 35
-	'0'            reduce using rule 35
-	'1'            reduce using rule 35
-	'CNOT'         reduce using rule 35
-	'FREDKIN'      reduce using rule 35
-	'H'            reduce using rule 35
-	'I'            reduce using rule 35
-	'S'            reduce using rule 35
-	'SWAP'         reduce using rule 35
-	'T'            reduce using rule 35
-	'TOFFOLI'      reduce using rule 35
-	'X'            reduce using rule 35
-	'Y'            reduce using rule 35
-	'Z'            reduce using rule 35
-	'else'         reduce using rule 35
-	'in'           reduce using rule 35
-	'then'         reduce using rule 35
-	L_FunVar       reduce using rule 35
-	L_Var          reduce using rule 35
-	L_GateIdent    reduce using rule 35
-	%eof           reduce using rule 35
-
-
-State 113
-
-	Term1 -> 'if' Term2 'then' Term2 'else' . Term      (rule 30)
-
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	'if'           shift, and enter state 70
-	'let'          shift, and enter state 71
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
-	L_Lambda       shift, and enter state 72
-
-	Var            goto state 58
-	GateIdent      goto state 19
-	Lambda         goto state 59
-	Term3          goto state 60
-	Term2          goto state 61
-	Term1          goto state 62
-	Term           goto state 116
-	Tup            goto state 64
-	Bit            goto state 66
-	Gate           goto state 67
-
-State 114
-
-	Term1 -> 'let' '(' Var ',' Var . ')' '=' Term2 'in' Term    (rule 31)
+	Type2 -> '(' Type . ')'                             (rule 56)
 
 	')'            shift, and enter state 115
 
 
+State 110
+
+	Type2 -> '!' Type2 .                                (rule 55)
+
+	')'            reduce using rule 55
+	'-o'           reduce using rule 55
+	'.'            reduce using rule 55
+	'><'           reduce using rule 55
+	L_Var          reduce using rule 55
+	%eof           reduce using rule 55
+
+
+State 111
+
+	Type1 -> Type2 '-o' . Type1                         (rule 58)
+
+	'!'            shift, and enter state 49
+	'('            shift, and enter state 50
+	'Bit'          shift, and enter state 51
+	'QBit'         shift, and enter state 52
+	'T'            shift, and enter state 53
+
+	Type2          goto state 46
+	Type1          goto state 114
+
+State 112
+
+	Type1 -> Type2 '><' . Type1                         (rule 57)
+
+	'!'            shift, and enter state 49
+	'('            shift, and enter state 50
+	'Bit'          shift, and enter state 51
+	'QBit'         shift, and enter state 52
+	'T'            shift, and enter state 53
+
+	Type2          goto state 46
+	Type1          goto state 113
+
+State 113
+
+	Type1 -> Type2 '><' Type1 .                         (rule 57)
+
+	')'            reduce using rule 57
+	'.'            reduce using rule 57
+	L_Var          reduce using rule 57
+	%eof           reduce using rule 57
+
+
+State 114
+
+	Type1 -> Type2 '-o' Type1 .                         (rule 58)
+
+	')'            reduce using rule 58
+	'.'            reduce using rule 58
+	L_Var          reduce using rule 58
+	%eof           reduce using rule 58
+
+
 State 115
 
-	Term1 -> 'let' '(' Var ',' Var ')' . '=' Term2 'in' Term    (rule 31)
+	Type2 -> '(' Type ')' .                             (rule 56)
 
-	'='            shift, and enter state 117
+	')'            reduce using rule 56
+	'-o'           reduce using rule 56
+	'.'            reduce using rule 56
+	'><'           reduce using rule 56
+	L_Var          reduce using rule 56
+	%eof           reduce using rule 56
 
 
 State 116
 
-	Term1 -> 'if' Term2 'then' Term2 'else' Term .      (rule 30)
+	Function -> Var ListArg '=' . Term                  (rule 48)
 
-	')'            reduce using rule 30
-	','            reduce using rule 30
-	L_FunVar       reduce using rule 30
-	%eof           reduce using rule 30
+	'('            shift, and enter state 80
+	'*'            shift, and enter state 81
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	'if'           shift, and enter state 82
+	'let'          shift, and enter state 83
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
+	L_Lambda       shift, and enter state 84
 
+	Var            goto state 70
+	GateIdent      goto state 21
+	Lambda         goto state 71
+	Term3          goto state 72
+	Term2          goto state 73
+	Term1          goto state 74
+	Term           goto state 129
+	Tup            goto state 76
+	Bit            goto state 78
+	Gate           goto state 79
 
 State 117
 
-	Term1 -> 'let' '(' Var ',' Var ')' '=' . Term2 'in' Term    (rule 31)
+	FunDec -> FunVar Type Function .                    (rule 45)
 
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
+	L_FunVar       reduce using rule 45
+	%eof           reduce using rule 45
 
-	Var            goto state 58
-	GateIdent      goto state 19
-	Term3          goto state 60
-	Term2          goto state 118
-	Tup            goto state 64
-	Bit            goto state 66
-	Gate           goto state 67
 
 State 118
 
-	Term2 -> Term2 . Term3                              (rule 28)
-	Term1 -> 'let' '(' Var ',' Var ')' '=' Term2 . 'in' Term    (rule 31)
+	Term1 -> Lambda FunVar Type . '.' Term              (rule 34)
 
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	'in'           shift, and enter state 119
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
+	'.'            shift, and enter state 128
 
-	Var            goto state 58
-	GateIdent      goto state 19
-	Term3          goto state 81
-	Tup            goto state 64
-	Bit            goto state 66
-	Gate           goto state 67
 
 State 119
 
-	Term1 -> 'let' '(' Var ',' Var ')' '=' Term2 'in' . Term    (rule 31)
+	ListTerm -> Term ',' ListTerm .                     (rule 42)
 
-	'('            shift, and enter state 68
-	'*'            shift, and enter state 69
-	'0'            shift, and enter state 56
-	'1'            shift, and enter state 57
-	'CNOT'         shift, and enter state 21
-	'FREDKIN'      shift, and enter state 22
-	'H'            shift, and enter state 23
-	'I'            shift, and enter state 24
-	'S'            shift, and enter state 25
-	'SWAP'         shift, and enter state 26
-	'T'            shift, and enter state 27
-	'TOFFOLI'      shift, and enter state 28
-	'X'            shift, and enter state 29
-	'Y'            shift, and enter state 30
-	'Z'            shift, and enter state 31
-	'if'           shift, and enter state 70
-	'let'          shift, and enter state 71
-	L_Var          shift, and enter state 42
-	L_GateIdent    shift, and enter state 32
-	L_Lambda       shift, and enter state 72
+	')'            reduce using rule 42
+	%eof           reduce using rule 42
 
-	Var            goto state 58
-	GateIdent      goto state 19
-	Lambda         goto state 59
-	Term3          goto state 60
-	Term2          goto state 61
-	Term1          goto state 62
-	Term           goto state 120
-	Tup            goto state 64
-	Bit            goto state 66
-	Gate           goto state 67
 
 State 120
 
-	Term1 -> 'let' '(' Var ',' Var ')' '=' Term2 'in' Term .    (rule 31)
+	Term3 -> '(' Term ')' .                             (rule 29)
 
-	')'            reduce using rule 31
-	','            reduce using rule 31
-	L_FunVar       reduce using rule 31
-	%eof           reduce using rule 31
+	'('            reduce using rule 29
+	')'            reduce using rule 29
+	'*'            reduce using rule 29
+	','            reduce using rule 29
+	'0'            reduce using rule 29
+	'1'            reduce using rule 29
+	'CNOT'         reduce using rule 29
+	'CR2'          reduce using rule 29
+	'CR2D'         reduce using rule 29
+	'CR3'          reduce using rule 29
+	'CR3D'         reduce using rule 29
+	'CR4'          reduce using rule 29
+	'CR4D'         reduce using rule 29
+	'CR8'          reduce using rule 29
+	'CR8D'         reduce using rule 29
+	'CT'           reduce using rule 29
+	'FREDKIN'      reduce using rule 29
+	'H'            reduce using rule 29
+	'I'            reduce using rule 29
+	'QFT'          reduce using rule 29
+	'QFTI'         reduce using rule 29
+	'S'            reduce using rule 29
+	'SWAP'         reduce using rule 29
+	'T'            reduce using rule 29
+	'TOFFOLI'      reduce using rule 29
+	'X'            reduce using rule 29
+	'Y'            reduce using rule 29
+	'Z'            reduce using rule 29
+	'else'         reduce using rule 29
+	'in'           reduce using rule 29
+	'then'         reduce using rule 29
+	L_FunVar       reduce using rule 29
+	L_Var          reduce using rule 29
+	L_GateIdent    reduce using rule 29
+	%eof           reduce using rule 29
+
+
+State 121
+
+	Tup -> '(' Term ',' . ListTerm ')'                  (rule 40)
+
+	'('            shift, and enter state 80
+	'*'            shift, and enter state 81
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	'if'           shift, and enter state 82
+	'let'          shift, and enter state 83
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
+	L_Lambda       shift, and enter state 84
+
+	Var            goto state 70
+	GateIdent      goto state 21
+	Lambda         goto state 71
+	Term3          goto state 72
+	Term2          goto state 73
+	Term1          goto state 74
+	Term           goto state 75
+	Tup            goto state 76
+	ListTerm       goto state 127
+	Bit            goto state 78
+	Gate           goto state 79
+
+State 122
+
+	Term1 -> 'if' Term2 'then' . Term 'else' Term       (rule 32)
+
+	'('            shift, and enter state 80
+	'*'            shift, and enter state 81
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	'if'           shift, and enter state 82
+	'let'          shift, and enter state 83
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
+	L_Lambda       shift, and enter state 84
+
+	Var            goto state 70
+	GateIdent      goto state 21
+	Lambda         goto state 71
+	Term3          goto state 72
+	Term2          goto state 73
+	Term1          goto state 74
+	Term           goto state 126
+	Tup            goto state 76
+	Bit            goto state 78
+	Gate           goto state 79
+
+State 123
+
+	Term1 -> 'let' '(' LetVar . ',' ListLetVar ')' '=' Term 'in' Term    (rule 33)
+
+	','            shift, and enter state 125
+
+
+State 124
+
+	ListLetVar -> LetVar ',' ListLetVar .               (rule 39)
+
+	')'            reduce using rule 39
+	%eof           reduce using rule 39
+
+
+State 125
+
+	Term1 -> 'let' '(' LetVar ',' . ListLetVar ')' '=' Term 'in' Term    (rule 33)
+
+	L_Var          shift, and enter state 59
+
+	Var            goto state 87
+	LetVar         goto state 88
+	ListLetVar     goto state 133
+
+State 126
+
+	Term1 -> 'if' Term2 'then' Term . 'else' Term       (rule 32)
+
+	'else'         shift, and enter state 132
+
+
+State 127
+
+	Tup -> '(' Term ',' ListTerm . ')'                  (rule 40)
+
+	')'            shift, and enter state 131
+
+
+State 128
+
+	Term1 -> Lambda FunVar Type '.' . Term              (rule 34)
+
+	'('            shift, and enter state 80
+	'*'            shift, and enter state 81
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	'if'           shift, and enter state 82
+	'let'          shift, and enter state 83
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
+	L_Lambda       shift, and enter state 84
+
+	Var            goto state 70
+	GateIdent      goto state 21
+	Lambda         goto state 71
+	Term3          goto state 72
+	Term2          goto state 73
+	Term1          goto state 74
+	Term           goto state 130
+	Tup            goto state 76
+	Bit            goto state 78
+	Gate           goto state 79
+
+State 129
+
+	Function -> Var ListArg '=' Term .                  (rule 48)
+
+	L_FunVar       reduce using rule 48
+	%eof           reduce using rule 48
+
+
+State 130
+
+	Term1 -> Lambda FunVar Type '.' Term .              (rule 34)
+
+	')'            reduce using rule 34
+	','            reduce using rule 34
+	'else'         reduce using rule 34
+	'in'           reduce using rule 34
+	L_FunVar       reduce using rule 34
+	%eof           reduce using rule 34
+
+
+State 131
+
+	Tup -> '(' Term ',' ListTerm ')' .                  (rule 40)
+
+	'('            reduce using rule 40
+	')'            reduce using rule 40
+	'*'            reduce using rule 40
+	','            reduce using rule 40
+	'0'            reduce using rule 40
+	'1'            reduce using rule 40
+	'CNOT'         reduce using rule 40
+	'CR2'          reduce using rule 40
+	'CR2D'         reduce using rule 40
+	'CR3'          reduce using rule 40
+	'CR3D'         reduce using rule 40
+	'CR4'          reduce using rule 40
+	'CR4D'         reduce using rule 40
+	'CR8'          reduce using rule 40
+	'CR8D'         reduce using rule 40
+	'CT'           reduce using rule 40
+	'FREDKIN'      reduce using rule 40
+	'H'            reduce using rule 40
+	'I'            reduce using rule 40
+	'QFT'          reduce using rule 40
+	'QFTI'         reduce using rule 40
+	'S'            reduce using rule 40
+	'SWAP'         reduce using rule 40
+	'T'            reduce using rule 40
+	'TOFFOLI'      reduce using rule 40
+	'X'            reduce using rule 40
+	'Y'            reduce using rule 40
+	'Z'            reduce using rule 40
+	'else'         reduce using rule 40
+	'in'           reduce using rule 40
+	'then'         reduce using rule 40
+	L_FunVar       reduce using rule 40
+	L_Var          reduce using rule 40
+	L_GateIdent    reduce using rule 40
+	%eof           reduce using rule 40
+
+
+State 132
+
+	Term1 -> 'if' Term2 'then' Term 'else' . Term       (rule 32)
+
+	'('            shift, and enter state 80
+	'*'            shift, and enter state 81
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	'if'           shift, and enter state 82
+	'let'          shift, and enter state 83
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
+	L_Lambda       shift, and enter state 84
+
+	Var            goto state 70
+	GateIdent      goto state 21
+	Lambda         goto state 71
+	Term3          goto state 72
+	Term2          goto state 73
+	Term1          goto state 74
+	Term           goto state 135
+	Tup            goto state 76
+	Bit            goto state 78
+	Gate           goto state 79
+
+State 133
+
+	Term1 -> 'let' '(' LetVar ',' ListLetVar . ')' '=' Term 'in' Term    (rule 33)
+
+	')'            shift, and enter state 134
+
+
+State 134
+
+	Term1 -> 'let' '(' LetVar ',' ListLetVar ')' . '=' Term 'in' Term    (rule 33)
+
+	'='            shift, and enter state 136
+
+
+State 135
+
+	Term1 -> 'if' Term2 'then' Term 'else' Term .       (rule 32)
+
+	')'            reduce using rule 32
+	','            reduce using rule 32
+	'else'         reduce using rule 32
+	'in'           reduce using rule 32
+	L_FunVar       reduce using rule 32
+	%eof           reduce using rule 32
+
+
+State 136
+
+	Term1 -> 'let' '(' LetVar ',' ListLetVar ')' '=' . Term 'in' Term    (rule 33)
+
+	'('            shift, and enter state 80
+	'*'            shift, and enter state 81
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	'if'           shift, and enter state 82
+	'let'          shift, and enter state 83
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
+	L_Lambda       shift, and enter state 84
+
+	Var            goto state 70
+	GateIdent      goto state 21
+	Lambda         goto state 71
+	Term3          goto state 72
+	Term2          goto state 73
+	Term1          goto state 74
+	Term           goto state 137
+	Tup            goto state 76
+	Bit            goto state 78
+	Gate           goto state 79
+
+State 137
+
+	Term1 -> 'let' '(' LetVar ',' ListLetVar ')' '=' Term . 'in' Term    (rule 33)
+
+	'in'           shift, and enter state 138
+
+
+State 138
+
+	Term1 -> 'let' '(' LetVar ',' ListLetVar ')' '=' Term 'in' . Term    (rule 33)
+
+	'('            shift, and enter state 80
+	'*'            shift, and enter state 81
+	'0'            shift, and enter state 68
+	'1'            shift, and enter state 69
+	'CNOT'         shift, and enter state 23
+	'CR2'          shift, and enter state 24
+	'CR2D'         shift, and enter state 25
+	'CR3'          shift, and enter state 26
+	'CR3D'         shift, and enter state 27
+	'CR4'          shift, and enter state 28
+	'CR4D'         shift, and enter state 29
+	'CR8'          shift, and enter state 30
+	'CR8D'         shift, and enter state 31
+	'CT'           shift, and enter state 32
+	'FREDKIN'      shift, and enter state 33
+	'H'            shift, and enter state 34
+	'I'            shift, and enter state 35
+	'QFT'          shift, and enter state 36
+	'QFTI'         shift, and enter state 37
+	'S'            shift, and enter state 38
+	'SWAP'         shift, and enter state 39
+	'T'            shift, and enter state 40
+	'TOFFOLI'      shift, and enter state 41
+	'X'            shift, and enter state 42
+	'Y'            shift, and enter state 43
+	'Z'            shift, and enter state 44
+	'if'           shift, and enter state 82
+	'let'          shift, and enter state 83
+	L_Var          shift, and enter state 59
+	L_GateIdent    shift, and enter state 45
+	L_Lambda       shift, and enter state 84
+
+	Var            goto state 70
+	GateIdent      goto state 21
+	Lambda         goto state 71
+	Term3          goto state 72
+	Term2          goto state 73
+	Term1          goto state 74
+	Term           goto state 139
+	Tup            goto state 76
+	Bit            goto state 78
+	Gate           goto state 79
+
+State 139
+
+	Term1 -> 'let' '(' LetVar ',' ListLetVar ')' '=' Term 'in' Term .    (rule 33)
+
+	')'            reduce using rule 33
+	','            reduce using rule 33
+	'else'         reduce using rule 33
+	'in'           reduce using rule 33
+	L_FunVar       reduce using rule 33
+	%eof           reduce using rule 33
 
 
 -----------------------------------------------------------------------------
 Grammar Totals
 -----------------------------------------------------------------------------
-Number of rules: 69
-Number of terminals: 33
-Number of non-terminals: 38
-Number of states: 121
+Number of rules: 84
+Number of terminals: 44
+Number of non-terminals: 42
+Number of states: 140

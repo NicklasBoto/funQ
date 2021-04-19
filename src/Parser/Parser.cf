@@ -9,7 +9,7 @@ TStar . Term3 ::= "*"                                                    ;
 TApp  . Term2 ::= Term2 Term3                                            ; 
 TIfEl . Term1 ::= "if" Term2 "then" Term "else" Term                     ; 
 TLet  . Term1 ::= "let" "(" LetVar "," [LetVar] ")" "=" Term "in" Term   ;
-TLamb . Term1 ::= Lambda Var "." Term                                    ; 
+TLamb . Term1 ::= Lambda FunVar Type "." Term                            ; 
 coercions Term 3;
 
 LVar . LetVar ::= Var;
@@ -46,7 +46,6 @@ token GateIdent ((upper)+) ;
 token Lambda '\\' ;
 
 --- Type ---
-TypeVar  . Type2  ::= Var              ;
 TypeBit  . Type2  ::= "Bit"            ;
 TypeQbit . Type2  ::= "QBit"           ;
 TypeVoid . Type2  ::= "T"              ;
@@ -73,7 +72,7 @@ GCT   . Gate ::= "CT"      ;
 GCR2  . Gate ::= "CR2"     ;
 GCR2D . Gate ::= "CR2D"    ;
 GCR3  . Gate ::= "CR3"     ;
-GCR3D . Gate ::= "CR3"     ;
+GCR3D . Gate ::= "CR3D"    ;
 GCR4  . Gate ::= "CR4"     ;
 GCR4D . Gate ::= "CR4D"    ;
 GCR8  . Gate ::= "CR8"     ;
