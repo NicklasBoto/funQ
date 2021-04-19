@@ -34,8 +34,11 @@ transTerm x = case x of
   Parser.Abs.TStar -> failure x
   Parser.Abs.TApp term1 term2 -> failure x
   Parser.Abs.TIfEl term1 term2 term3 -> failure x
-  Parser.Abs.TLet var1 var2 term1 term2 -> failure x
+  Parser.Abs.TLet letvar letvars term1 term2 -> failure x
   Parser.Abs.TLamb lambda funvar type_ term -> failure x
+transLetVar :: Parser.Abs.LetVar -> Result
+transLetVar x = case x of
+  Parser.Abs.LVar var -> failure x
 transTup :: Parser.Abs.Tup -> Result
 transTup x = case x of
   Parser.Abs.Tuple term terms -> failure x
@@ -75,5 +78,15 @@ transGate x = case x of
   Parser.Abs.GSWP -> failure x
   Parser.Abs.GFRDK -> failure x
   Parser.Abs.GQFT -> failure x
+  Parser.Abs.GQFTI -> failure x
+  Parser.Abs.GCT -> failure x
+  Parser.Abs.GCR2 -> failure x
+  Parser.Abs.GCR2D -> failure x
+  Parser.Abs.GCR3 -> failure x
+  Parser.Abs.GCR3D -> failure x
+  Parser.Abs.GCR4 -> failure x
+  Parser.Abs.GCR4D -> failure x
+  Parser.Abs.GCR8 -> failure x
+  Parser.Abs.GCR8D -> failure x
   Parser.Abs.GGate gateident -> failure x
 

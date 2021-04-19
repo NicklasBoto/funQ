@@ -1,16 +1,19 @@
 PDef.  Program ::= [FunDec] ;
 
 --- Terms ---
-TVar  . Term3 ::= Var                                                 ;
-TBit  . Term3 ::= Bit                                                 ;
-TGate . Term3 ::= Gate                                                ;
-TTup  . Term3 ::= Tup                                                 ; 
-TStar . Term3 ::= "*"                                                 ;
-TApp  . Term2 ::= Term2 Term3                                         ; 
-TIfEl . Term1 ::= "if" Term2 "then" Term "else" Term                  ; 
-TLet  . Term1 ::= "let" "(" Var "," Var ")" "=" Term "in" Term        ;
-TLamb . Term1 ::= Lambda FunVar Type "." Term                         ; 
+TVar  . Term3 ::= Var                                                    ;
+TBit  . Term3 ::= Bit                                                    ;
+TGate . Term3 ::= Gate                                                   ;
+TTup  . Term3 ::= Tup                                                    ; 
+TStar . Term3 ::= "*"                                                    ;
+TApp  . Term2 ::= Term2 Term3                                            ; 
+TIfEl . Term1 ::= "if" Term2 "then" Term "else" Term                     ; 
+TLet  . Term1 ::= "let" "(" LetVar "," [LetVar] ")" "=" Term "in" Term   ;
+TLamb . Term1 ::= Lambda FunVar Type "." Term                            ; 
 coercions Term 3;
+
+LVar . LetVar ::= Var;
+separator nonempty LetVar ",";
 
 Tuple. Tup ::= "(" Term "," [Term] ")" ;
 separator nonempty Term ",";
@@ -25,13 +28,13 @@ terminator FunDec "";
 
 FDef.  Function ::= Var [Arg] "=" Term;
 
-FArg. Arg ::= Var;
+FArg. Arg ::= Var ;
 separator Arg " ";
 
 comment "--" ; 
 
 token FunVar (lower (letter | digit | '_' | '\'')* (' ')* ':') ;
-
+ 
 --- Var ---
 token Var (lower (letter | digit | '_' | '\'')*) ;
 
@@ -65,4 +68,14 @@ GTOF  . Gate ::= "TOFFOLI" ;
 GSWP  . Gate ::= "SWAP"    ;
 GFRDK . Gate ::= "FREDKIN" ;
 GQFT  . Gate ::= "QFT"     ;
+GQFTI . Gate ::= "QFTI"    ;
+GCT   . Gate ::= "CT"      ;
+GCR2  . Gate ::= "CR2"     ;
+GCR2D . Gate ::= "CR2D"    ;
+GCR3  . Gate ::= "CR3"     ;
+GCR3D . Gate ::= "CR3D"    ;
+GCR4  . Gate ::= "CR4"     ;
+GCR4D . Gate ::= "CR4D"    ;
+GCR8  . Gate ::= "CR8"     ;
+GCR8D . Gate ::= "CR8D"    ;
 GGate . Gate ::= GateIdent ; 

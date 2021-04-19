@@ -9,6 +9,8 @@ module Parser.Par
   , pTerm2
   , pTerm1
   , pTerm
+  , pLetVar
+  , pListLetVar
   , pTup
   , pListTerm
   , pBit
@@ -31,6 +33,8 @@ import Parser.Lex
 %name pTerm2 Term2
 %name pTerm1 Term1
 %name pTerm Term
+%name pLetVar LetVar
+%name pListLetVar ListLetVar
 %name pTup Tup
 %name pListTerm ListTerm
 %name pBit Bit
@@ -60,23 +64,33 @@ import Parser.Lex
   '><' { PT _ (TS _ 11) }
   'Bit' { PT _ (TS _ 12) }
   'CNOT' { PT _ (TS _ 13) }
-  'FREDKIN' { PT _ (TS _ 14) }
-  'H' { PT _ (TS _ 15) }
-  'I' { PT _ (TS _ 16) }
-  'QBit' { PT _ (TS _ 17) }
-  'QFT' { PT _ (TS _ 18) }
-  'S' { PT _ (TS _ 19) }
-  'SWAP' { PT _ (TS _ 20) }
-  'T' { PT _ (TS _ 21) }
-  'TOFFOLI' { PT _ (TS _ 22) }
-  'X' { PT _ (TS _ 23) }
-  'Y' { PT _ (TS _ 24) }
-  'Z' { PT _ (TS _ 25) }
-  'else' { PT _ (TS _ 26) }
-  'if' { PT _ (TS _ 27) }
-  'in' { PT _ (TS _ 28) }
-  'let' { PT _ (TS _ 29) }
-  'then' { PT _ (TS _ 30) }
+  'CR2' { PT _ (TS _ 14) }
+  'CR2D' { PT _ (TS _ 15) }
+  'CR3' { PT _ (TS _ 16) }
+  'CR3D' { PT _ (TS _ 17) }
+  'CR4' { PT _ (TS _ 18) }
+  'CR4D' { PT _ (TS _ 19) }
+  'CR8' { PT _ (TS _ 20) }
+  'CR8D' { PT _ (TS _ 21) }
+  'CT' { PT _ (TS _ 22) }
+  'FREDKIN' { PT _ (TS _ 23) }
+  'H' { PT _ (TS _ 24) }
+  'I' { PT _ (TS _ 25) }
+  'QBit' { PT _ (TS _ 26) }
+  'QFT' { PT _ (TS _ 27) }
+  'QFTI' { PT _ (TS _ 28) }
+  'S' { PT _ (TS _ 29) }
+  'SWAP' { PT _ (TS _ 30) }
+  'T' { PT _ (TS _ 31) }
+  'TOFFOLI' { PT _ (TS _ 32) }
+  'X' { PT _ (TS _ 33) }
+  'Y' { PT _ (TS _ 34) }
+  'Z' { PT _ (TS _ 35) }
+  'else' { PT _ (TS _ 36) }
+  'if' { PT _ (TS _ 37) }
+  'in' { PT _ (TS _ 38) }
+  'let' { PT _ (TS _ 39) }
+  'then' { PT _ (TS _ 40) }
   L_FunVar { PT _ (T_FunVar $$) }
   L_Var { PT _ (T_Var $$) }
   L_GateIdent { PT _ (T_GateIdent $$) }
@@ -112,12 +126,19 @@ Term2 : Term2 Term3 { Parser.Abs.TApp $1 $2 } | Term3 { $1 }
 
 Term1 :: { Parser.Abs.Term }
 Term1 : 'if' Term2 'then' Term 'else' Term { Parser.Abs.TIfEl $2 $4 $6 }
-      | 'let' '(' Var ',' Var ')' '=' Term 'in' Term { Parser.Abs.TLet $3 $5 $8 $10 }
+      | 'let' '(' LetVar ',' ListLetVar ')' '=' Term 'in' Term { Parser.Abs.TLet $3 $5 $8 $10 }
       | Lambda FunVar Type '.' Term { Parser.Abs.TLamb $1 $2 $3 $5 }
       | Term2 { $1 }
 
 Term :: { Parser.Abs.Term }
 Term : Term1 { $1 }
+
+LetVar :: { Parser.Abs.LetVar }
+LetVar : Var { Parser.Abs.LVar $1 }
+
+ListLetVar :: { [Parser.Abs.LetVar] }
+ListLetVar : LetVar { (:[]) $1 }
+           | LetVar ',' ListLetVar { (:) $1 $3 }
 
 Tup :: { Parser.Abs.Tup }
 Tup : '(' Term ',' ListTerm ')' { Parser.Abs.Tuple $2 $4 }
@@ -172,6 +193,16 @@ Gate : 'H' { Parser.Abs.GH }
      | 'SWAP' { Parser.Abs.GSWP }
      | 'FREDKIN' { Parser.Abs.GFRDK }
      | 'QFT' { Parser.Abs.GQFT }
+     | 'QFTI' { Parser.Abs.GQFTI }
+     | 'CT' { Parser.Abs.GCT }
+     | 'CR2' { Parser.Abs.GCR2 }
+     | 'CR2D' { Parser.Abs.GCR2D }
+     | 'CR3' { Parser.Abs.GCR3 }
+     | 'CR3D' { Parser.Abs.GCR3D }
+     | 'CR4' { Parser.Abs.GCR4 }
+     | 'CR4D' { Parser.Abs.GCR4D }
+     | 'CR8' { Parser.Abs.GCR8 }
+     | 'CR8D' { Parser.Abs.GCR8D }
      | GateIdent { Parser.Abs.GGate $1 }
 {
 

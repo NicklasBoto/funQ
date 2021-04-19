@@ -203,7 +203,6 @@ inferTerm ctx (IfEl c t f) = do
         then supremum tt tf
         else throwError $ Mismatch TypeBit tc
 
-
 -- | Find the largest commont subtype (greatest lower bound).
 --   Throws error if no common subtype exists.
 infimum :: Type -> Type -> Check Type
@@ -263,15 +262,24 @@ freeVars = freeVars' 0
         freeVars' n (Idx i)      = [n - i | i >= n]
         freeVars' _ _            = []
 
-
 -- | Infer type of a gate.
 inferGate :: Gate -> Type
 inferGate g = TypeDup (arg :=> arg)
     where
-        n = case g of
-            GFRDK -> 3
-            GTOF  -> 3
-            GSWP  -> 2
-            GCNOT -> 2
-            _     -> 1
         arg = foldr (:><) TypeQBit (replicate (n-1) TypeQBit)
+        n = case g of
+                GQFT  -> 4 -- temp
+                GQFTI -> 4 -- temp
+                GFRDK -> 3
+                GTOF  -> 3
+                GSWP  -> 2
+                GCNOT -> 2
+                GCR2  -> 2
+                GCR2D -> 2
+                GCR3  -> 2
+                GCR3D -> 2
+                GCR4  -> 2
+                GCR4D -> 2
+                GCR8  -> 2
+                GCR8D -> 2
+                _     -> 1

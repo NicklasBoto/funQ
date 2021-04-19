@@ -122,10 +122,19 @@ instance Print Parser.Abs.Term where
     Parser.Abs.TStar -> prPrec i 3 (concatD [doc (showString "*")])
     Parser.Abs.TApp term1 term2 -> prPrec i 2 (concatD [prt 2 term1, prt 3 term2])
     Parser.Abs.TIfEl term1 term2 term3 -> prPrec i 1 (concatD [doc (showString "if"), prt 2 term1, doc (showString "then"), prt 0 term2, doc (showString "else"), prt 0 term3])
-    Parser.Abs.TLet var1 var2 term1 term2 -> prPrec i 1 (concatD [doc (showString "let"), doc (showString "("), prt 0 var1, doc (showString ","), prt 0 var2, doc (showString ")"), doc (showString "="), prt 0 term1, doc (showString "in"), prt 0 term2])
+    Parser.Abs.TLet letvar letvars term1 term2 -> prPrec i 1 (concatD [doc (showString "let"), doc (showString "("), prt 0 letvar, doc (showString ","), prt 0 letvars, doc (showString ")"), doc (showString "="), prt 0 term1, doc (showString "in"), prt 0 term2])
     Parser.Abs.TLamb lambda funvar type_ term -> prPrec i 1 (concatD [prt 0 lambda, prt 0 funvar, prt 0 type_, doc (showString "."), prt 0 term])
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
+
+instance Print Parser.Abs.LetVar where
+  prt i e = case e of
+    Parser.Abs.LVar var -> prPrec i 0 (concatD [prt 0 var])
+  prtList _ [x] = concatD [prt 0 x]
+  prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
+
+instance Print [Parser.Abs.LetVar] where
+  prt = prtList
 
 instance Print Parser.Abs.Tup where
   prt i e = case e of
@@ -185,5 +194,15 @@ instance Print Parser.Abs.Gate where
     Parser.Abs.GSWP -> prPrec i 0 (concatD [doc (showString "SWAP")])
     Parser.Abs.GFRDK -> prPrec i 0 (concatD [doc (showString "FREDKIN")])
     Parser.Abs.GQFT -> prPrec i 0 (concatD [doc (showString "QFT")])
+    Parser.Abs.GQFTI -> prPrec i 0 (concatD [doc (showString "QFTI")])
+    Parser.Abs.GCT -> prPrec i 0 (concatD [doc (showString "CT")])
+    Parser.Abs.GCR2 -> prPrec i 0 (concatD [doc (showString "CR2")])
+    Parser.Abs.GCR2D -> prPrec i 0 (concatD [doc (showString "CR2D")])
+    Parser.Abs.GCR3 -> prPrec i 0 (concatD [doc (showString "CR3")])
+    Parser.Abs.GCR3D -> prPrec i 0 (concatD [doc (showString "CR3D")])
+    Parser.Abs.GCR4 -> prPrec i 0 (concatD [doc (showString "CR4")])
+    Parser.Abs.GCR4D -> prPrec i 0 (concatD [doc (showString "CR4D")])
+    Parser.Abs.GCR8 -> prPrec i 0 (concatD [doc (showString "CR8")])
+    Parser.Abs.GCR8D -> prPrec i 0 (concatD [doc (showString "CR8D")])
     Parser.Abs.GGate gateident -> prPrec i 0 (concatD [prt 0 gateident])
 

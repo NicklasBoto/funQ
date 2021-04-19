@@ -32,8 +32,11 @@ data Term
     | TStar
     | TApp Term Term
     | TIfEl Term Term Term
-    | TLet Var Var Term Term
+    | TLet LetVar [LetVar] Term Term
     | TLamb Lambda FunVar Type Term
+  deriving (C.Eq, C.Ord, C.Show, C.Read)
+
+data LetVar = LVar Var
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data Tup = Tuple Term [Term]
@@ -74,6 +77,16 @@ data Gate
     | GSWP
     | GFRDK
     | GQFT
+    | GQFTI
+    | GCT
+    | GCR2
+    | GCR2D
+    | GCR3
+    | GCR3D
+    | GCR4
+    | GCR4D
+    | GCR8
+    | GCR8D
     | GGate GateIdent
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
