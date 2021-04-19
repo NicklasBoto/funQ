@@ -1,4 +1,4 @@
-swap : QBit -o QBit -o (QBit >< QBit)
+swap : !(QBit -o QBit -o (QBit >< QBit))
 swap a b = SWAP (a,b)
 
 main : Bit 

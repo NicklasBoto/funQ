@@ -143,7 +143,7 @@ eval env = \case
          VTup x1 x2 <- eval env eq
          eval env{ values = x1 : x2 : values env } inn
 
-    A.Abs e  -> return $ VFunc (values env) e
+    A.Abs _ e  -> return $ VFunc (values env) e
     A.Unit   -> return VUnit
     A.Gate g -> return $ VFunc (values env) (A.App (A.Gate g) (A.Idx 0))
     A.New    -> return $ VFunc (values env) (A.App A.New (A.Idx 0))
