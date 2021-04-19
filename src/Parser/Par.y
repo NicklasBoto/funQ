@@ -64,35 +64,6 @@ import Parser.Lex
   '><' { PT _ (TS _ 11) }
   'Bit' { PT _ (TS _ 12) }
   'CNOT' { PT _ (TS _ 13) }
-<<<<<<< Updated upstream
-  'CR2' { PT _ (TS _ 14) }
-  'CR2D' { PT _ (TS _ 15) }
-  'CR3' { PT _ (TS _ 16) }
-  'CR3D' { PT _ (TS _ 17) }
-  'CR4' { PT _ (TS _ 18) }
-  'CR4D' { PT _ (TS _ 19) }
-  'CR8' { PT _ (TS _ 20) }
-  'CR8D' { PT _ (TS _ 21) }
-  'CT' { PT _ (TS _ 22) }
-  'FREDKIN' { PT _ (TS _ 23) }
-  'H' { PT _ (TS _ 24) }
-  'I' { PT _ (TS _ 25) }
-  'QBit' { PT _ (TS _ 26) }
-  'QFT' { PT _ (TS _ 27) }
-  'QFTI' { PT _ (TS _ 28) }
-  'S' { PT _ (TS _ 29) }
-  'SWAP' { PT _ (TS _ 30) }
-  'T' { PT _ (TS _ 31) }
-  'TOFFOLI' { PT _ (TS _ 32) }
-  'X' { PT _ (TS _ 33) }
-  'Y' { PT _ (TS _ 34) }
-  'Z' { PT _ (TS _ 35) }
-  'else' { PT _ (TS _ 36) }
-  'if' { PT _ (TS _ 37) }
-  'in' { PT _ (TS _ 38) }
-  'let' { PT _ (TS _ 39) }
-  'then' { PT _ (TS _ 40) }
-=======
   'CR' { PT _ (TS _ 14) }
   'CR2' { PT _ (TS _ 15) }
   'CR2D' { PT _ (TS _ 16) }
@@ -124,7 +95,6 @@ import Parser.Lex
   'in' { PT _ (TS _ 42) }
   'let' { PT _ (TS _ 43) }
   'then' { PT _ (TS _ 44) }
->>>>>>> Stashed changes
   L_FunVar { PT _ (T_FunVar $$) }
   L_Var { PT _ (T_Var $$) }
   L_GateIdent { PT _ (T_GateIdent $$) }
