@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4d52549074a4ab1d8bb1ee03a5b3818df2ea04f19900d6b4ea6d1360753191df
+-- hash: 8ce356a8d030d92c86ad753319245fa982bacfaf2746845e4c23aed2a8f4ba93
 
 name:           qfunc
 version:        0.1.0.0
@@ -47,8 +47,6 @@ library
       Parser.Par
       Parser.Print
       Parser.Skel
-      Type.HM
-      Type.STLC
       Type.TypeChecker
       CoinFlip
       Deutsch

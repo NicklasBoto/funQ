@@ -16,7 +16,7 @@ import Control.Monad.Except
       withExceptT, replicateM )
 import Data.Bifunctor ( Bifunctor(bimap) )
 import Control.Exception (try)
-import qualified Type.HM as HM
+import qualified Type.TypeChecker as TC
 import Data.List
 
 -- TODO:
@@ -54,7 +54,7 @@ type Run a = ExceptT Error IO a
 
 data Error
   = ParseError String
-  | TypeError HM.TypeError
+  | TypeError TC.TypeError
   | ValueError I.ValueError
   | NoSuchFile FilePath
 
@@ -102,7 +102,7 @@ readfile path = do
 parse = toErr (pProgram . myLexer) ParseError A.toIm
 
 typecheck :: A.Program -> Run A.Program
-typecheck = toErr HM.typecheck TypeError . const <*> id
+typecheck = toErr TC.typecheck TypeError . const <*> id
 
 eval :: A.Program -> Run I.Value
 eval = withExceptT ValueError . mapExceptT Q.run . I.interpret
