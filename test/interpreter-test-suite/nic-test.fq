@@ -1,0 +1,5 @@
+q : QBit
+q = H (new 0)
+
+main : (Bit >< Bit)
+main = (measure q, measure q)

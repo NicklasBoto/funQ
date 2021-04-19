@@ -10,7 +10,7 @@ import Lib.QM (link)
 import Data.Functor ( (<&>) )
 import Parser.Abs as Abs
     ( Gate(GS, GH, GX, GY, GZ, GI, GT, GCNOT, GTOF, GSWP, GFRDK, GQFT, GQFTI, 
-      GCR2, GCR2D, GCR3, GCR3D, GCR4, GCR4D, GCR8, GCR8D), 
+      GCR, GCRD, GCR2, GCR2D, GCR3, GCR3D, GCR4, GCR5, GCR5D, GCR4D, GCR8, GCR8D), 
       Bit(BOne, BZero)  )
 import qualified AST.AST as A
 import Parser.Print
@@ -42,7 +42,7 @@ data ValueError
      deriving Show
 
 type Sig = M.Map String A.Term
-type Eval a = ExceptT ValueError Q.QM a
+type Eval = ExceptT ValueError Q.QM
 
 -- | Environment type, stores bound variables & functions
 data Env = Env {
@@ -123,6 +123,8 @@ eval env = \case
             Abs.GFRDK -> run3Gate Q.fredkin e2 env
             Abs.GQFT  -> runQFT   Q.qft e2 env
             Abs.GQFTI -> runQFT   Q.qftDagger e2 env
+            Abs.GCR   -> run2Gate (`Q.cphase` ( 1/2)) e2 env
+            Abs.GCRD  -> run2Gate (`Q.cphase` (-1/2)) e2 env
             Abs.GCR2  -> run2Gate (`Q.cphase` ( 1/4)) e2 env
             Abs.GCR2D -> run2Gate (`Q.cphase` (-1/4)) e2 env
             Abs.GCR3  -> run2Gate (`Q.cphase` ( 1/3)) e2 env

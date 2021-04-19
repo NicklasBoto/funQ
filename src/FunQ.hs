@@ -93,3 +93,11 @@ bellMeasure (x,y) = do
     m_x <- measure x
     m_y <- measure y
     return (m_x, m_y)
+
+testt :: QM ()
+testt = do
+  q <- new 1
+  q' <- new 1
+  checkState
+  cphase (q,q') (1/3)
+  checkState 
