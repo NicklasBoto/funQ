@@ -1,0 +1,14 @@
+main : Bit 
+main = measureFst (multiple (new 1, new 1)) -- 0 
+
+comp : (b -o c) -o (a -o b) -o (a -o c)
+comp f g = \x . f (g x)
+
+multiple : a -o a
+multiple = comp SWAP CNOT
+
+measureFst : (QBit >< QBit) -o Bit
+measureFst q = let (a,b) = q in meas a 
+
+measureSnd : (QBit >< QBit) -o Bit
+measureSnd q = let (a,b) = q in meas b

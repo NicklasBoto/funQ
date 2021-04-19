@@ -1,0 +1,5 @@
+cnot : (QBit >< QBit) -o (QBit >< QBit)
+cnot = CNOT
+
+main : Bit 
+main = let (a, b) = cnot (new 1, new 0) in meas b -- 1

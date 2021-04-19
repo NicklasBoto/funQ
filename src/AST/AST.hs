@@ -122,7 +122,7 @@ makeImTerm env (P.TVar (P.Var "measure")) = Meas
 makeImTerm env (P.TVar var) =  case M.lookup (name var) env of
     Just idx -> Idx idx
     Nothing  -> Fun (name var)
-makeImTerm env (P.TIfEl cond true false) = 
+makeImTerm env (P.TIfEl cond true false) =
     IfEl (makeImTerm env cond) (makeImTerm env true) (makeImTerm env false)
 makeImTerm env (P.TLet x [y] eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv x y env) inn)
 makeImTerm env (P.TLet x (y:ys) eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv x y env) (P.TLet y ys (toTerm y) inn))
@@ -198,8 +198,8 @@ reverseImFunction (Func name type' term) = P.FDecl (P.FunVar name) (reverseType 
 -- | imTerm in reverse. From the intermediate term to the parser term.
 reverseImTerm :: Integer -> Term -> P.Term
 reverseImTerm env (Idx idx)    = P.TVar $ P.Var $ 'x' : show (env - idx - 1)
-reverseImTerm env (Fun s)     = P.TVar $ P.Var s
-reverseImTerm env (Bit b)      = P.TBit b 
+reverseImTerm env (Fun s)      = P.TVar $ P.Var s
+reverseImTerm env (Bit b)      = P.TBit b
 reverseImTerm env (Gate g)     = P.TGate g
 reverseImTerm env (Tup l r)    = P.TTup $ P.Tuple (reverseImTerm env l) [reverseImTerm env r] -- FIXME
 reverseImTerm env (App  t1 t2) = P.TApp (reverseImTerm env t1) (reverseImTerm env t2)

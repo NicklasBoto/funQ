@@ -68,6 +68,9 @@ All other symbols are terminals.
   |  |  **|**  | //Lambda// //FunVar// //Type// ``.`` //Term//
   |  |  **|**  | //Term2//
   | //Term// | -> | //Term1//
+  | //LetVar// | -> | //Var//
+  | //[LetVar]// | -> | //LetVar//
+  |  |  **|**  | //LetVar// ``,`` //[LetVar]//
   | //Tup// | -> | ``(`` //Term// ``,`` //[Term]// ``)``
   | //[Term]// | -> | //Term//
   |  |  **|**  | //Term// ``,`` //[Term]//

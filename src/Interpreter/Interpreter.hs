@@ -12,8 +12,9 @@ import qualified FunQ as Q
 import Control.Monad.State ()
 import Data.Functor ( (<&>) )
 import Parser.Abs as Abs
-    ( Gate(GS, GH, GX, GY, GZ, GI, GT, GCNOT, GTOF, GSWP, GFRDK, GQFT),
-      Bit(BOne, BZero) )
+    ( Gate(GS, GH, GX, GY, GZ, GI, GT, GCNOT, GTOF, GSWP, GFRDK, GQFT, GQFTI, 
+      GCR2, GCR2D, GCR3, GCR3D, GCR4, GCR4D, GCR8, GCR8D), 
+      Bit(BOne, BZero)  )
 import qualified AST.AST as A
 
 -- TODO:
@@ -23,10 +24,16 @@ import qualified AST.AST as A
 -- main driver: egen fil? turtle och haskelline? 
 
 -- Nice to Have:
+-- evaluera uttryck utan fil.
 -- let user define custom gates (needs syntax for gate definition, type checking of arbitrary gate and evaluation of it)
+-- flera let defs irad (istälelt för behöva flera lets) ()
+-- explicita tuples i funktionsargumentet, á la f (x,y) = cnot (x,y) (typ pattern matching)
 
+-- Tidigare förslag:
 -- typeclass runnable, ta in gate och a, spotta ut QM a
 -- kan definiera olika fel
+
+
 
 data ValueError
     = NotFunction String
@@ -46,7 +53,7 @@ data Env = Env {
 
 instance Show Value where
     show (VBit b)    = show b
-    show (VTup a b)   = "(" ++ show a ++ ", " ++ show b ++ ")"
+    show (VTup a b)   = "(" ++ show a ++ "," ++ show b ++ ")"
     show (VQBit q)   = show q
     show VUnit       = "*"
     show (VFunc _ t) = "Function " ++ show t
@@ -55,8 +62,7 @@ instance Show Value where
 interpret :: [A.Function] -> Eval Value
 interpret fs = do
     let env = createEnv fs
-    getMainTerm env >>= eval env
-    -- debugging below
+    eval env =<< getMainTerm env
 
 -- | Creates an environment from a list of functions. 
 createEnv :: [A.Function] -> Env
@@ -80,7 +86,7 @@ data Value
 -- | Term evaluator
 eval :: Env -> A.Term -> Eval Value
 eval env = \case
-    A.Idx j -> return $ values env !! (fromIntegral j)
+    A.Idx j -> return $ values env !! fromIntegral j
 
     A.Fun s -> case M.lookup s (functions env) of
         Just t  -> eval env t
@@ -89,7 +95,7 @@ eval env = \case
     A.Bit BZero -> return $ VBit 0
     A.Bit BOne -> return $ VBit 1
 
-    A.Tup t1 t2 -> do 
+    A.Tup t1 t2 -> do
         v1 <- eval env t1
         v2 <- eval env t2
         return $ VTup v1 v2
@@ -108,6 +114,16 @@ eval env = \case
             Abs.GSWP  -> run2Gate Q.swap e2 env
             Abs.GFRDK -> run3Gate Q.fredkin e2 env
             Abs.GQFT  -> runQFT   Q.qft e2 env
+            Abs.GQFTI -> runQFT   Q.qftDagger e2 env
+            Abs.GCR2  -> run2Gate (`Q.cphase` ( 1/4)) e2 env
+            Abs.GCR2D -> run2Gate (`Q.cphase` (-1/4)) e2 env
+            Abs.GCR3  -> run2Gate (`Q.cphase` ( 1/3)) e2 env
+            Abs.GCR3D -> run2Gate (`Q.cphase` (-1/3)) e2 env
+            Abs.GCR4  -> run2Gate (`Q.cphase` ( 1/8)) e2 env
+            Abs.GCR4D -> run2Gate (`Q.cphase` (-1/8)) e2 env
+            Abs.GCR8  -> run2Gate (`Q.cphase` (-1/16)) e2 env
+            Abs.GCR8D -> run2Gate (`Q.cphase` (-1/16)) e2 env
+
         A.New -> do
             VBit b' <- eval env e2
             lift $ Q.new b' <&> VQBit
@@ -117,7 +133,7 @@ eval env = \case
         _ -> do
             v2 <- eval env e2
             VFunc v1 a <- eval env e1
-            eval env{ values = v2 : v1 ++ values env} a
+            eval env{ values = v2 : v1 ++ values env } a
 
     A.IfEl bit l r -> do
         VBit b <- eval env bit
@@ -125,20 +141,20 @@ eval env = \case
 
     A.Let eq inn -> do
          VTup x1 x2 <- eval env eq
-         eval env{ values = x2 : x1 : values env } inn
+         eval env{ values = x1 : x2 : values env } inn
 
     A.Abs _ e  -> return $ VFunc (values env) e
     A.Unit   -> return VUnit
-    A.Gate g -> throwError $ NotApplied $ "Gate " ++ show g ++ " must be applied to something"
-    A.New    -> throwError $ NotApplied "New must be applied to something"
-    A.Meas   -> throwError $ NotApplied "Meas must be applied to something"
+    A.Gate g -> return $ VFunc (values env) (A.App (A.Gate g) (A.Idx 0))
+    A.New    -> return $ VFunc (values env) (A.App A.New (A.Idx 0))
+    A.Meas   -> return $ VFunc (values env) (A.App A.Meas (A.Idx 0))
 
 fromVTup :: Value -> [Value]
 fromVTup (VTup a b) = a : fromVTup b
 fromVTup         x  = [x]
 
 toVTup :: [Value] -> Value
-toVTup vs = foldr1 VTup vs
+toVTup = foldr1 VTup
 
 -- | Eval monad print
 printE :: Show a => a -> Eval ()
@@ -167,7 +183,7 @@ runGate g q env = do
 run2Gate :: ((Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit)) -> A.Term -> Env -> Eval Value
 run2Gate g q env = do
     VTup (VQBit a) (VQBit b) <- eval env q
-    (p,q) <- lift (g (a,b)) 
+    (p,q) <- lift (g (a,b))
     return $ VTup (VQBit p) (VQBit q)
 
 -- | Run gate taking three qubits

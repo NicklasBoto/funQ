@@ -20,7 +20,7 @@ import Numeric.LinearAlgebra
       ident,
       kronecker,
       Matrix,
-      Linear(scale) )
+      Linear(scale), Convert (toComplex), mkPolar )
 
 instance {-# OVERLAPS#-} Show (Matrix C) where
   show mx = dispcf 3 mx
@@ -130,7 +130,7 @@ phasemat :: Double -> Matrix C
 phasemat r = (2 >< 2)
   [ 1, 0
   , 0, p ]
-  where p = exp (i*(r :+ 0))
+  where p = exp (0 :+ 2*pi*r)--(i*(r :+ 0))
 
 -- | PauliX matrix
 pXmat :: Matrix C
