@@ -1,10 +1,10 @@
 main : Bit 
 main = measureFst (multiple (new 1, new 1)) -- 0 
 
-comp : (b -o c) -o (a -o b) -o (a -o c)
-comp f g = \x . f (g x)
+comp : (QBit >< QBit -o QBit >< QBit) -o (QBit >< QBit -o QBit >< QBit) -o ((QBit >< QBit) -o (QBit >< QBit))
+comp f g = \x: QBit >< QBit . f (g x)
 
-multiple : a -o a
+multiple : (QBit >< QBit) -o (QBit >< QBit)
 multiple = comp SWAP CNOT
 
 measureFst : (QBit >< QBit) -o Bit

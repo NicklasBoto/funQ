@@ -23,7 +23,7 @@ data Term
     | TApp Term Term
     | TIfEl Term Term Term
     | TLet LetVar [LetVar] Term Term
-    | TLamb Lambda FunVar Type Term
+    | TLamb Lambda Var Term
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data LetVar = LVar Var

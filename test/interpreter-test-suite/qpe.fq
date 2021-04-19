@@ -11,24 +11,25 @@ init4 = (H (new 0), H (new 0), H (new 0), H (new 0), new 1)
 
 applyU2 : QBit >< QBit
 applyU2 = let (q0,q1,q2) = init2 in
-                let (q11,q21) = CR2 (q1,q2) in
-                    let (q01,q22) = CR2 (CR2 (q0,q21)) in
+                let (q11,q21) = CR4 (q1,q2) in
+                    let (q01,q22) = CR4 (CR4 (q0,q21)) in
                         (q01,q11)
 
 applyU3 : QBit >< QBit >< QBit
 applyU3 = let (q0,q1,q2,q3) = init3 in 
-                let (q21,q31) = CR3 (q2,q3) in
-                    let (q11,q32) = CR3 (CR3 (q1,q31)) in
-                        let (q01,q33) = CR3 (CR3 (CR3 (CR3 (q0,q32)))) in
+                let (q21,q31) = CR4 (q2,q3) in
+                    let (q11,q32) = CR4 (CR4 (q1,q31)) in
+                        let (q01,q33) = CR4 (CR4 (CR4 (CR4 (q0,q32)))) in
                             (q01,q11,q21)
 
 applyU4 : QBit >< QBit >< QBit >< QBit
 applyU4 = let (q0,q1,q2,q3,q4) = init4 in
-                let (q31,q41) = CR2 (q3,q4) in
-                    let (q21,q42) = CR2 (CR2 (q2,q41)) in
-                        let (q11,q43) = CR2 (CR2 (CR2 (CR2 (q1,q42)))) in
-                            let (q01,q44) = CR2 (CR2 (CR2 (CR2 (CR2 (CR2 (CR2 (CR2 (q0,q43)))))))) in
+                let (q31,q41) = CR4 (q3,q4) in
+                    let (q21,q42) = CR4 (CR4 (q2,q41)) in
+                        let (q11,q43) = CR4 (CR4 (CR4 (CR4 (q1,q42)))) in
+                            let (q01,q44) = CR4 (CR4 (CR4 (CR4 (CR4 (CR4 (CR4 (CR4 (q0,q43)))))))) in
                                 (q01,q11,q21,q31)
+
 
 meas2 : (QBit >< QBit) -o (Bit >< Bit)
 meas2 q = let (a,b) = q in (meas a, meas b)
@@ -44,15 +45,15 @@ main = meas4 (QFTI applyU4)
 
 -- qft : (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)
 -- qft q = let (q1,q2,q3) = q in
---             let (q21,q11) = CR2 (q2,H q1) in
+--             let (q21,q11) = CR4 (q2,H q1) in
 --                 let (q31,q12) = CR4 (q3,q11) in
---                     let (q32,q22) = CR2 (q31,H q21) in
+--                     let (q32,q22) = CR4 (q31,H q21) in
 --                         (H q32, q22, q12)
 
 -- qftdagger : (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)
 -- qftdagger q =   let (q1,q2,q3) = q in 
 --                     let (q11,q31) = SWAP (q1,q3) in
---                         let (q32,q21) = CR2D (H q31,q2) in
+--                         let (q32,q21) = CR4D (H q31,q2) in
 --                             let (q33,q12) = CR4D (q32,q11) in
---                                 let (q22,q13) = CR2D (H q21,q12) in
+--                                 let (q22,q13) = CR4D (H q21,q12) in
 --                                     (H q13,q22,q33)

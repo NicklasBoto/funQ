@@ -10,10 +10,11 @@ import Lib.QM (link)
 import Data.Functor ( (<&>) )
 import Parser.Abs as Abs
     ( Gate(GS, GH, GX, GY, GZ, GI, GT, GCNOT, GTOF, GSWP, GFRDK, GQFT, GQFTI, 
-      GCR, GCRD, GCR2, GCR2D, GCR3, GCR3D, GCR4, GCR4D, GCR8, GCR8D), 
+      GCR, GCRD, GCR2, GCR2D, GCR3, GCR3D, GCR4, GCR5, GCR5D, GCR4D, GCR8, GCR8D), 
       Bit(BOne, BZero)  )
 import qualified AST.AST as A
 import Parser.Print
+import Debug.Trace
 
 -- TODO:
 -- fredkin/toffoli
@@ -42,7 +43,7 @@ data ValueError
      deriving Show
 
 type Sig = M.Map String A.Term
-type Eval a = ExceptT ValueError Q.QM a
+type Eval = ExceptT ValueError Q.QM
 
 -- | Environment type, stores bound variables & functions
 data Env = Env {
@@ -58,7 +59,7 @@ instance Show Value where
     show (VFunc _ t e) = show (A.Abs t e)
     show VNew          = "new"
     show VMeas         = "measure"
-    show (VGate g)     = printTree g
+    show (VGate g)     = "VGate " ++ printTree g
 
 
 
@@ -123,8 +124,8 @@ eval env = \case
             Abs.GFRDK -> run3Gate Q.fredkin e2 env
             Abs.GQFT  -> runQFT   Q.qft e2 env
             Abs.GQFTI -> runQFT   Q.qftDagger e2 env
-            Abs.GCR  -> run2Gate (`Q.cphase` ( 1/2)) e2 env
-            Abs.GCRD -> run2Gate (`Q.cphase` (-1/2)) e2 env
+            Abs.GCR   -> run2Gate (`Q.cphase` ( 1/2)) e2 env
+            Abs.GCRD  -> run2Gate (`Q.cphase` (-1/2)) e2 env
             Abs.GCR2  -> run2Gate (`Q.cphase` ( 1/4)) e2 env
             Abs.GCR2D -> run2Gate (`Q.cphase` (-1/4)) e2 env
             Abs.GCR3  -> run2Gate (`Q.cphase` ( 1/3)) e2 env
@@ -142,8 +143,16 @@ eval env = \case
             lift $ VBit <$> Q.measure q'
         _ -> do
             v2 <- eval env e2
-            VFunc v1 _ a <- eval env e1
-            eval env{ values = v2 : v1 ++ values env } a
+            v1 <- eval env e1
+            case v1 of
+                VFunc v1 _ a -> eval env{ values = v2 : v1 ++ values env } a
+                VNew -> eval env{ values = v2 : values env } (A.App A.New (A.Idx 0))
+                VMeas -> eval env{ values = v2 : values env } (A.App A.Meas (A.Idx 0))
+                (VGate g) -> eval env{ values = v2 : values env } (A.App (A.Gate g) (A.Idx 0))
+                _ -> error "other"
+            
+            -- VFunc v1 _ a <- trace ("e1: " ++ show e1 ++ ", env: " ++ show env) eval env e1
+            -- eval env{ values = v2 : v1 ++ values env } a
 
     A.IfEl bit l r -> do
         VBit b <- eval env bit
