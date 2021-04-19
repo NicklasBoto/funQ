@@ -5,17 +5,15 @@ module Interpreter.Interpreter where
 import qualified Data.Map as M
 import Control.Monad.Except
     ( MonadTrans(lift), ExceptT, MonadError(throwError) )
-import Control.Monad.Reader ()
-import Data.List ()
-import Control.Monad.Identity ()
 import qualified FunQ as Q
-import Control.Monad.State ()
+import Lib.QM (link)
 import Data.Functor ( (<&>) )
 import Parser.Abs as Abs
     ( Gate(GS, GH, GX, GY, GZ, GI, GT, GCNOT, GTOF, GSWP, GFRDK, GQFT, GQFTI, 
       GCR2, GCR2D, GCR3, GCR3D, GCR4, GCR4D, GCR8, GCR8D), 
       Bit(BOne, BZero)  )
 import qualified AST.AST as A
+import Parser.Print
 
 -- TODO:
 -- fredkin/toffoli
@@ -40,6 +38,7 @@ data ValueError
     | NoMainFunction String
     | NotApplied String
     | Fail String
+    | IndexTooLarge String
      deriving Show
 
 type Sig = M.Map String A.Term
@@ -52,11 +51,16 @@ data Env = Env {
 } deriving Show
 
 instance Show Value where
-    show (VBit b)    = show b
-    show (VTup a b)   = "(" ++ show a ++ "," ++ show b ++ ")"
-    show (VQBit q)   = show q
-    show VUnit       = "*"
-    show (VFunc _ t) = "Function " ++ show t
+    show (VBit b)      = show b
+    show (VTup a b)    = "⟨" ++ show a ++ "," ++ show b ++ "⟩"
+    show (VQBit q)     = "p" ++ show (link q)
+    show VUnit         = "*"
+    show (VFunc _ t e) = show (A.Abs t e)
+    show VNew          = "new"
+    show VMeas         = "measure"
+    show (VGate g)     = printTree g
+
+
 
 -- | Main function in interpreter (exported)
 interpret :: [A.Function] -> Eval Value
@@ -81,12 +85,16 @@ data Value
     | VQBit Q.QBit
     | VUnit
     | VTup Value Value
-    | VFunc [Value] A.Term
+    | VFunc [Value] A.Type A.Term
+    | VNew 
+    | VMeas
+    | VGate Gate
 
 -- | Term evaluator
 eval :: Env -> A.Term -> Eval Value
 eval env = \case
-    A.Idx j -> return $ values env !! fromIntegral j
+    A.Idx j -> if j >= fromIntegral (length (values env)) then throwError (IndexTooLarge ("Index" ++ show j ++ "is too large"))
+             else return $ values env !! fromIntegral j
 
     A.Fun s -> case M.lookup s (functions env) of
         Just t  -> eval env t
@@ -121,18 +129,18 @@ eval env = \case
             Abs.GCR3D -> run2Gate (`Q.cphase` (-1/3)) e2 env
             Abs.GCR4  -> run2Gate (`Q.cphase` ( 1/8)) e2 env
             Abs.GCR4D -> run2Gate (`Q.cphase` (-1/8)) e2 env
-            Abs.GCR8  -> run2Gate (`Q.cphase` (-1/16)) e2 env
+            Abs.GCR8  -> run2Gate (`Q.cphase` ( 1/16)) e2 env
             Abs.GCR8D -> run2Gate (`Q.cphase` (-1/16)) e2 env
 
         A.New -> do
             VBit b' <- eval env e2
-            lift $ Q.new b' <&> VQBit
+            lift $ VQBit <$> Q.new b'
         A.Meas -> do
             VQBit q' <- eval env e2
-            lift $ Q.measure q' <&> VBit
+            lift $ VBit <$> Q.measure q'
         _ -> do
             v2 <- eval env e2
-            VFunc v1 a <- eval env e1
+            VFunc v1 _ a <- eval env e1
             eval env{ values = v2 : v1 ++ values env } a
 
     A.IfEl bit l r -> do
@@ -141,13 +149,16 @@ eval env = \case
 
     A.Let eq inn -> do
          VTup x1 x2 <- eval env eq
-         eval env{ values = x1 : x2 : values env } inn
+         eval env{ values = x2 : x1 : values env } inn
 
-    A.Abs e  -> return $ VFunc (values env) e
+    A.Abs t e  -> return $ VFunc (values env) t e
     A.Unit   -> return VUnit
-    A.Gate g -> return $ VFunc (values env) (A.App (A.Gate g) (A.Idx 0))
-    A.New    -> return $ VFunc (values env) (A.App A.New (A.Idx 0))
-    A.Meas   -> return $ VFunc (values env) (A.App A.Meas (A.Idx 0))
+    -- A.Gate g -> return $ VFunc (values env) A.TypeQBit (A.App (A.Gate g) (A.Idx 0))
+    -- A.New    -> return $ VFunc (values env) A.TypeQBit (A.App A.New (A.Idx 0))
+    -- A.Meas   -> return $ VFunc (values env) A.TypeQBit (A.App A.Meas (A.Idx 0))
+    A.Gate g -> return $ VGate g 
+    A.New    -> return VNew
+    A.Meas   -> return VMeas
 
 fromVTup :: Value -> [Value]
 fromVTup (VTup a b) = a : fromVTup b
@@ -166,7 +177,7 @@ runQFT g q env = do
     res <- eval env q
     case res of
         (VQBit q') ->
-            lift (g [q']) <&> VQBit . head
+            VQBit . head <$> lift (g [q'])
         vt@(VTup _ _) -> do
             b <- lift $ g (unValue (fromVTup vt))
             return $ toVTup $ map VQBit b

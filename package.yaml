@@ -37,6 +37,7 @@ dependencies:
 - haskeline
 - turtle
 - parsec
+- algebraic-graphs
 
 library:
   when:
