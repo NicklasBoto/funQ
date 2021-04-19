@@ -45,6 +45,7 @@ library
       Parser.ErrM
       Parser.Lex
       Parser.Par
+      Parser.Print
       Parser.Skel
       Type.TypeChecker
       CoinFlip

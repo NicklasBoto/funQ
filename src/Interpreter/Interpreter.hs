@@ -14,6 +14,7 @@ import Parser.Abs as Abs
       Bit(BOne, BZero)  )
 import qualified AST.AST as A
 import Parser.Print
+import Debug.Trace
 
 -- TODO:
 -- fredkin/toffoli
@@ -58,7 +59,7 @@ instance Show Value where
     show (VFunc _ t e) = show (A.Abs t e)
     show VNew          = "new"
     show VMeas         = "measure"
-    show (VGate g)     = printTree g
+    show (VGate g)     = "VGate " ++ printTree g
 
 
 
@@ -140,8 +141,16 @@ eval env = \case
             lift $ VBit <$> Q.measure q'
         _ -> do
             v2 <- eval env e2
-            VFunc v1 _ a <- eval env e1
-            eval env{ values = v2 : v1 ++ values env } a
+            v1 <- eval env e1
+            case v1 of
+                VFunc v1 _ a -> eval env{ values = v2 : v1 ++ values env } a
+                VNew -> eval env{ values = v2 : values env } (A.App A.New (A.Idx 0))
+                VMeas -> eval env{ values = v2 : values env } (A.App A.Meas (A.Idx 0))
+                (VGate g) -> eval env{ values = v2 : values env } (A.App (A.Gate g) (A.Idx 0))
+                _ -> error "other"
+            
+            -- VFunc v1 _ a <- trace ("e1: " ++ show e1 ++ ", env: " ++ show env) eval env e1
+            -- eval env{ values = v2 : v1 ++ values env } a
 
     A.IfEl bit l r -> do
         VBit b <- eval env bit
