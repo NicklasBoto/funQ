@@ -119,8 +119,8 @@ makeImTerm env (P.TVar var) =  case M.lookup (name var) env of
     Nothing  -> Fun (name var)
 makeImTerm env (P.TIfEl cond true false) =
     IfEl (makeImTerm env cond) (makeImTerm env true) (makeImTerm env false)
-makeImTerm env (P.TLet x [y] eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv x y env) inn)
-makeImTerm env (P.TLet x (y:ys) eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv x y env) (P.TLet y ys (toTerm y) inn))
+makeImTerm env (P.TLet x [y] eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv y x env) inn)
+makeImTerm env (P.TLet x (y:ys) eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv y x env) (P.TLet y ys (toTerm y) inn))
 makeImTerm env (P.TTup (P.Tuple t ts)) = foldr1 Tup $ map (makeImTerm env) (t:ts)
 makeImTerm _env (P.TBit b) = Bit b
 makeImTerm _env (P.TGate g) = Gate g

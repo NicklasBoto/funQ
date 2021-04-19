@@ -8,7 +8,7 @@ import Parser.Par (pProgram, myLexer)
 import qualified Interpreter.Interpreter as I
 import System.Console.Haskeline
 import Control.Monad.Except
-    ( MonadIO(liftIO),
+  ( MonadIO(liftIO),
       MonadError(throwError),
       ExceptT(..),
       mapExceptT,
@@ -84,14 +84,6 @@ toErr f l r = ExceptT . return . bimap l r . f
 run :: FilePath -> Run I.Value
 run path = readfile path >>= parse >>= typecheck >>= eval
 
-runTerminalIO :: String -> IO ()
-runTerminalIO s = runExceptT (runTerminal s) >>= \case
-  Left  err -> putStrLn $ "*** Exception, " ++ show err
-  Right val -> putStrLn $ "Output: " ++ show val
-
-runTerminal :: String -> Run I.Value
-runTerminal s = parse s >>= typecheck >>= eval
-
 readfile :: FilePath -> Run String
 readfile path = do
   e <- liftIO (try (readFile path) :: IO (Either IOError String))
@@ -104,6 +96,18 @@ parse = toErr (pProgram . myLexer) ParseError A.toIm
 typecheck :: A.Program -> Run A.Program
 typecheck = toErr TC.typecheck TypeError . const <*> id
 
+runTerminalIO :: String -> IO ()
+runTerminalIO s = runExceptT (runTerminal s) >>= \case
+  Left  err   -> putStrLn $ "*** Exception, " ++ show err
+  Right (v,t) -> putStrLn $ show v ++ " : " ++ show t
+
+runTerminal :: String -> Run (I.Value, A.Type)
+runTerminal s = do
+  p@[A.Func _ _ term] <- parse s
+  typ <- toErr (TC.runCheck . TC.infer) TypeError id term
+  val <- eval p
+  return (val, typ)
+  
 eval :: A.Program -> Run I.Value
 eval = withExceptT ValueError . mapExceptT Q.run . I.interpret
 

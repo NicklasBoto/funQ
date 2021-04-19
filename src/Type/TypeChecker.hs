@@ -28,7 +28,6 @@ inferExp :: String -> Either TypeError Type
 inferExp s = runCheck $ infer p
     where [Func _ _ p] = run $ "f : a f = " ++ s
 
-
 -- | All type errors that can occur.
 data TypeError
     = NotFunction Type         -- ^ A type was expected to be a function but was not.
