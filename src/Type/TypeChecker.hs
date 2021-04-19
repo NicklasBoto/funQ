@@ -9,6 +9,9 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.String
 
+runCheck :: Check a -> Either TypeError a
+runCheck c = evalState (runReaderT (runExceptT c) M.empty) S.empty
+
 -- | Typecheck a program.
 --   Returns TypeError on failure an unit on success.
 typecheck :: Program -> Either TypeError ()
@@ -22,7 +25,7 @@ tcStr :: String -> Either TypeError ()
 tcStr = typecheck . run
 
 inferExp :: String -> Either TypeError Type
-inferExp s = evalState (runReaderT (runExceptT (infer p)) M.empty) S.empty
+inferExp s = runCheck $ infer p
     where [Func _ _ p] = run $ "f : a f = " ++ s
 
 
@@ -208,7 +211,7 @@ infimum a b | a == b    = return a
 infimum (TypeDup a) (TypeDup b) = TypeDup <$> infimum a b
 infimum (TypeDup a) b = TypeDup <$> infimum a b
 infimum a (TypeDup b) = TypeDup <$> infimum a b
-infimum (a :>< b) (c :>< d) = (:><) <$> infimum a c <*> infimum b d
+infimum (a :>< b) (c :>< d) = (:><) <$> infimum  a c <*> infimum b d
 infimum (a :=> b) (c :=> d) = (:=>) <$> supremum a c <*> infimum b d -- NOTE: contravariance of negative type
 infimum a b = throwError (NoCommonSuper a b)
 
@@ -220,7 +223,7 @@ supremum (TypeDup a) (TypeDup b) = supremum a b
 supremum (TypeDup a) b = supremum a b
 supremum a (TypeDup b) = supremum a b
 supremum (a :>< b) (c :>< d) = (:><) <$> supremum a c <*> supremum b d
-supremum (a :=> b) (c :=> d) = (:=>) <$> infimum a c <*> supremum b d -- NOTE: contravariance of negative type
+supremum (a :=> b) (c :=> d) = (:=>) <$> infimum  a c <*> supremum b d -- NOTE: contravariance of negative type
 supremum a b = throwError (NoCommonSuper a b)
 
 -- | Unwraps as many ! as possible from a type.
