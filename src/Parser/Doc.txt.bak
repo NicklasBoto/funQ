@@ -36,12 +36,12 @@ The set of reserved words is the set of terminals appearing in the grammar. Thos
 The reserved words used in Parser are the following:
   | ``Bit`` | ``CNOT`` | ``CR2`` | ``CR2D``
   | ``CR3`` | ``CR3D`` | ``CR4`` | ``CR4D``
-  | ``CR8`` | ``CR8D`` | ``CT`` | ``FREDKIN``
-  | ``H`` | ``I`` | ``QBit`` | ``QFT``
-  | ``QFTI`` | ``S`` | ``SWAP`` | ``T``
-  | ``TOFFOLI`` | ``X`` | ``Y`` | ``Z``
-  | ``else`` | ``if`` | ``in`` | ``let``
-  | ``then`` |  |  |
+  | ``CR5`` | ``CR5D`` | ``CR8`` | ``CR8D``
+  | ``CT`` | ``FREDKIN`` | ``H`` | ``I``
+  | ``QBit`` | ``QFT`` | ``QFTI`` | ``S``
+  | ``SWAP`` | ``T`` | ``TOFFOLI`` | ``X``
+  | ``Y`` | ``Z`` | ``else`` | ``if``
+  | ``in`` | ``let`` | ``then`` |
 
 The symbols used in Parser are the following:
   | * | ( | , | )
@@ -116,6 +116,8 @@ All other symbols are terminals.
   |  |  **|**  | ``CR3D``
   |  |  **|**  | ``CR4``
   |  |  **|**  | ``CR4D``
+  |  |  **|**  | ``CR5``
+  |  |  **|**  | ``CR5D``
   |  |  **|**  | ``CR8``
   |  |  **|**  | ``CR8D``
   |  |  **|**  | //GateIdent//
