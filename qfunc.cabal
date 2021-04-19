@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4d52549074a4ab1d8bb1ee03a5b3818df2ea04f19900d6b4ea6d1360753191df
+-- hash: b970842091502abce8f2d356a2df3f5586e806cdbe419935d2629cef601c6725
 
 name:           qfunc
 version:        0.1.0.0
@@ -47,7 +47,6 @@ library
       Parser.Par
       Parser.Print
       Parser.Skel
-      Type.HM
       Type.STLC
       Type.TypeChecker
       CoinFlip
@@ -61,6 +60,7 @@ library
       examples
   build-depends:
       MonadRandom
+    , algebraic-graphs
     , array
     , base >=4.7 && <5
     , bitvec
@@ -85,6 +85,7 @@ executable qfunc-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       MonadRandom
+    , algebraic-graphs
     , array
     , base >=4.7 && <5
     , bitvec
@@ -114,6 +115,7 @@ test-suite qfunc-test
   build-depends:
       MonadRandom
     , QuickCheck
+    , algebraic-graphs
     , array
     , base >=4.7 && <5
     , bitvec
