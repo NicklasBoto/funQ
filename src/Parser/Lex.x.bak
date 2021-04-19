@@ -5,6 +5,8 @@
 {-# OPTIONS_GHC -w #-}
 module Parser.Lex where
 
+import Prelude
+
 import qualified Data.Bits
 import Data.Word (Word8)
 import Data.Char (ord)
@@ -117,7 +119,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "I" 16 (b "0" 8 (b "*" 4 (b "(" 2 (b "!" 1 N N) (b ")" 3 N N)) (b "-o" 6 (b "," 5 N N) (b "." 7 N N))) (b "Bit" 12 (b "=" 10 (b "1" 9 N N) (b "><" 11 N N)) (b "FREDKIN" 14 (b "CNOT" 13 N N) (b "H" 15 N N)))) (b "Y" 24 (b "SWAP" 20 (b "QFT" 18 (b "QBit" 17 N N) (b "S" 19 N N)) (b "TOFFOLI" 22 (b "T" 21 N N) (b "X" 23 N N))) (b "in" 28 (b "else" 26 (b "Z" 25 N N) (b "if" 27 N N)) (b "then" 30 (b "let" 29 N N) N)))
+resWords = b "CR5D" 21 (b "><" 11 (b "-o" 6 (b ")" 3 (b "(" 2 (b "!" 1 N N) N) (b "," 5 (b "*" 4 N N) N)) (b "1" 9 (b "0" 8 (b "." 7 N N) N) (b "=" 10 N N))) (b "CR3" 16 (b "CR2" 14 (b "CNOT" 13 (b "Bit" 12 N N) N) (b "CR2D" 15 N N)) (b "CR4D" 19 (b "CR4" 18 (b "CR3D" 17 N N) N) (b "CR5" 20 N N)))) (b "T" 32 (b "QBit" 27 (b "FREDKIN" 24 (b "CR8D" 23 (b "CR8" 22 N N) N) (b "I" 26 (b "H" 25 N N) N)) (b "S" 30 (b "QFTI" 29 (b "QFT" 28 N N) N) (b "SWAP" 31 N N))) (b "else" 37 (b "Y" 35 (b "X" 34 (b "TOFFOLI" 33 N N) N) (b "Z" 36 N N)) (b "let" 40 (b "in" 39 (b "if" 38 N N) N) (b "then" 41 N N))))
    where b s n = let bs = s
                  in  B bs (TS bs n)
 

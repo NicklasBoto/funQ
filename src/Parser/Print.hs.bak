@@ -1,8 +1,10 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE LambdaCase #-}
 #if __GLASGOW_HASKELL__ <= 708
 {-# LANGUAGE OverlappingInstances #-}
 #endif
-{-# LANGUAGE FlexibleInstances #-}
+
 {-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
 
 -- | Pretty-printer for Parser.
@@ -10,8 +12,16 @@
 
 module Parser.Print where
 
+import Prelude
+  ( ($), (.)
+  , Bool(..), (==), (<)
+  , Int, Integer, Double, (+), (-), (*)
+  , String, (++)
+  , ShowS, showChar, showString
+  , all, dropWhile, elem, foldr, id, map, null, replicate, shows, span
+  )
+import Data.Char ( Char, isSpace )
 import qualified Parser.Abs
-import Data.Char
 
 -- | The top-level printing method.
 
@@ -25,7 +35,7 @@ doc = (:)
 
 render :: Doc -> String
 render d = rend 0 (map ($ "") $ d []) "" where
-  rend i ss = case ss of
+  rend i = \case
     "["      :ts -> showChar '[' . rend i ts
     "("      :ts -> showChar '(' . rend i ts
     "{"      :ts -> showChar '{' . new (i+1) . rend (i+1) ts
@@ -77,16 +87,16 @@ instance {-# OVERLAPPABLE #-} Print a => Print [a] where
   prt = prtList
 
 instance Print Char where
-  prt _ s = doc (showChar '\'' . mkEsc '\'' s . showChar '\'')
+  prt     _ s = doc (showChar '\'' . mkEsc '\'' s . showChar '\'')
   prtList _ s = doc (showChar '"' . concatS (map (mkEsc '"') s) . showChar '"')
 
 mkEsc :: Char -> Char -> ShowS
-mkEsc q s = case s of
-  _ | s == q -> showChar '\\' . showChar s
-  '\\'-> showString "\\\\"
+mkEsc q = \case
+  s | s == q -> showChar '\\' . showChar s
+  '\\' -> showString "\\\\"
   '\n' -> showString "\\n"
   '\t' -> showString "\\t"
-  _ -> showChar s
+  s -> showChar s
 
 prPrec :: Int -> Int -> Doc -> Doc
 prPrec i j = if j < i then parenth else id
@@ -98,23 +108,23 @@ instance Print Double where
   prt _ x = doc (shows x)
 
 instance Print Parser.Abs.FunVar where
-  prt _ (Parser.Abs.FunVar i) = doc $ showString $ i
+  prt _ (Parser.Abs.FunVar i) = doc $ showString i
 
 instance Print Parser.Abs.Var where
-  prt _ (Parser.Abs.Var i) = doc $ showString $ i
+  prt _ (Parser.Abs.Var i) = doc $ showString i
 
 instance Print Parser.Abs.GateIdent where
-  prt _ (Parser.Abs.GateIdent i) = doc $ showString $ i
+  prt _ (Parser.Abs.GateIdent i) = doc $ showString i
 
 instance Print Parser.Abs.Lambda where
-  prt _ (Parser.Abs.Lambda i) = doc $ showString $ i
+  prt _ (Parser.Abs.Lambda i) = doc $ showString i
 
 instance Print Parser.Abs.Program where
-  prt i e = case e of
+  prt i = \case
     Parser.Abs.PDef fundecs -> prPrec i 0 (concatD [prt 0 fundecs])
 
 instance Print Parser.Abs.Term where
-  prt i e = case e of
+  prt i = \case
     Parser.Abs.TVar var -> prPrec i 3 (concatD [prt 0 var])
     Parser.Abs.TBit bit -> prPrec i 3 (concatD [prt 0 bit])
     Parser.Abs.TGate gate -> prPrec i 3 (concatD [prt 0 gate])
@@ -128,7 +138,7 @@ instance Print Parser.Abs.Term where
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
 
 instance Print Parser.Abs.LetVar where
-  prt i e = case e of
+  prt i = \case
     Parser.Abs.LVar var -> prPrec i 0 (concatD [prt 0 var])
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
@@ -137,19 +147,19 @@ instance Print [Parser.Abs.LetVar] where
   prt = prtList
 
 instance Print Parser.Abs.Tup where
-  prt i e = case e of
+  prt i = \case
     Parser.Abs.Tuple term terms -> prPrec i 0 (concatD [doc (showString "("), prt 0 term, doc (showString ","), prt 0 terms, doc (showString ")")])
 
 instance Print [Parser.Abs.Term] where
   prt = prtList
 
 instance Print Parser.Abs.Bit where
-  prt i e = case e of
+  prt i = \case
     Parser.Abs.BZero -> prPrec i 0 (concatD [doc (showString "0")])
     Parser.Abs.BOne -> prPrec i 0 (concatD [doc (showString "1")])
 
 instance Print Parser.Abs.FunDec where
-  prt i e = case e of
+  prt i = \case
     Parser.Abs.FDecl funvar type_ function -> prPrec i 0 (concatD [prt 0 funvar, prt 0 type_, prt 0 function])
   prtList _ [] = concatD []
   prtList _ (x:xs) = concatD [prt 0 x, prt 0 xs]
@@ -158,11 +168,11 @@ instance Print [Parser.Abs.FunDec] where
   prt = prtList
 
 instance Print Parser.Abs.Function where
-  prt i e = case e of
+  prt i = \case
     Parser.Abs.FDef var args term -> prPrec i 0 (concatD [prt 0 var, prt 0 args, doc (showString "="), prt 0 term])
 
 instance Print Parser.Abs.Arg where
-  prt i e = case e of
+  prt i = \case
     Parser.Abs.FArg var -> prPrec i 0 (concatD [prt 0 var])
   prtList _ [] = concatD []
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString " "), prt 0 xs]
@@ -171,8 +181,7 @@ instance Print [Parser.Abs.Arg] where
   prt = prtList
 
 instance Print Parser.Abs.Type where
-  prt i e = case e of
-    Parser.Abs.TypeVar var -> prPrec i 2 (concatD [prt 0 var])
+  prt i = \case
     Parser.Abs.TypeBit -> prPrec i 2 (concatD [doc (showString "Bit")])
     Parser.Abs.TypeQbit -> prPrec i 2 (concatD [doc (showString "QBit")])
     Parser.Abs.TypeVoid -> prPrec i 2 (concatD [doc (showString "T")])
@@ -181,7 +190,7 @@ instance Print Parser.Abs.Type where
     Parser.Abs.TypeFunc type_1 type_2 -> prPrec i 1 (concatD [prt 2 type_1, doc (showString "-o"), prt 1 type_2])
 
 instance Print Parser.Abs.Gate where
-  prt i e = case e of
+  prt i = \case
     Parser.Abs.GH -> prPrec i 0 (concatD [doc (showString "H")])
     Parser.Abs.GX -> prPrec i 0 (concatD [doc (showString "X")])
     Parser.Abs.GY -> prPrec i 0 (concatD [doc (showString "Y")])
@@ -195,13 +204,16 @@ instance Print Parser.Abs.Gate where
     Parser.Abs.GFRDK -> prPrec i 0 (concatD [doc (showString "FREDKIN")])
     Parser.Abs.GQFT -> prPrec i 0 (concatD [doc (showString "QFT")])
     Parser.Abs.GQFTI -> prPrec i 0 (concatD [doc (showString "QFTI")])
-    Parser.Abs.GCT -> prPrec i 0 (concatD [doc (showString "CT")])
+    Parser.Abs.GCR -> prPrec i 0 (concatD [doc (showString "CR2")])
+    Parser.Abs.GCRD -> prPrec i 0 (concatD [doc (showString "CR2D")])
     Parser.Abs.GCR2 -> prPrec i 0 (concatD [doc (showString "CR2")])
     Parser.Abs.GCR2D -> prPrec i 0 (concatD [doc (showString "CR2D")])
     Parser.Abs.GCR3 -> prPrec i 0 (concatD [doc (showString "CR3")])
     Parser.Abs.GCR3D -> prPrec i 0 (concatD [doc (showString "CR3D")])
     Parser.Abs.GCR4 -> prPrec i 0 (concatD [doc (showString "CR4")])
     Parser.Abs.GCR4D -> prPrec i 0 (concatD [doc (showString "CR4D")])
+    Parser.Abs.GCR5 -> prPrec i 0 (concatD [doc (showString "CR5")])
+    Parser.Abs.GCR5D -> prPrec i 0 (concatD [doc (showString "CR5D")])
     Parser.Abs.GCR8 -> prPrec i 0 (concatD [doc (showString "CR8")])
     Parser.Abs.GCR8D -> prPrec i 0 (concatD [doc (showString "CR8D")])
     Parser.Abs.GGate gateident -> prPrec i 0 (concatD [prt 0 gateident])

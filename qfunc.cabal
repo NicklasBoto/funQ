@@ -46,6 +46,7 @@ library
       Parser.Lex
       Parser.Par
       Parser.Skel
+      Parser.Print
       Type.TypeChecker
       CoinFlip
       Deutsch

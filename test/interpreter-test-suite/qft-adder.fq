@@ -1,36 +1,47 @@
-exIntA : (QBit >< QBit >< QBit >< QBit)
-exIntA = (new 1, new 0, new 0, new 0)
+-- exIntA : (QBit >< QBit >< QBit >< QBit)
+-- exIntA = QFT (new 0, new 0, new 0, new 1)
 
-exIntB : (QBit >< QBit >< QBit >< QBit)
-exIntB = QFT (new 0, new 0, new 1, new 1)
+-- exIntB : (QBit >< QBit >< QBit >< QBit)
+-- exIntB = (new 0, new 1, new 0, new 0)
 
--- cAdd : (QBit -o (QBit >< QBit >< QBit >< QBit))
--- cAdd c =    let (q0,q1,q2,q3) = exIntB in
---             let (a0,a1,a2,a3) = exIntA in
---             let (a31,q31) = CR8 (CR4 (CR2 (CR (a3,q3)))) in
---             let (a21,q21) =      CR4 (CR2 (CR (a2,q2))) in
---             let (a11,q11) =           CR2 (CR (a1,q1))  in
---             let (a01,q01) =                CR (a0,q0)   in
---                 (q01,q11,q21,q31)
-            
-cAddv2 : (QBit -o (QBit >< QBit >< QBit >< QBit))
-cAddv2 c =  let (b0,b1,b2,b3) = exIntB in
-            let (a0,a1,a2,a3) = exIntA in
-            let (b31,a31) = CR (b3,a3) in
-            let (b21,a32) = CR2 (b2,a31) in
-            let (b11,a33) = CR4 (b1,a32) in
-            let (b01,a34) = CR8 (b0,a33) in
-            let (b21,a21) = CR (b2,a2) in
-            let (b12,a22) = CR2 (b11,a21) in
-            let (b02,a23) = CR4 (b01,a22) in
-            let (b13,a11) = CR (b12,a1) in
-            let (b03,a12) = CR2 (b02,a11) in
-            let (b04,a01) = CR (b03,a0) in
-            (a01,a12,a23,a34)
+-- cAddv2 : (QBit >< QBit >< QBit >< QBit)
+-- cAddv2 =    let (b0, b1, b2, b3) = exIntB in
+--             let (a0, a1, a2, a3) = exIntA in
+--             let (b31, a31) = CR  (b3, a3)   in
+--             let (b21, a32) = CR2 (b2, a31)  in
+--             let (b11, a33) = CR4 (b1, a32)  in
+--             let (b01, a34) = CR8 (b0, a33)  in
+--             let (b22, a21) = CR  (b21, a2)  in
+--             let (b12, a22) = CR2 (b11, a21) in
+--             let (b02, a23) = CR4 (b01, a22) in
+--             let (b13, a11) = CR  (b12, a1)  in
+--             let (b03, a12) = CR2 (b02, a11) in
+--             let (b04, a01) = CR  (b03, a0)  in
+--             (a01, a12, a23, a34)
 
-main : (Bit >< Bit >< Bit >< Bit)
-main = meas4 (QFTI (cAddv2 (new 1)))
+exIntA3 : QBit >< QBit >< QBit
+exIntA3 = QFT (new 0, new 1, new 0)
+exIntB3 : QBit >< QBit >< QBit
+exIntB3 = (new 1, new 0, new 1)
+
+cAdd3 : (QBit >< QBit >< QBit)
+cAdd3 = let (a0, a1, a2) = exIntA3 in   
+        let (b0, b1, b2) = exIntB3 in    
+        let (b21, a21) = CR  (b2, a2)   in
+        let (b11, a22) = CR2 (b1, a21)  in
+        let (b01, a23) = CR4 (b0, a22)  in
+        let (b12, a11) = CR  (b11, a1)  in
+        let (b02, a12) = CR2 (b01, a11) in
+        let (b03, a01) = CR  (b02, a0)  in
+        (a01,a12,a23)
 
 
-meas4 : ((QBit >< QBit >< QBit >< QBit) -o (Bit >< Bit >< Bit >< Bit))
+main : Bit >< Bit >< Bit
+main = meas3 (QFTI cAdd3)
+
+
+meas4 : (QBit >< QBit >< QBit >< QBit) -o (Bit >< Bit >< Bit >< Bit)
 meas4 q = let (a,b,c,d) = q in (meas a,meas b,meas c,meas d)
+
+meas3 : (QBit >< QBit >< QBit) -o (Bit >< Bit >< Bit)
+meas3 q = let (a,b,c) = q in (meas a,meas b,meas c)

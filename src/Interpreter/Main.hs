@@ -121,7 +121,7 @@ rundistest path = do
 rundist :: FilePath -> Run [I.Value]
 rundist path = do 
   a <- readfile path >>= parse >>= typecheck
-  evaldist a 300
+  evaldist a 10
 
 
 evaldist :: A.Program -> Int -> Run [I.Value]
@@ -139,21 +139,26 @@ exVTup :: I.Value
 exVTup = I.VTup (I.VBit 1) (I.VTup (I.VBit 0) (I.VBit 1))
 
 
+
+
+gatherResults :: [I.Value] -> IO ()
+gatherResults vals = do
+  let res = countUniques $ map readtup vals
+  let stats = stat (length vals) res
+  mapM_ (putStrLn . prettystats) stats
+
 readtup :: I.Value -> Int
-readtup tup@(I.VTup a as) = (toDec . catchBit . reverse . I.fromVTup) tup
+readtup = toDec . catchBit . reverse . I.fromVTup
   where catchBit []            = []
         catchBit (I.VBit b:bs) = (fromIntegral . toInteger) b : catchBit bs
-        toDec []        = 0
-        toDec (b:bs)    = b + 2*toDec bs
+        toDec []     = 0
+        toDec (b:bs) = b + 2*toDec bs
 
-findUniques []     as = as
-findUniques (b:bs) as = if b `elem` as then findUniques bs as else findUniques bs (insert b as)
-countOcc as = map length $ (group . sort) as
-uniquesAndCount as = zip (sort (findUniques as [])) (countOcc as)
-
-toBin 0 = []
-toBin n | n `mod` 2 == 1 = toBin (n `div` 2) ++ [1]
-toBin n | n `mod` 2 == 0 = toBin (n `div` 2) ++ [0]
+countUniques :: [Int] -> [(Int, Int)]
+countUniques as = zip (sort (findUniques as [])) (countOcc as)
+  where findUniques []     as = as
+        findUniques (b:bs) as = if b `elem` as then findUniques bs as else findUniques bs (insert b as)
+        countOcc as           = map length $ (group . sort) as
 
 stat :: Int -> [(Int, Int)] -> [(Int, Double, Int)]
 stat _   []         = []
@@ -161,14 +166,8 @@ stat len ((a,b):as) = (a, dub b/dub len, b) : stat len as
   where dub = fromIntegral . toInteger
 
 prettystats :: (Int, Double, Int) -> String
-prettystats (a,b,c) = show a ++ ": " ++ "\t" ++ (show . truncateboi) b ++ "%" ++ "\t" ++ show c
-
--- truncateboi :: Double -> Double
-truncateboi :: Double -> Double
-truncateboi d = (fromIntegral . truncate) (10000*(d :: Double))/100
-
-gatherResults :: [I.Value] -> IO ()
-gatherResults vals@(I.VTup _ _:as) = do
-  let res = uniquesAndCount $ map readtup vals
-  let stats = stat (length vals) res
-  mapM_ (putStrLn . prettystats) stats
+prettystats (a,b,c) = concatMap show (toBin a) ++ ": " ++ "\t" ++ (show . truncateboi) b ++ "%" ++ "\t" ++ show c
+  where toBin 0 = []
+        toBin n | n `mod` 2 == 1 = toBin (n `div` 2) ++ [1]
+        toBin n | n `mod` 2 == 0 = toBin (n `div` 2) ++ [0]
+        truncateboi d = (fromIntegral . truncate) (10000*(d :: Double))/100
