@@ -78,12 +78,16 @@ data Gate
     | GQFT
     | GQFTI
     | GCT
+    | GCR
+    | GCRD
     | GCR2
     | GCR2D
     | GCR3
     | GCR3D
     | GCR4
     | GCR4D
+    | GCR5
+    | GCR5D
     | GCR8
     | GCR8D
     | GGate GateIdent
