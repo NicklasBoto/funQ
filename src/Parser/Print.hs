@@ -172,7 +172,6 @@ instance Print [Parser.Abs.Arg] where
 
 instance Print Parser.Abs.Type where
   prt i e = case e of
-    Parser.Abs.TypeVar var -> prPrec i 2 (concatD [prt 0 var])
     Parser.Abs.TypeBit -> prPrec i 2 (concatD [doc (showString "Bit")])
     Parser.Abs.TypeQbit -> prPrec i 2 (concatD [doc (showString "QBit")])
     Parser.Abs.TypeVoid -> prPrec i 2 (concatD [doc (showString "T")])

@@ -57,7 +57,6 @@ transArg x = case x of
   Parser.Abs.FArg var -> failure x
 transType :: Parser.Abs.Type -> Result
 transType x = case x of
-  Parser.Abs.TypeVar var -> failure x
   Parser.Abs.TypeBit -> failure x
   Parser.Abs.TypeQbit -> failure x
   Parser.Abs.TypeVoid -> failure x

@@ -47,7 +47,7 @@ main = runInputT defaultSettings loop
                 liftIO $ runIO (w !! 1)
                 loop
               _ -> do
-                liftIO $ runTerminalIO $ "main : a main = " ++ input
+                liftIO $ runTerminalIO $ "main : T main = " ++ input
                 loop
 
 type Run a = ExceptT Error IO a

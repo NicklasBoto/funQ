@@ -46,7 +46,6 @@ token GateIdent ((upper)+) ;
 token Lambda '\\' ;
 
 --- Type ---
-TypeVar  . Type2  ::= Var              ;
 TypeBit  . Type2  ::= "Bit"            ;
 TypeQbit . Type2  ::= "QBit"           ;
 TypeVoid . Type2  ::= "T"              ;

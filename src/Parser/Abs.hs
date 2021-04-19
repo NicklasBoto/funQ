@@ -55,8 +55,7 @@ data Arg = FArg Var
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data Type
-    = TypeVar Var
-    | TypeBit
+    = TypeBit
     | TypeQbit
     | TypeVoid
     | TypeDup Type

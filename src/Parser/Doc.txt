@@ -86,8 +86,7 @@ All other symbols are terminals.
   | //Arg// | -> | //Var//
   | //[Arg]// | -> | **eps**
   |  |  **|**  | //Arg// //[Arg]//
-  | //Type2// | -> | //Var//
-  |  |  **|**  | ``Bit``
+  | //Type2// | -> | ``Bit``
   |  |  **|**  | ``QBit``
   |  |  **|**  | ``T``
   |  |  **|**  | ``!`` //Type2//
