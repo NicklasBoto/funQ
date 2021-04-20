@@ -38,7 +38,9 @@ The reserved words used in Parser are the following:
   | ``CR2D`` | ``CR3`` | ``CR3D`` | ``CR4``
   | ``CR4D`` | ``CR5`` | ``CR5D`` | ``CR8``
   | ``CR8D`` | ``CRD`` | ``FREDKIN`` | ``H``
-  | ``I`` | ``QBit`` | ``QFT`` | ``QFTI``
+  | ``I`` | ``QBit`` | ``QFT`` | ``QFT2``
+  | ``QFT3`` | ``QFT4`` | ``QFT5`` | ``QFTI``
+  | ``QFTI2`` | ``QFTI3`` | ``QFTI4`` | ``QFTI5``
   | ``S`` | ``SWAP`` | ``T`` | ``TOFFOLI``
   | ``X`` | ``Y`` | ``Z`` | ``else``
   | ``if`` | ``in`` | ``let`` | ``then``
@@ -108,6 +110,14 @@ All other symbols are terminals.
   |  |  **|**  | ``FREDKIN``
   |  |  **|**  | ``QFT``
   |  |  **|**  | ``QFTI``
+  |  |  **|**  | ``QFT2``
+  |  |  **|**  | ``QFTI2``
+  |  |  **|**  | ``QFT3``
+  |  |  **|**  | ``QFTI3``
+  |  |  **|**  | ``QFT4``
+  |  |  **|**  | ``QFTI4``
+  |  |  **|**  | ``QFT5``
+  |  |  **|**  | ``QFTI5``
   |  |  **|**  | ``CR``
   |  |  **|**  | ``CRD``
   |  |  **|**  | ``CR2``

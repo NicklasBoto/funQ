@@ -226,14 +226,13 @@ crot k (c, t) = do
   return (c,t)
 
 -- | Quantum fourier transform
-qft :: [QBit] -> QM [QBit]
-qft [] = errorWithoutStackTrace "Cannot perform QFT on zero qubits"
-qft qs@((Ptr q):_)
+qft :: Int -> [QBit] -> QM [QBit]
+qft _ [] = errorWithoutStackTrace "Cannot perform QFT on zero qubits"
+qft n qs@((Ptr q):_)
   | notAdjacent (map link qs) =
      errorWithoutStackTrace "Cannot perform QFT on non-adjacent qubits"
   | otherwise = do
       (_, size) <- getState
-      let n = length qs
       let matrixQFT = qftMatrix (2 ^ n)
       let ids = replicate (size - n + 1) (ident 2)
       let masqwe = changeAt matrixQFT q ids
@@ -241,14 +240,13 @@ qft qs@((Ptr q):_)
       return qs
 
 -- | Inverse quantum fourier transform
-qftDagger :: [QBit] -> QM [QBit]
-qftDagger [] = errorWithoutStackTrace "Cannot perform QFT on zero qubits"
-qftDagger qs@((Ptr q):_)
+qftDagger :: Int -> [QBit] -> QM [QBit]
+qftDagger _ [] = errorWithoutStackTrace "Cannot perform QFT on zero qubits"
+qftDagger n qs@((Ptr q):_)
   | notAdjacent (map link qs) =
      errorWithoutStackTrace "Cannot perform QFT on non-adjacent qubits"
   | otherwise = do
       (_, size) <- getState
-      let n = length qs
       let matrixQFT = tr $ qftMatrix (2 ^ n)
       let ids = replicate (size - n + 1) (ident 2)
       let masqwe = changeAt matrixQFT q ids

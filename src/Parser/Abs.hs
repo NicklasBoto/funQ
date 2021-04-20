@@ -67,6 +67,14 @@ data Gate
     | GFRDK
     | GQFT
     | GQFTI
+    | GQFT2
+    | GQFTI2
+    | GQFT3
+    | GQFTI3
+    | GQFT4
+    | GQFTI4
+    | GQFT5
+    | GQFTI5
     | GCR
     | GCRD
     | GCR2

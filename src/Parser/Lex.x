@@ -119,7 +119,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "CR5D" 22 (b "><" 11 (b "-o" 6 (b ")" 3 (b "(" 2 (b "!" 1 N N) N) (b "," 5 (b "*" 4 N N) N)) (b "1" 9 (b "0" 8 (b "." 7 N N) N) (b "=" 10 N N))) (b "CR3" 17 (b "CR" 14 (b "CNOT" 13 (b "Bit" 12 N N) N) (b "CR2D" 16 (b "CR2" 15 N N) N)) (b "CR4D" 20 (b "CR4" 19 (b "CR3D" 18 N N) N) (b "CR5" 21 N N)))) (b "SWAP" 33 (b "I" 28 (b "CRD" 25 (b "CR8D" 24 (b "CR8" 23 N N) N) (b "H" 27 (b "FREDKIN" 26 N N) N)) (b "QFTI" 31 (b "QFT" 30 (b "QBit" 29 N N) N) (b "S" 32 N N))) (b "else" 39 (b "X" 36 (b "TOFFOLI" 35 (b "T" 34 N N) N) (b "Z" 38 (b "Y" 37 N N) N)) (b "let" 42 (b "in" 41 (b "if" 40 N N) N) (b "then" 43 N N))))
+resWords = b "FREDKIN" 26 (b "CNOT" 13 (b "." 7 (b "*" 4 (b "(" 2 (b "!" 1 N N) (b ")" 3 N N)) (b "-o" 6 (b "," 5 N N) N)) (b "=" 10 (b "1" 9 (b "0" 8 N N) N) (b "Bit" 12 (b "><" 11 N N) N))) (b "CR4D" 20 (b "CR3" 17 (b "CR2" 15 (b "CR" 14 N N) (b "CR2D" 16 N N)) (b "CR4" 19 (b "CR3D" 18 N N) N)) (b "CR8" 23 (b "CR5D" 22 (b "CR5" 21 N N) N) (b "CRD" 25 (b "CR8D" 24 N N) N)))) (b "QFTI5" 39 (b "QFT4" 33 (b "QFT" 30 (b "I" 28 (b "H" 27 N N) (b "QBit" 29 N N)) (b "QFT3" 32 (b "QFT2" 31 N N) N)) (b "QFTI2" 36 (b "QFTI" 35 (b "QFT5" 34 N N) N) (b "QFTI4" 38 (b "QFTI3" 37 N N) N))) (b "Z" 46 (b "TOFFOLI" 43 (b "SWAP" 41 (b "S" 40 N N) (b "T" 42 N N)) (b "Y" 45 (b "X" 44 N N) N)) (b "in" 49 (b "if" 48 (b "else" 47 N N) N) (b "then" 51 (b "let" 50 N N) N))))
    where b s n = let bs = s
                  in  B bs (TS bs n)
 

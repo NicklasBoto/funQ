@@ -85,19 +85,27 @@ import Parser.Lex
   'I' { PT _ (TS _ 28) }
   'QBit' { PT _ (TS _ 29) }
   'QFT' { PT _ (TS _ 30) }
-  'QFTI' { PT _ (TS _ 31) }
-  'S' { PT _ (TS _ 32) }
-  'SWAP' { PT _ (TS _ 33) }
-  'T' { PT _ (TS _ 34) }
-  'TOFFOLI' { PT _ (TS _ 35) }
-  'X' { PT _ (TS _ 36) }
-  'Y' { PT _ (TS _ 37) }
-  'Z' { PT _ (TS _ 38) }
-  'else' { PT _ (TS _ 39) }
-  'if' { PT _ (TS _ 40) }
-  'in' { PT _ (TS _ 41) }
-  'let' { PT _ (TS _ 42) }
-  'then' { PT _ (TS _ 43) }
+  'QFT2' { PT _ (TS _ 31) }
+  'QFT3' { PT _ (TS _ 32) }
+  'QFT4' { PT _ (TS _ 33) }
+  'QFT5' { PT _ (TS _ 34) }
+  'QFTI' { PT _ (TS _ 35) }
+  'QFTI2' { PT _ (TS _ 36) }
+  'QFTI3' { PT _ (TS _ 37) }
+  'QFTI4' { PT _ (TS _ 38) }
+  'QFTI5' { PT _ (TS _ 39) }
+  'S' { PT _ (TS _ 40) }
+  'SWAP' { PT _ (TS _ 41) }
+  'T' { PT _ (TS _ 42) }
+  'TOFFOLI' { PT _ (TS _ 43) }
+  'X' { PT _ (TS _ 44) }
+  'Y' { PT _ (TS _ 45) }
+  'Z' { PT _ (TS _ 46) }
+  'else' { PT _ (TS _ 47) }
+  'if' { PT _ (TS _ 48) }
+  'in' { PT _ (TS _ 49) }
+  'let' { PT _ (TS _ 50) }
+  'then' { PT _ (TS _ 51) }
   L_FunVar { PT _ (T_FunVar $$) }
   L_Var { PT _ (T_Var $$) }
   L_GateIdent { PT _ (T_GateIdent $$) }
@@ -200,6 +208,14 @@ Gate : 'H' { Parser.Abs.GH }
      | 'FREDKIN' { Parser.Abs.GFRDK }
      | 'QFT' { Parser.Abs.GQFT }
      | 'QFTI' { Parser.Abs.GQFTI }
+     | 'QFT2' { Parser.Abs.GQFT2 }
+     | 'QFTI2' { Parser.Abs.GQFTI2 }
+     | 'QFT3' { Parser.Abs.GQFT3 }
+     | 'QFTI3' { Parser.Abs.GQFTI3 }
+     | 'QFT4' { Parser.Abs.GQFT4 }
+     | 'QFTI4' { Parser.Abs.GQFTI4 }
+     | 'QFT5' { Parser.Abs.GQFT5 }
+     | 'QFTI5' { Parser.Abs.GQFTI5 }
      | 'CR' { Parser.Abs.GCR }
      | 'CRD' { Parser.Abs.GCRD }
      | 'CR2' { Parser.Abs.GCR2 }
