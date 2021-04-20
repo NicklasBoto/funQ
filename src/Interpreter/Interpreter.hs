@@ -15,7 +15,6 @@ import Parser.Abs as Abs
       Bit(BOne, BZero)  )
 import qualified AST.AST as A
 import Parser.Print
-import Debug.Trace
 
 -- TODO:
 -- fredkin/toffoli
