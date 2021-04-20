@@ -148,7 +148,7 @@ hadamard = runGate hmat
 --
 -- ![phase](images/s.PNG)
 phase :: QBit -> QM QBit
-phase = runGate $ phasemat pi/2
+phase = runGate $ phasemat (1/4)
 
 -- | Pi/8 gate (T gate)
 --
@@ -159,11 +159,11 @@ phase = runGate $ phasemat pi/2
 --
 -- ![pi8](images/t.PNG)
 phasePi8 :: QBit -> QM QBit
-phasePi8 = runGate $ phasemat (pi/4)
+phasePi8 = runGate $ phasemat (1/8)
 
 -- | Hermetian adjoint of T gate (`phasePi8`)
 tdagger :: QBit -> QM QBit
-tdagger = runGate $ phasemat (-pi/4)
+tdagger = runGate $ phasemat (-1/8)
 
 -- | Identity gate
 --
