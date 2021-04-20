@@ -75,142 +75,87 @@ x = testSup (supremum "Bit -o QBit" "!Bit -o QBit")
 
 assTest :: Monad m => (t1 -> t2 -> m t2) -> t1 -> t2 -> t1 -> m t2
 assTest f a b c = f a b >>= f c
--- !Bit <: !!Bit
--- !!Bit <: !Bit
--- !!Bit != !Bit
--- poset
--- lattice
 
 
+-- | The inside is (!Bit, !Bit) which makes ! move outside, to !(Bit, Bit)
+prop_testDupProd = expectSuccess $ tcStr "main: !(Bit >< Bit) main = (0, 0)" 
 
+-- | Pick out a bit from product using let
+prop_testFst = expectSuccess $ tcStr "main : !(Bit >< T) -o !Bit main x = let (a,b) = x in a"
 
--- t1 ^ (t2 ^ t3) == (t1 ^ t2) ^ t3
+-- | Identity for !Bit should work
+prop_id = expectSuccess $ tcStr "x : !Bit -o !Bit x = \\x:!Bit. x"
 
+-- | Test that a linear bit can be used as a condition in an if statement. Should succeed.
+prop_ifLinBit = expectSuccess $ tcStr "x : Bit -o Bit x b = if b then 0 else 1"
 
+-- | Test that a (outer level) linear bit can be used as a condition in an if statement. Should succeed.
+-- fails unsuccessfully
+prop_ifLinBit2 = expectSuccess $ tcStr $ "g: Bit g = 0 " ++
+                                    "f : Bit f = if g then 0 else 1"
 
--- a ^ b ^ b = a ^ b
--- x ^ x = x
+-- | Test that an unlinear bit can be used as a condition in an if statement. Should succeed.
+prop_ifNormalBit = expectSuccess $ tcStr $ "g : !Bit g = 0"
+                                        ++ "f : Bit f = if g then 0 else 1"
 
-return []
+-- | Test a nonlinear function can be used many times. Should succeed.
+prop_useLinFun = expectSuccess . tcStr $ "f : !(Bit -o Bit) f a = 0 " ++
+                                         "b2 : Bit b2 = f 1 " ++ 
+                                         "b3 : Bit b3 = f 1"
 
--- Run all tests 
-runTests :: IO Bool
-runTests = $quickCheckAll
+-- | Can assign a unlinear bit to a linear bit. Should succeed.
+prop_unLinBit = expectSuccess . tcStr $ "f : Bit f = 0"
 
--- import Type.HM
--- import AST.AST
+-- | Higher order functions test. Should succeed.
+prop_subtypeHoF = expectSuccess . tcStr $ "main: (Bit -o T) -o (Bit >< QBit) -o (T >< QBit) main = \\f: Bit -o T . \\ qs: Bit >< QBit. let (x,y) = qs in (f x, y) "
 
+-- | Simple higher order function test. Should succeed.
+prop_simpleHoF = expectSuccess . tcStr $  "main: (Bit -o Bit) -o !Bit -o Bit main f x = f x"
 
--- --- Test that should fail (throw an exception)
--- expectErrorWith :: TypeError -> Either TypeError t -> Property
--- expectErrorWith err res = case res of 
---     Left err' -> property (err == err')
---     Right _   -> property False  
+-- | Test that new can receive unlinear bit. Should succeed.
+prop_simpleApp = expectSuccess . tcStr $ "b : QBit b = new 0"
 
+-- | Test mixed tuple type is valid as long as equal duplicity. Should succeed.
+prop_funInTup = expectSuccess . tcStr $ "main : !(Bit -o QBit) >< Bit " ++  "main = (\\x : !(Bit -o QBit).(x, 0)) new"
 
--- expectSuccess :: Either e t -> Property 
--- expectSuccess = property . isRight
+-- | Test general if statement. Should succeed.
+prop_ifGeneral = expectSuccess . tcStr $ "main : Bit -o Bit main x = if x then 0 else 1"
 
--- -------------- Tests that should succeed ------------------------------
+-- | Should succeed:
+prop_dupIf = expectSuccess . tcStr $ "main: !Bit -o (!Bit >< Bit) main x = if x then (x,x) else (x,x)"
 
--- -- | Inferring 0 should be !Bit
--- prop_testBit = inferExp "0" === Right (TypeFlex 0 TypeBit)
--- -- | The inside is (!Bit, !Bit) which makes ! move outside, to !(Bit, Bit)
--- prop_testDupProd = inferExp "(0, 0)" === Right (TypeFlex 1 (TypeBit :>< TypeBit))
+-- | Normal if statement.
+prop_ifSig = expectSuccess . tcStr $ "f : !Bit -o !Bit " 
+                                  ++ "f x = if x then 0 else 1"
 
--- -- | Expected (?a, ?b) -o ?a
--- prop_testFst = inferExp "\\x.let (a,b) = x in a" === Right (TypeFlex 3 (TypeFlex 2 (TypeVar "a" :>< TypeVar "b") :=> TypeFlex 2 (TypeVar "a")))
--- -- == Right ((TypeFlex "a" :>< TypeFlex "b") :=> TypeFlex "a")
+-- | Test that linear and duplicable terms can be mixed in product.
+prop_eqDup = expectSuccess . tcStr $ "f : Bit -o (Bit >< !Bit) f x = (x,0)"
 
--- -- | \x.x should have type ?a->?a, since it could be either linear or not linear.
--- prop_id = inferExp "\\x.x" === Right (TypeFlex 1 (TypeFlex 0 "a" :=> TypeFlex 0 "a"))
+-- | Test that let picks out correct element.
+prop_letFunConst = expectSuccess . tcStr $ "main : T main = let (a,b) = (0,*) in (b)" --inferExp "\\x.\\y.let (a,b) = (x,y) in a" === Right (TypeFlex 5 (TypeFlex 3 (TypeVar "a") :=> TypeFlex 4 (TypeFlex 3 (TypeVar "b") :=> TypeFlex 3 (TypeVar "a"))))
 
--- -- | Test that a linear bit can be used as a condition in an if statement. Should succeed.
--- prop_IfLinBit = expectSuccess . typecheck . run $ "f : Bit -o Bit f g = if g then 0 else 1"
-
--- -- | Test that a linear bit can be used as a condition in an if statement. Should succeed.
--- -- fails unsuccessfully
--- prop_IfLinBit2 = expectSuccess . typecheck . run $ "g : Bit g = 0 " ++ 
---                                     "f : Bit f = if g then 0 else 1"
-
--- -- | Test that an unlinear bit can be used as a condition in an if statement. Should succeed.
--- prop_IfNormalBit = expectSuccess . typecheck . run $ "g : !Bit g = 0 " ++ 
---                                      "f : Bit f = if g then 0 else 1"
-
--- -- | Test a nonlinear function can be used many times. Should succeed.
--- prop_UseLinFun = expectSuccess . typecheck . run $ "f : !(Bit -o Bit) f a = 0 " ++
---                                                    "b2 : Bit b2 = f 1 " ++ 
---                                                    "b3 : Bit b3 = f 1"
-
--- -- | Can assign a unlinear bit to a linear bit. Should succeed.
--- prop_UnLinBit = expectSuccess . typecheck . run $ "f : Bit f = 0"
-
--- -- | Higher order functions test. Should succeed.
--- prop_SubtypeHoF = expectSuccess $ inferExp "\\f . \\ qs . let (x,y) = qs in (f x, y)" -- == Right ((TypeFlex "a" :=> TypeFlex "b"):=> (TypeFlex "a" :><  TypeFlex "c") :=> TypeFlex "b" :>< TypeFlex "c")
-
--- -- | Simple higher order function test. Should succeed.
--- prop_SimpleHoF = expectSuccess $ inferExp "\\f . \\x . f x" -- == Right ((TypeFlex "a" :=> TypeFlex "b") :=> TypeFlex "a" :=> TypeFlex "b")
-
--- -- | Test that new can receive unlinear bit. Should succeed.
--- prop_SimpleApp = expectSuccess . typecheck . run $ "b : QBit b = new 0"
-
--- -- | Test mixed tuple type is valid as long as equal duplicity. Should succeed.
--- prop_FunInTup = expectSuccess $ inferExp "(\\x.(x,x,x,x,0,1)) new"
-
--- -- | Test general if statement. Should succeed.
--- prop_IfGeneral = expectSuccess $ inferExp "\\x. if x then 0 else 1"
-
--- -- | Should succeed: Right !Bit ⊸ !(Bit ⊗ Bit)
--- prop_DupIf = expectSuccess $ inferExp "\\x.if x then (x,x) else (x,x)"
-
--- -- | 
--- prop_IfSig = expectSuccess $ typecheck . run $ "f : !Bit -o !Bit " 
---                                             ++ "f x = if x then 0 else 1"
-
--- -- | Test that we can infer a general type for x. Should succeed. 
--- prop_EqDup = expectSuccess $ inferExp "\\x.(x,0)"
-
-
--- -- | Test that x and y get same flex id and that it type checks. Should succeed
--- prop_letFunConst = inferExp "\\x.\\y.let (a,b) = (x,y) in a" === Right (TypeFlex 5 (TypeFlex 3 (TypeVar "a") :=> TypeFlex 4 (TypeFlex 3 (TypeVar "b") :=> TypeFlex 3 (TypeVar "a"))))
-
-
+-- | Test that let picks out correct element in big let.
+prop_letFunConstBig = expectSuccess . tcStr $ "main : !Bit >< T main = let (a,b,c) = (0,new,*) in (a,c)" --inferExp "\\x.\\y.let (a,b) = (x,y) in a" === Right (TypeFlex 5 (TypeFlex 3 (TypeVar "a") :=> TypeFlex 4 (TypeFlex 3 (TypeVar "b") :=> TypeFlex 3 (TypeVar "a"))))
 
 -- -- | Tests nested let statements with general types. should succeed.
--- prop_NestLet = inferExp "\\x . let (a,b) = x in let (b,c) = b in (a,b,c)" ===  Right (TypeFlex 5 (TypeFlex 4 (TypeVar "a" :>< TypeVar "b" :>< TypeVar "c") :=> TypeFlex 4 (TypeVar "a" :>< TypeVar "b" :>< TypeVar "c")))
+prop_nestLet = expectSuccess . tcStr $ "main: Bit >< Bit >< Bit >< T main = let(a,b) = (0,0,0,*) in let (b,c) = b in (a,b,c)"
 
--- -- | Tests that simple let-statements infers correct type. Should succeed.
--- prop_LeftLet = inferExp "let (a,b) = (*, 0) in a" === Right (TypeDup TypeUnit)
--- prop_RightLet = inferExp "let (a,b) = (*, 0) in b" === Right (TypeDup TypeBit)
--- prop_ConstLet = inferExp "let (a, b) = (0, 1) in a" === Right (TypeFlex 1 TypeBit)
+-- | Tests that simple let-statements infers correct type. Should succeed.
+prop_leftLet = expectSuccess . tcStr $ "main: T main = let (a,b) = (*, 0) in a"
+prop_rightLet = expectSuccess . tcStr $ "main: !Bit main = let (a,b) = (*, 0) in b"
+prop_constLet = expectSuccess . tcStr $ "main: !Bit main = let (a,b) = (0, 1) in a"
 
+-- | Test that double bang tuple move bang out.
+prop_dupBit = expectSuccess . tcStr $ "main: !(Bit >< Bit) main = (0, 0)"
 
--- -- | Test that the inferred type of a simple bit tuple is correct. Should succeed.
--- prop_dupBit = inferExp "(0, 0)" === Right (TypeFlex 1 (TypeBit :>< TypeBit))
+prop_linOuterIf = expectSuccess . tcStr $ "f : Bit f = 0"
+                                        ++ "g : Bit g = if 1 then f else f"
 
--- -- | Test that a general function gets a flexible type. Should succeed.
--- prop_DupFlexExp = inferExp "\\x. \\y. (x,y)" === Right (TypeFlex 3 (TypeFlex 1 a :=> TypeFlex 2 (TypeFlex 1 b :=> TypeFlex 1 (a :>< b))))
---     where
---         a = TypeVar "a"
---         b = TypeVar "b"
+-- | Test that the duplicity can be mixed.
+prop_linDupExp = expectSuccess . tcStr $ "main : Bit -o !Bit >< QBit main x = (0, new 0)"
 
--- -- | Test that the duplicity is the same for all elements in a tuple. Should succeed.
--- prop_DupExp = inferExp "\\x.(x,0)" === Right (TypeFlex 2 (TypeFlex 1 a :=> TypeFlex 1 (a :>< TypeBit)))
---     where
---         a = TypeVar "a"
-
--- -- | Test that the duplicity is the same for all elements in a tuple. Should succeed.
--- prop_LinExp = inferExp "\\x.(x,new 0)" === Right (TypeFlex 3 (a :=> a :>< TypeQBit))
---     where
---         a = TypeVar "a"
-
--- -- | Test that the duplicity is the same for all elements in a tuple. Should succeed.
--- prop_LinExp2 = inferExp "\\x.(new 0, x)" === Right (TypeFlex 3 (a :=> TypeQBit :>< a))
---     where
---         a = TypeVar "a"
-        
--- -- | Test that the duplicity is the same for all elements in a tuple. Should succeed.
--- prop_linLinExp = inferExp "(new 0, new 0)" === Right (TypeQBit :>< TypeQBit)
+-- | Test double qubit tuple.
+prop_doubleQubit= expectSuccess . tcStr $ "main : (QBit >< QBit) main = (new 0, new 0)"
 
 
 -- --------------- Tests that should fail -------------------------------
@@ -337,3 +282,21 @@ runTests = $quickCheckAll
 
 -- -- not working, problem when we say that x must be duplicable, should work?
 -- stProb2 = inferExp "(\\x . (new x, new x)) 0"
+
+return []
+
+-- Run all tests 
+runTests :: IO Bool
+runTests = $quickCheckAll
+
+-- --- Test that should fail (throw an exception)
+-- expectErrorWith :: TypeError -> Either TypeError t -> Property
+-- expectErrorWith err res = case res of 
+--     Left err' -> property (err == err')
+--     Right _   -> property False  
+
+
+-- expectSuccess :: Either e t -> Property 
+-- expectSuccess = property . isRight
+
+-- -------------- Tests that should succeed ------------------------------
