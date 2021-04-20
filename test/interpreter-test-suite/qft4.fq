@@ -1,0 +1,2 @@
+main : Bit >< Bit >< Bit >< Bit
+main = let (x,y,z,w) = QFTI4 (QFT4 ((new 0), (new 1), (new 0), (new 1))) in (meas x, meas y, meas z, meas w) -- (0,1,0,1)

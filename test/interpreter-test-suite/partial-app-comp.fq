@@ -1,7 +1,7 @@
 main : Bit 
 main = measureFst (multiple (new 1, new 1)) -- 0 
 
-comp : (QBit >< QBit -o QBit >< QBit) -o (QBit >< QBit -o QBit >< QBit) -o ((QBit >< QBit) -o (QBit >< QBit))
+comp : ((QBit >< QBit) -o (QBit >< QBit)) -o ((QBit >< QBit) -o (QBit >< QBit)) -o ((QBit >< QBit) -o (QBit >< QBit))
 comp f g = \x: QBit >< QBit . f (g x)
 
 multiple : (QBit >< QBit) -o (QBit >< QBit)
