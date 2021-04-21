@@ -42,7 +42,7 @@ tests =
   [ 
     ("cnot.fq", "0"),
     ("equals.fq", "1"),
-    ("higher-order-function.fq","(0,1)"),
+    ("higher-order-function.fq","⟨0,1⟩"),
     ("id.fq", "1"),
     ("let-tup-q.fq", "0"),
     ("let-tup.fq", "0"),
@@ -64,9 +64,14 @@ tests =
     ("teleport.fq", "1"),
     ("nested-let.fq", "0"),
     ("deutsch.fq", "1"),
-    -- ("qpe.fq", "(0,0,1)")
+    -- ("qpe.fq", "⟨0,0,1⟩")
     -- TODO ("toffoli.fq")
     -- TODO ("fredkin.fq",  "0"),
+    -- TODO ("qft1.fq",     "0"),
+    ("qft5.fq",     "⟨1,⟨0,⟨1,⟨0,1⟩⟩⟩⟩"),
+    ("qft4.fq",     "⟨0,⟨1,⟨0,1⟩⟩⟩"),
+    ("qft3.fq",     "⟨0,⟨1,0⟩⟩"),
+    ("qft2.fq",     "⟨0,1⟩"),
     ("qft1.fq",     "0"),
     ("tdagger.fq",  "1")
   ]

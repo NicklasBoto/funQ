@@ -15,7 +15,6 @@ import Parser.Abs as Abs
       Bit(BOne, BZero)  )
 import qualified AST.AST as A
 import Parser.Print
-import Debug.Trace
 
 -- TODO:
 -- fredkin/toffoli
@@ -57,10 +56,10 @@ instance Show Value where
     show (VTup a b)    = "⟨" ++ show a ++ "," ++ show b ++ "⟩"
     show (VQBit q)     = "p" ++ show (link q)
     show VUnit         = "*"
-    show (VFunc _ t e) = show (A.Abs t e)
+    show (VAbs _ t e) = show (A.Abs t e)
     show VNew          = "new"
     show VMeas         = "measure"
-    show (VGate g)     = "VGate " ++ printTree g
+    show (VGate g)     = printTree g
 
 
 
@@ -87,7 +86,7 @@ data Value
     | VQBit Q.QBit
     | VUnit
     | VTup Value Value
-    | VFunc [Value] A.Type A.Term
+    | VAbs [Value] A.Type A.Term
     | VNew 
     | VMeas
     | VGate Gate
@@ -154,14 +153,11 @@ eval env = \case
             v2 <- eval env e2
             v1 <- eval env e1
             case v1 of
-                VFunc v1 _ a -> eval env{ values = v2 : v1 ++ values env } a
+                VAbs v1 _ a -> eval env{ values = v2 : v1 ++ values env } a
                 VNew -> eval env{ values = v2 : values env } (A.App A.New (A.Idx 0))
                 VMeas -> eval env{ values = v2 : values env } (A.App A.Meas (A.Idx 0))
                 (VGate g) -> eval env{ values = v2 : values env } (A.App (A.Gate g) (A.Idx 0))
-                _ -> error "other"
-            
-            -- VFunc v1 _ a <- trace ("e1: " ++ show e1 ++ ", env: " ++ show env) eval env e1
-            -- eval env{ values = v2 : v1 ++ values env } a
+                _ -> throwError $ Fail $ "Can't apply " ++ show v1 ++ " with " ++ show v2
 
     A.IfEl bit l r -> do
         VBit b <- eval env bit
@@ -171,11 +167,8 @@ eval env = \case
          VTup x1 x2 <- eval env eq
          eval env{ values = x2 : x1 : values env } inn
 
-    A.Abs t e  -> return $ VFunc (values env) t e
+    A.Abs t e  -> return $ VAbs (values env) t e
     A.Unit   -> return VUnit
-    -- A.Gate g -> return $ VFunc (values env) A.TypeQBit (A.App (A.Gate g) (A.Idx 0))
-    -- A.New    -> return $ VFunc (values env) A.TypeQBit (A.App A.New (A.Idx 0))
-    -- A.Meas   -> return $ VFunc (values env) A.TypeQBit (A.App A.Meas (A.Idx 0))
     A.Gate g -> return $ VGate g 
     A.New    -> return VNew
     A.Meas   -> return VMeas

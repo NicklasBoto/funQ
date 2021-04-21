@@ -275,8 +275,8 @@ inferGate g = TypeDup (arg :=> arg)
                 GQFTI3 -> 3 -- temp
                 GQFT4  -> 4 -- temp
                 GQFTI4 -> 4 -- temp
-                GQFT5  -> 4 -- temp
-                GQFTI5 -> 4 -- temp
+                GQFT5  -> 5 -- temp
+                GQFTI5 -> 5 -- temp
                 GFRDK  -> 3
                 GTOF   -> 3
                 GSWP   -> 2

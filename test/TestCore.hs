@@ -76,9 +76,9 @@ applyGate' qs g qbt = do
 -- cnot to be used with applyGate for testing purpose
 cnot' :: (QBit -> QM QBit)
 cnot' q = do
-    let p = if link q /= 0 then Ptr $ link q + 1 else Ptr $ link q - 1
+    let p = if link q == 0 then Ptr $ link q + 1 else Ptr $ link q - 1
     (q',p') <- cnot (q, p)
-    return p' -- returns pointer to the first qubit only, dummy implementation for matching of types 
+    return p' -- returns pointer to the first qubit only, dummy implementation for matching of types  -- trace ("q in cnot': " ++ show q ++ "p in cnot': " ++ show p ++ " p': " ++ show p' ++ " q':" ++ show q') 
 
 -- Returns index between zero and size of QState
 --getRandQbit :: Int -> QM QBit
