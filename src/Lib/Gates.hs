@@ -148,7 +148,7 @@ hadamard = runGate hmat
 --
 -- ![phase](images/s.PNG)
 phase :: QBit -> QM QBit
-phase = runGate $ phasemat pi/2
+phase = runGate $ phasemat (1/4)
 
 -- | Pi/8 gate (T gate)
 --
@@ -159,11 +159,11 @@ phase = runGate $ phasemat pi/2
 --
 -- ![pi8](images/t.PNG)
 phasePi8 :: QBit -> QM QBit
-phasePi8 = runGate $ phasemat (pi/4)
+phasePi8 = runGate $ phasemat (1/8)
 
 -- | Hermetian adjoint of T gate (`phasePi8`)
 tdagger :: QBit -> QM QBit
-tdagger = runGate $ phasemat (-pi/4)
+tdagger = runGate $ phasemat (-1/8)
 
 -- | Identity gate
 --
@@ -226,14 +226,13 @@ crot k (c, t) = do
   return (c,t)
 
 -- | Quantum fourier transform
-qft :: [QBit] -> QM [QBit]
-qft [] = errorWithoutStackTrace "Cannot perform QFT on zero qubits"
-qft qs@((Ptr q):_)
+qft :: Int -> [QBit] -> QM [QBit]
+qft _ [] = errorWithoutStackTrace "Cannot perform QFT on zero qubits"
+qft n qs@((Ptr q):_)
   | notAdjacent (map link qs) =
      errorWithoutStackTrace "Cannot perform QFT on non-adjacent qubits"
   | otherwise = do
       (_, size) <- getState
-      let n = length qs
       let matrixQFT = qftMatrix (2 ^ n)
       let ids = replicate (size - n + 1) (ident 2)
       let masqwe = changeAt matrixQFT q ids
@@ -241,14 +240,13 @@ qft qs@((Ptr q):_)
       return qs
 
 -- | Inverse quantum fourier transform
-qftDagger :: [QBit] -> QM [QBit]
-qftDagger [] = errorWithoutStackTrace "Cannot perform QFT on zero qubits"
-qftDagger qs@((Ptr q):_)
+qftDagger :: Int -> [QBit] -> QM [QBit]
+qftDagger _ [] = errorWithoutStackTrace "Cannot perform QFT on zero qubits"
+qftDagger n qs@((Ptr q):_)
   | notAdjacent (map link qs) =
      errorWithoutStackTrace "Cannot perform QFT on non-adjacent qubits"
   | otherwise = do
       (_, size) <- getState
-      let n = length qs
       let matrixQFT = tr $ qftMatrix (2 ^ n)
       let ids = replicate (size - n + 1) (ident 2)
       let masqwe = changeAt matrixQFT q ids

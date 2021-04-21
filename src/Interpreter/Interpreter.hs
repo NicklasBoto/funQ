@@ -10,7 +10,8 @@ import Lib.QM (link)
 import Data.Functor ( (<&>) )
 import Parser.Abs as Abs
     ( Gate(GS, GH, GX, GY, GZ, GI, GT, GCNOT, GTOF, GSWP, GFRDK, GQFT, GQFTI, 
-      GCR2, GCR2D, GCR3, GCR3D, GCR4, GCR4D, GCR8, GCR8D), 
+      GCR, GCRD, GCR2, GCR2D, GCR3, GCR3D, GCR4, GCR5, GCR5D, GCR4D, GCR8, GCR8D,
+      GQFT,GQFTI,GQFT2,GQFTI2,GQFT3,GQFTI3,GQFT4,GQFTI4,GQFT5,GQFTI5), 
       Bit(BOne, BZero)  )
 import qualified AST.AST as A
 import Parser.Print
@@ -42,7 +43,7 @@ data ValueError
      deriving Show
 
 type Sig = M.Map String A.Term
-type Eval a = ExceptT ValueError Q.QM a
+type Eval = ExceptT ValueError Q.QM
 
 -- | Environment type, stores bound variables & functions
 data Env = Env {
@@ -55,7 +56,7 @@ instance Show Value where
     show (VTup a b)    = "⟨" ++ show a ++ "," ++ show b ++ "⟩"
     show (VQBit q)     = "p" ++ show (link q)
     show VUnit         = "*"
-    show (VFunc _ t e) = show (A.Abs t e)
+    show (VAbs _ t e) = show (A.Abs t e)
     show VNew          = "new"
     show VMeas         = "measure"
     show (VGate g)     = printTree g
@@ -85,7 +86,7 @@ data Value
     | VQBit Q.QBit
     | VUnit
     | VTup Value Value
-    | VFunc [Value] A.Type A.Term
+    | VAbs [Value] A.Type A.Term
     | VNew 
     | VMeas
     | VGate Gate
@@ -110,27 +111,37 @@ eval env = \case
 
     A.App e1 e2 -> case e1 of
         A.Gate g -> case g of
-            Abs.GH    -> runGate  Q.hadamard e2 env
-            Abs.GX    -> runGate  Q.pauliX e2 env
-            Abs.GY    -> runGate  Q.pauliY e2 env
-            Abs.GZ    -> runGate  Q.pauliZ e2 env
-            Abs.GI    -> runGate  Q.identity e2 env
-            Abs.GT    -> runGate  Q.phasePi8 e2 env
-            Abs.GS    -> runGate  Q.phase e2 env
-            Abs.GCNOT -> run2Gate Q.cnot e2 env
-            Abs.GTOF  -> run3Gate Q.toffoli e2 env
-            Abs.GSWP  -> run2Gate Q.swap e2 env
-            Abs.GFRDK -> run3Gate Q.fredkin e2 env
-            Abs.GQFT  -> runQFT   Q.qft e2 env
-            Abs.GQFTI -> runQFT   Q.qftDagger e2 env
-            Abs.GCR2  -> run2Gate (`Q.cphase` ( 1/4)) e2 env
-            Abs.GCR2D -> run2Gate (`Q.cphase` (-1/4)) e2 env
-            Abs.GCR3  -> run2Gate (`Q.cphase` ( 1/3)) e2 env
-            Abs.GCR3D -> run2Gate (`Q.cphase` (-1/3)) e2 env
-            Abs.GCR4  -> run2Gate (`Q.cphase` ( 1/8)) e2 env
-            Abs.GCR4D -> run2Gate (`Q.cphase` (-1/8)) e2 env
-            Abs.GCR8  -> run2Gate (`Q.cphase` ( 1/16)) e2 env
-            Abs.GCR8D -> run2Gate (`Q.cphase` (-1/16)) e2 env
+            Abs.GH     -> runGate  Q.hadamard e2 env
+            Abs.GX     -> runGate  Q.pauliX e2 env
+            Abs.GY     -> runGate  Q.pauliY e2 env
+            Abs.GZ     -> runGate  Q.pauliZ e2 env
+            Abs.GI     -> runGate  Q.identity e2 env
+            Abs.GT     -> runGate  Q.phasePi8 e2 env
+            Abs.GS     -> runGate  Q.phase e2 env
+            Abs.GCNOT  -> run2Gate Q.cnot e2 env
+            Abs.GTOF   -> run3Gate Q.toffoli e2 env
+            Abs.GSWP   -> run2Gate Q.swap e2 env
+            Abs.GFRDK  -> run3Gate Q.fredkin e2 env
+            Abs.GQFT   -> runQFT   (Q.qft 1) e2 env
+            Abs.GQFTI  -> runQFT   (Q.qftDagger 1) e2 env
+            Abs.GQFT2  -> runQFT   (Q.qft 2) e2 env
+            Abs.GQFTI2 -> runQFT   (Q.qftDagger 2) e2 env
+            Abs.GQFT3  -> runQFT   (Q.qft 3) e2 env
+            Abs.GQFTI3 -> runQFT   (Q.qftDagger 3) e2 env
+            Abs.GQFT4  -> runQFT   (Q.qft 4) e2 env
+            Abs.GQFTI4 -> runQFT   (Q.qftDagger 4) e2 env
+            Abs.GQFT5  -> runQFT   (Q.qft 5) e2 env
+            Abs.GQFTI5 -> runQFT   (Q.qftDagger 5) e2 env
+            Abs.GCR    -> run2Gate (`Q.cphase` ( 1/2)) e2 env
+            Abs.GCRD   -> run2Gate (`Q.cphase` (-1/2)) e2 env
+            Abs.GCR2   -> run2Gate (`Q.cphase` ( 1/4)) e2 env
+            Abs.GCR2D  -> run2Gate (`Q.cphase` (-1/4)) e2 env
+            Abs.GCR3   -> run2Gate (`Q.cphase` ( 1/3)) e2 env
+            Abs.GCR3D  -> run2Gate (`Q.cphase` (-1/3)) e2 env
+            Abs.GCR4   -> run2Gate (`Q.cphase` ( 1/8)) e2 env
+            Abs.GCR4D  -> run2Gate (`Q.cphase` (-1/8)) e2 env
+            Abs.GCR8   -> run2Gate (`Q.cphase` ( 1/16)) e2 env
+            Abs.GCR8D  -> run2Gate (`Q.cphase` (-1/16)) e2 env
 
         A.New -> do
             VBit b' <- eval env e2
@@ -140,8 +151,13 @@ eval env = \case
             lift $ VBit <$> Q.measure q'
         _ -> do
             v2 <- eval env e2
-            VFunc v1 _ a <- eval env e1
-            eval env{ values = v2 : v1 ++ values env } a
+            v1 <- eval env e1
+            case v1 of
+                VAbs v1 _ a -> eval env{ values = v2 : v1 ++ values env } a
+                VNew -> eval env{ values = v2 : values env } (A.App A.New (A.Idx 0))
+                VMeas -> eval env{ values = v2 : values env } (A.App A.Meas (A.Idx 0))
+                (VGate g) -> eval env{ values = v2 : values env } (A.App (A.Gate g) (A.Idx 0))
+                _ -> throwError $ Fail $ "Can't apply " ++ show v1 ++ " with " ++ show v2
 
     A.IfEl bit l r -> do
         VBit b <- eval env bit
@@ -151,11 +167,8 @@ eval env = \case
          VTup x1 x2 <- eval env eq
          eval env{ values = x2 : x1 : values env } inn
 
-    A.Abs t e  -> return $ VFunc (values env) t e
+    A.Abs t e  -> return $ VAbs (values env) t e
     A.Unit   -> return VUnit
-    -- A.Gate g -> return $ VFunc (values env) A.TypeQBit (A.App (A.Gate g) (A.Idx 0))
-    -- A.New    -> return $ VFunc (values env) A.TypeQBit (A.App A.New (A.Idx 0))
-    -- A.Meas   -> return $ VFunc (values env) A.TypeQBit (A.App A.Meas (A.Idx 0))
     A.Gate g -> return $ VGate g 
     A.New    -> return VNew
     A.Meas   -> return VMeas

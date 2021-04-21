@@ -88,7 +88,7 @@ test_rev g = TestCore.run $ do
 -- | Applies the reversibility tests to all gates that matches type signature of QBit -> QM QBit.
 test_rev_gates :: IO Bool
 test_rev_gates = liftM and $ mapM test_rev gates
-    where gates = [hadamard, pauliX, pauliY, pauliZ, TestCore.phase, phasePi8, identity]
+    where gates = [TestCore.phase, hadamard, pauliX, pauliY, pauliZ, phasePi8, identity]
 
 -- | Test reversibility of cnot 
 test_rev_cnot :: IO Bool 

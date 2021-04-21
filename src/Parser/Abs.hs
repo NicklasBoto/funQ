@@ -3,23 +3,13 @@
 
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
+-- | The abstract syntax of language Parser.
+
 module Parser.Abs where
 
-import Prelude (Char, Double, Integer, String)
+import Prelude (String)
 import qualified Prelude as C (Eq, Ord, Show, Read)
 import qualified Data.String
-
-newtype FunVar = FunVar String
-  deriving (C.Eq, C.Ord, C.Show, C.Read, Data.String.IsString)
-
-newtype Var = Var String
-  deriving (C.Eq, C.Ord, C.Show, C.Read, Data.String.IsString)
-
-newtype GateIdent = GateIdent String
-  deriving (C.Eq, C.Ord, C.Show, C.Read, Data.String.IsString)
-
-newtype Lambda = Lambda String
-  deriving (C.Eq, C.Ord, C.Show, C.Read, Data.String.IsString)
 
 data Program = PDef [FunDec]
   deriving (C.Eq, C.Ord, C.Show, C.Read)
@@ -77,15 +67,38 @@ data Gate
     | GFRDK
     | GQFT
     | GQFTI
-    | GCT
+    | GQFT2
+    | GQFTI2
+    | GQFT3
+    | GQFTI3
+    | GQFT4
+    | GQFTI4
+    | GQFT5
+    | GQFTI5
+    | GCR
+    | GCRD
     | GCR2
     | GCR2D
     | GCR3
     | GCR3D
     | GCR4
     | GCR4D
+    | GCR5
+    | GCR5D
     | GCR8
     | GCR8D
     | GGate GateIdent
   deriving (C.Eq, C.Ord, C.Show, C.Read)
+
+newtype FunVar = FunVar String
+  deriving (C.Eq, C.Ord, C.Show, C.Read, Data.String.IsString)
+
+newtype Var = Var String
+  deriving (C.Eq, C.Ord, C.Show, C.Read, Data.String.IsString)
+
+newtype GateIdent = GateIdent String
+  deriving (C.Eq, C.Ord, C.Show, C.Read, Data.String.IsString)
+
+newtype Lambda = Lambda String
+  deriving (C.Eq, C.Ord, C.Show, C.Read, Data.String.IsString)
 

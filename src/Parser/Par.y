@@ -24,8 +24,12 @@ module Parser.Par
   , pType
   , pGate
   ) where
+
+import Prelude
+
 import qualified Parser.Abs
 import Parser.Lex
+
 }
 
 %name pProgram Program
@@ -48,7 +52,7 @@ import Parser.Lex
 %name pType Type
 %name pGate Gate
 -- no lexer declaration
-%monad { Either String } { (>>=) } { return }
+%monad { Err } { (>>=) } { return }
 %tokentype {Token}
 %token
   '!' { PT _ (TS _ 1) }
@@ -64,33 +68,44 @@ import Parser.Lex
   '><' { PT _ (TS _ 11) }
   'Bit' { PT _ (TS _ 12) }
   'CNOT' { PT _ (TS _ 13) }
-  'CR2' { PT _ (TS _ 14) }
-  'CR2D' { PT _ (TS _ 15) }
-  'CR3' { PT _ (TS _ 16) }
-  'CR3D' { PT _ (TS _ 17) }
-  'CR4' { PT _ (TS _ 18) }
-  'CR4D' { PT _ (TS _ 19) }
-  'CR8' { PT _ (TS _ 20) }
-  'CR8D' { PT _ (TS _ 21) }
-  'CT' { PT _ (TS _ 22) }
-  'FREDKIN' { PT _ (TS _ 23) }
-  'H' { PT _ (TS _ 24) }
-  'I' { PT _ (TS _ 25) }
-  'QBit' { PT _ (TS _ 26) }
-  'QFT' { PT _ (TS _ 27) }
-  'QFTI' { PT _ (TS _ 28) }
-  'S' { PT _ (TS _ 29) }
-  'SWAP' { PT _ (TS _ 30) }
-  'T' { PT _ (TS _ 31) }
-  'TOFFOLI' { PT _ (TS _ 32) }
-  'X' { PT _ (TS _ 33) }
-  'Y' { PT _ (TS _ 34) }
-  'Z' { PT _ (TS _ 35) }
-  'else' { PT _ (TS _ 36) }
-  'if' { PT _ (TS _ 37) }
-  'in' { PT _ (TS _ 38) }
-  'let' { PT _ (TS _ 39) }
-  'then' { PT _ (TS _ 40) }
+  'CR' { PT _ (TS _ 14) }
+  'CR2' { PT _ (TS _ 15) }
+  'CR2D' { PT _ (TS _ 16) }
+  'CR3' { PT _ (TS _ 17) }
+  'CR3D' { PT _ (TS _ 18) }
+  'CR4' { PT _ (TS _ 19) }
+  'CR4D' { PT _ (TS _ 20) }
+  'CR5' { PT _ (TS _ 21) }
+  'CR5D' { PT _ (TS _ 22) }
+  'CR8' { PT _ (TS _ 23) }
+  'CR8D' { PT _ (TS _ 24) }
+  'CRD' { PT _ (TS _ 25) }
+  'FREDKIN' { PT _ (TS _ 26) }
+  'H' { PT _ (TS _ 27) }
+  'I' { PT _ (TS _ 28) }
+  'QBit' { PT _ (TS _ 29) }
+  'QFT' { PT _ (TS _ 30) }
+  'QFT2' { PT _ (TS _ 31) }
+  'QFT3' { PT _ (TS _ 32) }
+  'QFT4' { PT _ (TS _ 33) }
+  'QFT5' { PT _ (TS _ 34) }
+  'QFTI' { PT _ (TS _ 35) }
+  'QFTI2' { PT _ (TS _ 36) }
+  'QFTI3' { PT _ (TS _ 37) }
+  'QFTI4' { PT _ (TS _ 38) }
+  'QFTI5' { PT _ (TS _ 39) }
+  'S' { PT _ (TS _ 40) }
+  'SWAP' { PT _ (TS _ 41) }
+  'T' { PT _ (TS _ 42) }
+  'TOFFOLI' { PT _ (TS _ 43) }
+  'X' { PT _ (TS _ 44) }
+  'Y' { PT _ (TS _ 45) }
+  'Z' { PT _ (TS _ 46) }
+  'else' { PT _ (TS _ 47) }
+  'if' { PT _ (TS _ 48) }
+  'in' { PT _ (TS _ 49) }
+  'let' { PT _ (TS _ 50) }
+  'then' { PT _ (TS _ 51) }
   L_FunVar { PT _ (T_FunVar $$) }
   L_Var { PT _ (T_Var $$) }
   L_GateIdent { PT _ (T_GateIdent $$) }
@@ -98,16 +113,16 @@ import Parser.Lex
 
 %%
 
-FunVar :: { Parser.Abs.FunVar}
+FunVar :: { Parser.Abs.FunVar }
 FunVar  : L_FunVar { Parser.Abs.FunVar $1 }
 
-Var :: { Parser.Abs.Var}
+Var :: { Parser.Abs.Var }
 Var  : L_Var { Parser.Abs.Var $1 }
 
-GateIdent :: { Parser.Abs.GateIdent}
+GateIdent :: { Parser.Abs.GateIdent }
 GateIdent  : L_GateIdent { Parser.Abs.GateIdent $1 }
 
-Lambda :: { Parser.Abs.Lambda}
+Lambda :: { Parser.Abs.Lambda }
 Lambda  : L_Lambda { Parser.Abs.Lambda $1 }
 
 Program :: { Parser.Abs.Program }
@@ -193,19 +208,32 @@ Gate : 'H' { Parser.Abs.GH }
      | 'FREDKIN' { Parser.Abs.GFRDK }
      | 'QFT' { Parser.Abs.GQFT }
      | 'QFTI' { Parser.Abs.GQFTI }
-     | 'CT' { Parser.Abs.GCT }
+     | 'QFT2' { Parser.Abs.GQFT2 }
+     | 'QFTI2' { Parser.Abs.GQFTI2 }
+     | 'QFT3' { Parser.Abs.GQFT3 }
+     | 'QFTI3' { Parser.Abs.GQFTI3 }
+     | 'QFT4' { Parser.Abs.GQFT4 }
+     | 'QFTI4' { Parser.Abs.GQFTI4 }
+     | 'QFT5' { Parser.Abs.GQFT5 }
+     | 'QFTI5' { Parser.Abs.GQFTI5 }
+     | 'CR' { Parser.Abs.GCR }
+     | 'CRD' { Parser.Abs.GCRD }
      | 'CR2' { Parser.Abs.GCR2 }
      | 'CR2D' { Parser.Abs.GCR2D }
      | 'CR3' { Parser.Abs.GCR3 }
      | 'CR3D' { Parser.Abs.GCR3D }
      | 'CR4' { Parser.Abs.GCR4 }
      | 'CR4D' { Parser.Abs.GCR4D }
+     | 'CR5' { Parser.Abs.GCR5 }
+     | 'CR5D' { Parser.Abs.GCR5D }
      | 'CR8' { Parser.Abs.GCR8 }
      | 'CR8D' { Parser.Abs.GCR8D }
      | GateIdent { Parser.Abs.GGate $1 }
 {
 
-happyError :: [Token] -> Either String a
+type Err = Either String
+
+happyError :: [Token] -> Err a
 happyError ts = Left $
   "syntax error at " ++ tokenPos ts ++
   case ts of
@@ -213,6 +241,8 @@ happyError ts = Left $
     [Err _] -> " due to lexer error"
     t:_     -> " before `" ++ (prToken t) ++ "'"
 
+myLexer :: String -> [Token]
 myLexer = tokens
+
 }
 
