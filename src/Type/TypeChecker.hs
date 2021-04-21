@@ -8,6 +8,7 @@ import Control.Monad.State
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.String
+import Data.Maybe
 
 runCheck :: Check a -> Either TypeError a
 runCheck c = evalState (runReaderT (runExceptT c) M.empty) S.empty
@@ -26,7 +27,11 @@ tcStr = typecheck . run
 
 inferExp :: String -> Either TypeError Type
 inferExp s = runCheck $ infer p
-    where [Func _ _ p] = run $ "f : a f = " ++ s
+    where [Func _ _ p] = run $ "f : T f = " ++ s
+
+parseExp :: String -> Term
+parseExp s = p
+    where [Func _ _ p] = run $ "f : T f = " ++ s
 
 -- | All type errors that can occur.
 data TypeError
@@ -150,7 +155,9 @@ inferTerm ctx (Abs t e) = do
     top <- ask
     checkLinear e t
     et <- inferTerm (t:ctx) e
-    if any (\idx -> isLinear (ctx !! fromIntegral idx)) (freeVars (Abs t e)) 
+    let boundLin = any (isLinear . (ctx !!) . fromIntegral) (freeVars (Abs t e))
+    let freeLin = any isLinear $ mapMaybe (`M.lookup` top) (names e)
+    if boundLin || freeLin
         then return (t :=> et)
         else return $ TypeDup (t :=> et)
 inferTerm ctx (Let eq inn) = do
@@ -257,9 +264,18 @@ freeVars = freeVars' 0
         freeVars' n (Tup l r)    = freeVars' n l ++ freeVars' n r
         freeVars' n (App f a)    = freeVars' n f ++ freeVars' n a
         freeVars' n (Let eq inn) = freeVars' n eq ++ freeVars' (n+2) inn
-        freeVars' n (Abs _ e)    = freeVars' (n+2) e
+        freeVars' n (Abs _ e)    = freeVars' (n+1) e
         freeVars' n (Idx i)      = [n - i | i >= n]
         freeVars' _ _            = []
+
+-- | Finds all functions used in a term.
+names :: Term -> [String]
+names (Tup l r)    = names l ++ names r
+names (App f a)    = names f ++ names a
+names (Let eq inn) = names eq ++ names inn
+names (Abs _ e)    = names e
+names (Fun f)      = [f]
+names _            = []
 
 -- | Infer type of a gate.
 inferGate :: Gate -> Type
