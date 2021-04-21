@@ -1,2 +1,6 @@
-f : a >< b -o a
-fst b = let (x,y) = b in x
+main : Bit 
+main = 0
+
+
+felName : Bit 
+hej  = 0

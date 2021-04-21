@@ -19,6 +19,10 @@ import Control.Exception (try)
 import qualified Type.HM as HM
 import Data.List
 
+import Parser.Abs
+
+import Debug.Trace
+
 -- TODO:
 -- * fixa partial application
 -- * sugar for multiple arguments 
@@ -81,9 +85,12 @@ runIO path = runExceptT (run path) >>= \case
 toErr :: (i -> Either e v) -> (e -> Error) -> (v -> o) -> i -> Run o
 toErr f l r = ExceptT . return . bimap l r . f
 
-run :: FilePath -> Run I.Value
-run path = readfile path >>= parse >>= typecheck >>= eval
+--run :: FilePath -> Run I.Value
+--run path = readfile path >>= parse >>= typecheck >>= eval
 
+run :: FilePath -> Run I.Value
+run path = readfile path >>= parse' >>= semanticAnalysis >>= convertAST >>= typecheck >>= eval
+ 
 runTerminalIO :: String -> IO ()
 runTerminalIO s = runExceptT (runTerminal s) >>= \case
   Left  err -> putStrLn $ "*** Exception, " ++ show err
@@ -99,7 +106,57 @@ readfile path = do
     Left  _ -> throwError $ NoSuchFile path
     Right s -> return s
 
+parse :: String -> Run A.Program
 parse = toErr (pProgram . myLexer) ParseError A.toIm
+
+parse' :: String -> Run Program
+parse' s = case (pProgram $ myLexer s) of 
+  Left err  -> throwError $ ParseError "gick mindre bra" -- todo error
+  Right b   -> return b
+
+convertAST :: Program -> Run A.Program
+convertAST = return . A.toIm 
+
+---- Semantic analysis
+-- flytta ut i egen fil
+-- error som e fint :) 
+semanticAnalysis :: Program -> Run Program
+semanticAnalysis p = funNameMatch p >>= anotherCheck 
+
+funNameMatch :: Program -> Run Program
+funNameMatch p@(PDef fs) = if (all check fs) then return p else throwError $ ParseError ""
+  where check :: FunDec -> Bool
+        check (FDecl (FunVar s) _ (FDef (Var s') _ _)) = (funName s) == s'
+        funName :: String -> String 
+        funName s = takeUntil " " (takeUntil ":" s)
+        print :: FunDec -> String 
+        print (FDecl (FunVar s) _ (FDef (Var s') _ _)) = ("s: " ++ s ++ " s': " ++ s') ++ (show $ s == s')
+
+takeUntil :: String -> String -> String
+takeUntil [] [] = []                           --don't need this
+takeUntil xs [] = [] 
+takeUntil [] ys = [] 
+takeUntil xs (y:ys) = if isPrefixOf xs (y:ys)
+                      then []
+                      else y:(takeUntil xs (tail (y:ys)))
+
+-- check main exist (remove main check from interpreter)
+
+
+-- duplicate function names (se typcheckaren)
+
+
+-- gateIdent blir fail! 
+
+
+-- Endast 0/1 (måste göra om grammar!)
+
+
+-- antalet argument är samma eller fler som antalet typer 
+
+anotherCheck :: Program -> Run Program 
+anotherCheck p = return p
+-- end 
 
 typecheck :: A.Program -> Run A.Program
 typecheck = toErr HM.typecheck TypeError . const <*> id
