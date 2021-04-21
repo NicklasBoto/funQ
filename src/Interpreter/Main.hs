@@ -13,11 +13,12 @@ import Control.Monad.Except
       ExceptT(..),
       mapExceptT,
       runExceptT,
-      withExceptT, replicateM )
+      withExceptT, replicateM, zipWithM )
 import Data.Bifunctor ( Bifunctor(bimap) )
 import Control.Exception (try)
 import qualified Type.TypeChecker as TC
 import Data.List
+import Data.Maybe
 
 -- TODO:
 -- * fixa partial application
@@ -107,9 +108,11 @@ runTerminal s = do
   typ <- toErr (TC.runCheck . TC.infer) TypeError id term
   val <- eval p
   return (val, typ)
-  
+
 eval :: A.Program -> Run I.Value
 eval = withExceptT ValueError . mapExceptT Q.run . I.interpret
+
+-- | Distribution testing code below
 
 rundistest :: FilePath -> IO ()
 rundistest path = do
@@ -119,27 +122,12 @@ rundistest path = do
     Right r  -> gatherResults r
 
 rundist :: FilePath -> Run [I.Value]
-rundist path = do 
+rundist path = do
   a <- readfile path >>= parse >>= typecheck
   evaldist a 10
 
-
 evaldist :: A.Program -> Int -> Run [I.Value]
 evaldist prg reps = replicateM reps $ (withExceptT ValueError . mapExceptT Q.run . I.interpret) prg
---   where 
-
-        -- sortera listan 
-        -- -> plocka ut unika element 
-        -- -> räkna antalet av de olika unika elementen i startlistan
-        -- -> konvertera till binärt
-        -- -> printa andelar 
--- input (1,0,1)
-
-exVTup :: I.Value
-exVTup = I.VTup (I.VBit 1) (I.VTup (I.VBit 0) (I.VBit 1))
-
-
-
 
 gatherResults :: [I.Value] -> IO ()
 gatherResults vals = do
@@ -166,8 +154,81 @@ stat len ((a,b):as) = (a, dub b/dub len, b) : stat len as
   where dub = fromIntegral . toInteger
 
 prettystats :: (Int, Double, Int) -> String
-prettystats (a,b,c) = concatMap show (toBin a) ++ ": " ++ "\t" ++ (show . truncateboi) b ++ "%" ++ "\t" ++ show c
+prettystats (a,b,c) = concatMap show ((fillzeros . toBin) a) ++ ": " ++ "\t" ++ (show . truncateboi) b ++ "%" ++ "\t" ++ show c
   where toBin 0 = []
         toBin n | n `mod` 2 == 1 = toBin (n `div` 2) ++ [1]
         toBin n | n `mod` 2 == 0 = toBin (n `div` 2) ++ [0]
         truncateboi d = (fromIntegral . truncate) (10000*(d :: Double))/100
+        fillzeros as = if length as == 4 then as else replicate (4 - length as) 0 ++ as
+
+
+-- | Adder testing code below, non-functional right now
+-- runAdderTest :: FilePath -> IO ()
+-- runAdderTest path = do
+--   ss <- readFile path
+--   let indsA = splitInto3 $ findinputinds ss "A"
+--   let indsB = splitInto3 $ findinputinds ss "B"
+--   let inpsA = splitInto3 (map show inputs1)
+--   let inpsB = splitInto3 (map show inputs2)
+--   res <- runExceptT (zipWithM4 (runAdder path) indsA indsB inpsA inpsB :: Run [[I.Value]])
+--   case res of
+--     Left err -> print err
+--     Right r  -> print r
+
+runAdder :: FilePath -> [Int] -> [Int] -> [String] -> [String] -> Run [I.Value]
+runAdder path indsA indsB inputsA inputsB = do
+  a <- liftIO $ readFile path -- >>= parse >>= typecheck
+  let b = applyInputs (words a) indsA inputsA
+  let c = unwords $ applyInputs b indsA inputsA
+  q <- parse c >>= typecheck
+  evaldist q 1
+
+  -- evaldist a 10
+-- ta första 3 av varje, applicera, kör, spara resultat, repetera
+-- tar in 3 av indexA, 3 av indexB, 3 av värdenA, 3 av värdenB, sträng; ger ut strängen
+
+splitInto3 :: [a] -> [[a]]
+splitInto3 []    = []
+splitInto3 [b]   = [[b]]
+splitInto3 [a,b] = [[a,b]]
+splitInto3 as    = let (a,b) = splitAt 3 as in a : splitInto3 b
+
+applyInputs :: [String] -> [Int] -> [String] -> [String]
+applyInputs ss inds inputs = foldl applyInput ss indputs
+  where indputs = zip inds inputs
+
+applyInput ::  [String] -> (Int, String) -> [String]
+applyInput ss (ind, inp)= replaceNth ss ind inp
+
+replaceNth :: [String] -> Int -> String -> [String]
+replaceNth [] _ _  = []
+replaceNth (x:xs) n newVal
+  | n == 0 = newVal:xs
+  | otherwise = x:replaceNth xs (n-1) newVal
+
+compareResults :: [I.Value] -> IO ()
+compareResults vals = undefined
+
+findinputinds :: String -> String -> [Int]
+findinputinds s which = inputA : inputA + 2 : [inputA + 4]
+  where inputA  = fromMaybe (-1) (elemIndex ("exInt" ++ which) ss)
+        ss      = words s
+
+inputs1, inputs2 :: [Int]
+inputs1 = map fst (inputslist 3)
+inputs2 = map snd (inputslist 3)
+
+inputslist :: Int -> [(Int, Int)]
+inputslist n = [(a,b) | a <- [0..2^n-1], b <- [0..2^n-1]]
+
+outputs :: [Int] -> [Int]
+outputs as = zipWith (+) inputs1 inputs2
+
+test :: IO [String]
+test = do
+  a <- readFile "test/interpreter-test-suite/qft-adder3.fq"
+  return $ words a
+
+toBin 0 = []
+toBin n | n `mod` 2 == 1 = toBin (n `div` 2) ++ [1]
+toBin n | n `mod` 2 == 0 = toBin (n `div` 2) ++ [0]
