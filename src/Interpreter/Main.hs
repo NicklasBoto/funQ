@@ -20,6 +20,7 @@ import qualified Type.HM as HM
 import Data.List
 
 import Parser.Abs
+import SemanticAnalysis.SemanticAnalysis as S
 
 import Debug.Trace
 
@@ -57,10 +58,11 @@ main = runInputT defaultSettings loop
 type Run a = ExceptT Error IO a
 
 data Error
-  = ParseError String
+  = ParseError S.SemanticError
   | TypeError HM.TypeError
   | ValueError I.ValueError
   | NoSuchFile FilePath
+  | SemanticError String
 
 instance Exception Error
 
@@ -117,52 +119,14 @@ parse' s = case (pProgram $ myLexer s) of
 convertAST :: Program -> Run A.Program
 convertAST = return . A.toIm 
 
----- Semantic analysis
--- flytta ut i egen fil
--- error som e fint :) 
-semanticAnalysis :: Program -> Run Program
-semanticAnalysis p = funNameMatch p >>= anotherCheck 
-
-funNameMatch :: Program -> Run Program
-funNameMatch p@(PDef fs) = if (all check fs) then return p else throwError $ ParseError ""
-  where check :: FunDec -> Bool
-        check (FDecl (FunVar s) _ (FDef (Var s') _ _)) = (funName s) == s'
-        funName :: String -> String 
-        funName s = takeUntil " " (takeUntil ":" s)
-        print :: FunDec -> String 
-        print (FDecl (FunVar s) _ (FDef (Var s') _ _)) = ("s: " ++ s ++ " s': " ++ s') ++ (show $ s == s')
-
-takeUntil :: String -> String -> String
-takeUntil [] [] = []                           --don't need this
-takeUntil xs [] = [] 
-takeUntil [] ys = [] 
-takeUntil xs (y:ys) = if isPrefixOf xs (y:ys)
-                      then []
-                      else y:(takeUntil xs (tail (y:ys)))
-
--- check main exist (remove main check from interpreter)
-
-
--- duplicate function names (se typcheckaren)
-
-
--- gateIdent blir fail! 
-
-
--- Endast 0/1 (måste göra om grammar!)
-
-
--- antalet argument är samma eller fler som antalet typer 
-
-anotherCheck :: Program -> Run Program 
-anotherCheck p = return p
--- end 
-
 typecheck :: A.Program -> Run A.Program
 typecheck = toErr HM.typecheck TypeError . const <*> id
 
 eval :: A.Program -> Run I.Value
 eval = withExceptT ValueError . mapExceptT Q.run . I.interpret
+
+semanticAnalysis :: Program -> Run Program 
+semanticAnalysis = toErr S.semanticAnalysis SemanticError . const <*> id
 
 rundistest :: FilePath -> IO ()
 rundistest path = do
