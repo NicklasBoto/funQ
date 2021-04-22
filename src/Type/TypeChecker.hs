@@ -2,7 +2,8 @@
 
 module Type.TypeChecker where
 import AST.AST
-import Control.Monad.Except
+import Control.Monad.Except hiding (throwError)
+import qualified Control.Monad.Except as EX
 import Control.Monad.Reader
 import Control.Monad.State
 import qualified Data.Map as M
@@ -11,15 +12,14 @@ import Data.String
 import Data.Maybe
 
 runCheck :: Check a -> Either TypeError a
-runCheck c = evalState (runReaderT (runExceptT c) M.empty) S.empty
+runCheck c = evalState (runReaderT (runExceptT c) M.empty) emptyErrorEnv
 
 -- | Typecheck a program.
 --   Returns TypeError on failure an unit on success.
 typecheck :: Program -> Either TypeError ()
-typecheck program = evalState (runReaderT (runExceptT (typecheckP program)) top) lin
+typecheck program = evalState (runReaderT (runExceptT (typecheckP program)) top) emptyErrorEnv
     where
         top = buildTopEnv program
-        lin = S.empty
 
 -- | Parse a typecheck a program encoded as a string.
 tcStr :: String -> Either TypeError ()
@@ -34,7 +34,7 @@ parseExp s = p
     where [Func _ _ p] = run $ "f : T f = " ++ s
 
 -- | All type errors that can occur.
-data TypeError
+data ErrorTypes
     = NotFunction Type         -- ^ A type was expected to be a function but was not.
     | Mismatch Type Type       -- ^ Expected a type but found another type.
     | NotProduct Type          -- ^ A type was expected to be a product but was not.
@@ -45,9 +45,21 @@ data TypeError
     | DuplicateFunction String -- ^ A function was defined multiple times.
     deriving Eq
 
+data TypeError = TError String ErrorTypes
+    deriving Eq
+
 instance Show TypeError where
+    show (TError where' why) =
+        "Type error in function " ++ where' ++ ":\n" ++ show why
+
+throwError :: ErrorTypes -> Check a
+throwError err = do
+    name <- gets currentFun
+    EX.throwError (TError name err)
+
+instance Show ErrorTypes where
     show (NotFunction t) = 
-        show t ++ " is not a function!"
+        "Type '" ++ show t ++ "' is not a function type"
 
     show (Mismatch e a) =
         "Couldn't match expected type '" ++ show e ++
@@ -78,19 +90,28 @@ instance IsString Type where
 -- | Typecheck the program inside Check monad.
 typecheckP :: Program -> Check ()
 typecheckP program = do
-    checkNamesUnique program
+    -- checkNamesUnique program
     mapM_ typecheckF program
 
 -- Typechecks the function inside the check monad.
 typecheckF :: Function -> Check ()
 typecheckF (Func name type' term) = do
-    t <- inferTerm [] term
+    modify $ \s -> s{currentFun=name}
+    t <- infer term
     if t <: type'
         then return ()
         else throwError (Mismatch type' t)
 
+data ErrorEnv 
+    = ErrorEnv { linenv :: LinEnv
+               , currentFun :: String
+               }
+
 type LinEnv = S.Set String
 type TopEnv = M.Map String Type
+
+emptyErrorEnv :: ErrorEnv
+emptyErrorEnv = ErrorEnv S.empty "MEGA URK"
 
 -- | Builds map between top level names and types.
 buildTopEnv :: Program -> TopEnv
@@ -99,22 +120,32 @@ buildTopEnv program = M.fromList (map addFunc program)
         addFunc :: Function -> (String, Type)
         addFunc (Func name t _) = (name, t)
 
--- | Check that all top level names are unique.
-checkNamesUnique :: Program -> Check ()
-checkNamesUnique = foldM_ f S.empty
-    where
-        f :: S.Set String -> Function -> Check (S.Set String)
-        f visited (Func n _ _)
-            | S.member n visited = throwError (DuplicateFunction n)
-            | otherwise          = return (S.insert n visited)
-
-
 -- | Ability to throw type errors when type checking.
-type Check a = ExceptT TypeError (ReaderT TopEnv (State LinEnv)) a
+type Check = ExceptT TypeError (ReaderT TopEnv (State ErrorEnv))
 
+-- !a !b   a!=b  a <:b   (!Bit >< Bit) <: (Bit >< Bit)
+
+-- f : a -o Bit
+-- f x = 0
+
+-- f : (!Bit -o !(Bit -o Bit))
+-- f x y = x
+
+-- f : (Bit -o Bit -o Bit)
+-- f x y = y
+
+-- f : (Bit -o !(Bit -o Bit) -o Bit)
+-- f x y = y x
+
+-- f : (Bit -o !(Bit -o QBit))
+-- f x y = new y
+
+-- !Bit !Bit
+-- Bit <: !Bit
 -- | Whether a type is a subtype of another type.
 (<:) :: Type -> Type -> Bool
 TypeDup a <: TypeDup b     = TypeDup a <: b       -- (!)
+TypeDup (a1 :>< a2) <: (b1 :>< b2) = TypeDup a1 <: b1 && TypeDup a2 <: b2
 TypeDup a <: b             = a <: b               -- (D)
 (a1 :>< a2) <: (b1 :>< b2) = a1 <: b1 && a2 <: b2 -- (><)
 (a' :=> b) <: (a :=> b')   = a  <: a' && b  <: b' -- (-o)
@@ -185,25 +216,25 @@ inferTerm ctx (Tup l r) = do
 inferTerm ctx (Idx i) = return $ ctx !! fromIntegral i
 inferTerm _ (Fun fun) = do
     top <- ask
-    lin <- get
+    lin <- gets linenv
     case M.lookup fun top of
         Nothing -> throwError $ NotInScope fun
         Just t | isLinear t -> if S.member fun lin
                                 then throwError $ NotLinearTop fun
-                                else modify (S.insert fun) >> return t
+                                else modify (\s -> s {linenv = S.insert fun lin}) >> return t
                | otherwise -> return t
 inferTerm ctx (IfEl c t f) = do
     tc <- inferTerm ctx c
     linc <- get
 
     tt <- inferTerm ctx t
-    lint <- get
+    lint <- gets linenv
     put linc
 
     tf <- inferTerm ctx f
-    linf <- get
+    linf <- gets linenv
 
-    put (S.union lint linf)
+    modify $ \s -> s{linenv=S.union lint linf}
 
     if tc <: TypeBit 
         then supremum tt tf
@@ -224,7 +255,7 @@ infimum a b = throwError (NoCommonSuper a b)
 --   Throws error if no common supertype exists.
 supremum :: Type -> Type -> Check Type
 supremum a b | a == b = return a
-supremum (TypeDup a) (TypeDup b) = supremum a b
+supremum (TypeDup a) (TypeDup b) = TypeDup <$> supremum a b
 supremum (TypeDup a) b = supremum a b
 supremum a (TypeDup b) = supremum a b
 supremum (a :>< b) (c :>< d) = (:><) <$> supremum a c <*> supremum b d
