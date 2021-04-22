@@ -14,7 +14,7 @@ module Parser.Print where
 
 import Prelude
   ( ($), (.)
-  , Bool(..), (==), (<)
+  , Bool(..), (==), (<), (||)
   , Int, Integer, Double, (+), (-), (*)
   , String, (++)
   , ShowS, showChar, showString
@@ -48,7 +48,7 @@ render d = rend 0 (map ($ "") $ d []) "" where
     _            -> id
   new i     = showChar '\n' . replicateS (2*i) (showChar ' ') . dropWhile isSpace
   space t s =
-    case (all isSpace t', null spc, null rest) of
+    case (all isSpace t' || t' == "!", null spc, null rest) of
       (True , _   , True ) -> []              -- remove trailing space
       (False, _   , True ) -> t'              -- remove trailing space
       (False, True, False) -> t' ++ ' ' : s   -- add space if none
