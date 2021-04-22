@@ -19,8 +19,7 @@ Tuple. Tup ::= "(" Term "," [Term] ")" ;
 separator nonempty Term ",";
 
 --- Bits ---
-BZero. Bit ::= "0";
-BOne.  Bit ::= "1";
+BBit. Bit ::= Integer;
 
 --- Function declaration  --- 
 FDecl. FunDec ::= FunVar Type Function;

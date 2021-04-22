@@ -14,30 +14,11 @@ import Data.Functor ( (<&>) )
 import Parser.Abs as Abs
     ( Gate(GS, GH, GX, GY, GZ, GI, GT, GCNOT, GTOF, GSWP, GFRDK, GQFT, GQFTI, 
       GCR2, GCR2D, GCR3, GCR3D, GCR4, GCR4D, GCR8, GCR8D), 
-      Bit(BOne, BZero)  )
+      Bit(BBit)  )
 import qualified AST.AST as A
-
--- TODO:
--- fredkin/toffoli
-
--- När vi tycker interpreter är klar! 
--- main driver: egen fil? turtle och haskelline? 
-
--- Nice to Have:
--- evaluera uttryck utan fil.
--- let user define custom gates (needs syntax for gate definition, type checking of arbitrary gate and evaluation of it)
--- flera let defs irad (istälelt för behöva flera lets) ()
--- explicita tuples i funktionsargumentet, á la f (x,y) = cnot (x,y) (typ pattern matching)
-
--- Tidigare förslag:
--- typeclass runnable, ta in gate och a, spotta ut QM a
--- kan definiera olika fel
-
-
 
 data ValueError
     = NotFunction String
-    | NoMainFunction String
     | NotApplied String
     | Fail String
      deriving Show
@@ -73,7 +54,7 @@ createEnv fs = Env { functions = M.fromList [(s, t) | (A.Func s _ t) <- fs],
 getMainTerm :: Env -> Eval A.Term
 getMainTerm env = case M.lookup "main" (functions env) of
     Just term -> return term
-    Nothing   -> throwError $ NoMainFunction "Main function not defined"
+    Nothing   -> throwError $ Fail "Main function not defined" 
 
 -- | Return type
 data Value
@@ -92,8 +73,8 @@ eval env = \case
         Just t  -> eval env t
         Nothing -> throwError $ NotFunction $ "Function " ++ show s ++ " is not defined"
 
-    A.Bit BZero -> return $ VBit 0
-    A.Bit BOne -> return $ VBit 1
+    A.Bit A.BZero -> return $ VBit 0
+    A.Bit A.BOne -> return $ VBit 1
 
     A.Tup t1 t2 -> do
         v1 <- eval env t1

@@ -20,9 +20,8 @@ import qualified Type.HM as HM
 import Data.List
 
 import Parser.Abs
-import SemanticAnalysis.SemanticAnalysis as S
+import qualified SemanticAnalysis.SemanticAnalysis as S
 
-import Debug.Trace
 
 -- TODO:
 -- * fixa partial application
@@ -58,15 +57,18 @@ main = runInputT defaultSettings loop
 type Run a = ExceptT Error IO a
 
 data Error
-  = ParseError S.SemanticError
+  = SemanticError S.SemanticError
+  | ParseError String
   | TypeError HM.TypeError
   | ValueError I.ValueError
   | NoSuchFile FilePath
-  | SemanticError String
 
 instance Exception Error
 
 instance Show Error where
+  show (SemanticError e) =
+    "semantic error:\n" ++ show e
+
   show (ParseError e) =
     "syntax error:\n" ++ e
 
