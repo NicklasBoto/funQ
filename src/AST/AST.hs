@@ -159,10 +159,9 @@ debangFunc t = t
 
 -- | Lambdaizes and types the argument types based on the type signature.
 lambdaize :: P.Type -> [P.Arg] -> P.Term -> P.Term
-lambdaize _t [] body                            = body 
+lambdaize _t [] body                                    = body 
 lambdaize (P.TypeFunc n p) (P.FArg (P.Var v) : vs) body = P.TLamb (P.Lambda "\\") (P.FunVar v) n (lambdaize p vs body)
-
-
+lambdaize (P.TypeDup (P.TypeFunc n p)) (P.FArg (P.Var v) : vs) body = P.TLamb (P.Lambda "\\") (P.FunVar v) n (lambdaize p vs body)
 
 -- -- | Convert all functions to lambda abstractions
 -- lambdaize :: P.Function -> P.Term
