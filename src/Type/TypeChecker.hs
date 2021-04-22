@@ -198,8 +198,8 @@ inferTerm ctx (Let eq inn) = do
         (a1 :>< a2) -> do
             let a1t = addBangs nBangs a1
             let a2t = addBangs nBangs a2
-            checkLinear inn a2
-            checkLinear (Abs a2 inn) a1
+            checkLinear inn a2t
+            checkLinear (Abs a2t inn) a1t
             inferTerm (a2t : a1t : ctx) inn
         _ -> throwError $ NotProduct teq
 inferTerm ctx (App f arg) = do

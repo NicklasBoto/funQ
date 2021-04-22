@@ -31,6 +31,8 @@ import Data.Maybe
 -- * inte ska dö om interpreter/typechecker failar
 -- * coolt: kunna loada en fil och köra funktioner
 -- * kunna skriva run [filnamn] utan hela sökvägen -> letar i subdirectories efter filen
+
+-- | Runs the funq interpreter.
 main :: IO ()
 main = runInputT defaultSettings loop
   where
@@ -39,14 +41,18 @@ main = runInputT defaultSettings loop
       minput <- getInputLine "λ: "
       case minput of
           Nothing -> return ()
-          Just "quit" -> return ()
+          Just ":q" -> return ()
+          Just ":help" -> outputStrLn ":q to quit, :run filename to run a file, type to expressions" >> loop
           Just input -> do
             let w = words input
-            case head w of
-              "run" -> do
-                outputStrLn $ "runs " ++ (w !! 1)
-                liftIO $ runIO (w !! 1)
-                loop
+            case head w of 
+              ":run" -> do
+                case length w of
+                  1 -> outputStrLn "Need to specify file to run" >> loop
+                  _ -> do
+                    outputStrLn $ "runs " ++ (w !! 1)
+                    liftIO $ runIO (w !! 1)
+                    loop
               _ -> do
                 liftIO $ runTerminalIO $ "main : T main = " ++ input
                 loop
@@ -65,8 +71,8 @@ instance Show Error where
   show (ParseError e) =
     "syntax error:\n" ++ e
 
-  show (TypeError e) =
-    "type error:\n" ++ show e
+  show (TypeError (TC.TError f e)) =
+    "type error in function " ++ f ++ ":\n" ++ show e
 
   show (ValueError e) =
     "value error:\n" ++ show e
@@ -74,6 +80,7 @@ instance Show Error where
   show (NoSuchFile f) =
     "file not found: " ++ f
 
+-- | Runs funq on a file.
 runIO :: FilePath -> IO ()
 runIO path = runExceptT (run path) >>= \case
   Left  err -> putStrLn $ "*** Exception, " ++ show err
@@ -114,17 +121,18 @@ eval = withExceptT ValueError . mapExceptT Q.run . I.interpret
 
 -- | Distribution testing code below
 
-rundistest :: FilePath -> IO ()
-rundistest path = do
-  res <- runExceptT $ rundist path
+-- | Runs a file some number of times.
+rundistest :: FilePath -> Int -> IO ()
+rundistest path runs = do
+  res <- runExceptT $ rundist path runs
   case res of
-    Left err -> print err
+    Left err -> putStrLn $ "*** Exception:, " ++ show err
     Right r  -> gatherResults r
 
-rundist :: FilePath -> Run [I.Value]
-rundist path = do
+rundist :: FilePath -> Int -> Run [I.Value]
+rundist path runs = do
   a <- readfile path >>= parse >>= typecheck
-  evaldist a 10
+  evaldist a runs
 
 evaldist :: A.Program -> Int -> Run [I.Value]
 evaldist prg reps = replicateM reps $ (withExceptT ValueError . mapExceptT Q.run . I.interpret) prg
