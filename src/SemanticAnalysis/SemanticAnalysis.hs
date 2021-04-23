@@ -27,7 +27,23 @@ data SemanticError
   | DupFun String
   | UnknownGate String
   | TooManyArguments String
-    deriving Show
+    -- deriving Show
+
+instance Show SemanticError where
+  show (FunNameMismatch e) =
+    "semantic error:\n" ++ show e
+
+  show (NoMainFunction e) =
+    "syntax error:\n" ++ e
+
+  show (DupFun e) =
+    "type error:\n" ++ show e
+
+  show (UnknownGate e) =
+    "value error:\n" ++ show e
+
+  show (TooManyArguments f) =
+    "TooManyArguments: " ++ f
 
 -- Refakturering
 -- fs istället för p
@@ -35,15 +51,16 @@ data SemanticError
 -- collect all errors
 
 semanticAnalysis :: Program -> Either SemanticError ()
-semanticAnalysis p = do 
-  funNameMatch p 
-  mainDefined p
-  dupFun p
-  unknownGate p
-  onlyBits p
+semanticAnalysis (PDef fs) = do 
+  funNameMatch fs
+  mainDefined fs
+  dupFun fs
+  unknownGate fs
+  onlyBits fs
+  correctNumberOfArgs fs
   
-funNameMatch :: Program -> Either SemanticError ()
-funNameMatch p@(PDef fs) = if null mismatches then Right () else Left $ FunNameMismatch $ "Mismatchig names in function declaration and definition for " ++ mismatches -- mapM_ check fs
+funNameMatch :: [FunDec] -> Either SemanticError ()
+funNameMatch fs = if null mismatches then Right () else Left $ FunNameMismatch $ "Mismatchig names in function declaration and definition for " ++ mismatches
   where mismatches = concat $ intersperse ", " $ check fs []
         check :: [FunDec] -> [String] -> [String]   
         check [] ms = ms
@@ -52,13 +69,13 @@ funNameMatch p@(PDef fs) = if null mismatches then Right () else Left $ FunNameM
         funName' s = takeUntil " " (takeUntil ":" s)
     
 
-mainDefined :: Program -> Either SemanticError ()
-mainDefined (PDef fs) = if any isMain fs then Right () else Left $ NoMainFunction "No main function has been declared"
+mainDefined :: [FunDec] -> Either SemanticError ()
+mainDefined fs = if any isMain fs then Right () else Left $ NoMainFunction "No main function has been declared"
   where isMain f = funName f == "main"
 
 
-dupFun :: Program -> Either SemanticError ()
-dupFun (PDef fs) = if null collectErrors then Right () else Left $ DupFun $ "Duplicate functions declarations for " ++ collectErrors
+dupFun :: [FunDec] -> Either SemanticError ()
+dupFun fs = if null collectErrors then Right () else Left $ DupFun $ "Duplicate functions declarations for " ++ collectErrors
   where collectErrors = concat $ intersperse ", " $ check funNames []
         check :: [String] -> [String] -> [String]
         check []     errors = errors 
@@ -69,8 +86,8 @@ dupFun (PDef fs) = if null collectErrors then Right () else Left $ DupFun $ "Dup
         
 
 -- gateIdent blir fail! 
-unknownGate :: Program -> Either SemanticError ()
-unknownGate (PDef fs) = if null collectUnknownGates then Right () else Left $ UnknownGate $ collectUnknownGates ++ " are not predefined gates"
+unknownGate :: [FunDec] -> Either SemanticError ()
+unknownGate fs = if null collectUnknownGates then Right () else Left $ UnknownGate $ collectUnknownGates ++ " are not predefined gates"
   where collectUnknownGates = concat $ intersperse ", " $ check fs []
         check :: [FunDec] -> [String] -> [String]
         check [] gs = gs
@@ -84,8 +101,8 @@ unknownGate (PDef fs) = if null collectUnknownGates then Right () else Left $ Un
         unknownGates _ gs                             = gs
 
 -- Endast 0/1 (måste göra om grammar!)
-onlyBits :: Program -> Either SemanticError ()
-onlyBits (PDef fs) = if null collectInvalidBits then Right () else Left $ UnknownGate $ "Expected value of bits to be 0 or 1 but got " ++ collectInvalidBits
+onlyBits :: [FunDec] -> Either SemanticError ()
+onlyBits fs = if null collectInvalidBits then Right () else Left $ UnknownGate $ "Expected value of bits to be 0 or 1 but got " ++ collectInvalidBits
   where collectInvalidBits = concat $ intersperse ", " $ check fs []
         check :: [FunDec] -> [String] -> [String]
         check [] gs = gs
@@ -98,10 +115,23 @@ onlyBits (PDef fs) = if null collectInvalidBits then Right () else Left $ Unknow
         invalidBit (TLamb _ _ t1) gs    = gs ++ invalidBit t1 []
         invalidBit _ gs                 = gs
 
--- antalet argument är samma eller fler som antalet typer 
-correctNumberOfArgs :: Program -> Either SemanticError ()
-correctNumberOfArgs (PDef fs) = undefined
---((FDecl _ types (FDef _ args _))
+-- antalet argument är samma eller fler som antalet typer - 1
+correctNumberOfArgs :: [FunDec] -> Either SemanticError ()
+correctNumberOfArgs fs = if null mismatches then Right () else Left $ TooManyArguments $ "Incorrect number of arguments for: " ++ mismatches
+  where mismatches = concat $ intersperse "\n" $ check fs []
+        check :: [FunDec] -> [String] -> [String]   
+        check [] ms = ms
+        check (f@(FDecl (FunVar s) _ (FDef (Var s') _ _)):fs) ms = if isValid f then check fs ms else check fs (errorMsg f : ms)  
+        isValid :: FunDec -> Bool 
+        isValid (FDecl _ t (FDef _ args _)) = length args < size t
+        size :: Type -> Int 
+        size (TypeFunc t1 t2) = size t1 + size t2
+        size (TypeTens t1 t2) = size t1 + size t2
+        size (TypeDup t)      = size t 
+        size _                = 1
+        errorMsg :: FunDec -> String 
+        errorMsg f@(FDecl _ t (FDef _ args _)) = funName f ++ " has " ++ (show $ length args) ++ " arguments, but function takes only " ++ (show $ size t - 1) ++ " arguments."
+
 
 -- borde funka
 -- f : Bit -o Bit
