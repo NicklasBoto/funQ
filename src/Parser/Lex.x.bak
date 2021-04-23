@@ -30,7 +30,7 @@ $s ([\' \_]| ($d | $l)) * \  * \:
     { tok (\p s -> PT p (eitherResIdent (T_FunVar . share) s)) }
 $s ([\' \_]| ($d | $l)) *
     { tok (\p s -> PT p (eitherResIdent (T_Var . share) s)) }
-$c +
+$c ($d | $c)*
     { tok (\p s -> PT p (eitherResIdent (T_GateIdent . share) s)) }
 \\
     { tok (\p s -> PT p (eitherResIdent (T_Lambda . share) s)) }

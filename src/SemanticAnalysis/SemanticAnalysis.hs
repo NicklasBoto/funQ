@@ -5,7 +5,7 @@ module SemanticAnalysis.SemanticAnalysis (runAnalysis, SemanticError(..)) where
 import Data.List
 import Parser.Abs
 import qualified Data.Set as Set
-import Data.Char ( digitToInt )
+import Data.Char ( digitToInt, isDigit, isLetter )
 
 data SemanticError 
   = FunNameMismatch String
@@ -61,6 +61,8 @@ unknownGate fs = checkSemantics fs isValid genErr errorMsg
         unknownGates (TGate (GGate (GateIdent g))) gs
           | init g == "QFT" && length g == 4 && (digitToInt $ last g) <= 5 = gs
           | init g == "QFTI" && length g == 5 && (digitToInt $ last g) <= 5 = gs
+          | init g == "CR" && all isDigit (dropWhile isLetter g) = gs
+          | init g == "CRI" && all isDigit (dropWhile isLetter g) = gs
           | otherwise = gs ++ [g]
         unknownGates (TApp t1 t2) gs                  = gs ++ unknownGates t1 [] ++ unknownGates t2 []
         unknownGates (TIfEl t1 t2 t3) gs              = gs ++ unknownGates t1 [] ++ unknownGates t2 [] ++ unknownGates t3 [] 

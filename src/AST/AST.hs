@@ -24,7 +24,7 @@ import Parser.Par ( myLexer, pProgram )
 import Parser.Print ( printTree )
 import qualified Parser.Abs as P
 import qualified Data.Map as M
-import Data.Char ( digitToInt )
+import Data.Char
 
 type Env = M.Map String Integer
 
@@ -77,18 +77,8 @@ data Gate
     | GFRDK
     | GQFT Int
     | GQFTI Int
-    | GCR
-    | GCRD
-    | GCR2
-    | GCR2D
-    | GCR3
-    | GCR3D
-    | GCR4
-    | GCR4D
-    | GCR5
-    | GCR5D
-    | GCR8
-    | GCR8D
+    | GCR Int
+    | GCRI Int
     | GGate P.GateIdent
   deriving (Eq, Ord, Show, Read)
 
@@ -157,8 +147,11 @@ makeImTerm env (P.TTup (P.Tuple t ts)) = foldr1 Tup $ map (makeImTerm env) (t:ts
 makeImTerm _env (P.TBit (P.BBit 0)) = Bit BZero 
 makeImTerm _env (P.TBit (P.BBit 1)) = Bit BOne 
 makeImTerm _env (P.TGate (P.GGate (P.GateIdent g))) 
-    | init g == "QFT"  = Gate $ GQFT (digitToInt $ last g)
-    | init g == "QFTI" = Gate $ GQFTI (digitToInt $ last g)
+    | init g == "QFT"  = Gate $ GQFT (nums g)
+    | init g == "QFTI" = Gate $ GQFTI (nums g)
+    | init g == "CR"   = Gate $ GCR (nums g) 
+    | init g == "CRI"  = Gate $ GCRI (nums g) 
+    where nums = read . dropWhile isLetter
 makeImTerm _env (P.TGate g) = Gate $ gateToASTGate g 
 makeImTerm _env P.TStar = Unit
 

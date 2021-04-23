@@ -27,7 +27,7 @@ Var literals are recognized by the regular expression
 `````lower (["'_"] | digit | letter)*`````
 
 GateIdent literals are recognized by the regular expression
-`````upper+`````
+`````upper (digit | upper)*`````
 
 Lambda literals are recognized by the regular expression
 `````'\'`````
