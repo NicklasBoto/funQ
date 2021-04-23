@@ -47,7 +47,7 @@ library:
     - examples
 
 executables:
-  qfunc-exe:
+  funq:
     main:                Main.hs
     source-dirs:         app
     ghc-options:

@@ -1,14 +1,14 @@
 main : Bit 
 main = 0
 
-args : Bit -o Bit
-args a b = 0
+-- args : Bit -o Bit
+-- args a b = 0
 
-test : Bit 
-test a = 0
+-- test : Bit 
+-- test a = 0
 
-test1 : Bit
-test1 h s d = 1
+-- test1 : Bit
+-- test1 h s d = 1
 
 -- p : QBit
 -- q = new 0

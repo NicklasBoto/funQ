@@ -33,7 +33,7 @@ data Term
     | TApp Term Term
     | TIfEl Term Term Term
     | TLet LetVar [LetVar] Term Term
-    | TLamb Lambda Var Term
+    | TLamb Lambda FunVar Type Term
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data LetVar = LVar Var
@@ -55,8 +55,7 @@ data Arg = FArg Var
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data Type
-    = TypeVar Var
-    | TypeBit
+    = TypeBit
     | TypeQbit
     | TypeVoid
     | TypeDup Type
@@ -78,13 +77,24 @@ data Gate
     | GFRDK
     | GQFT
     | GQFTI
-    | GCT
+    | GQFT2
+    | GQFTI2
+    | GQFT3
+    | GQFTI3
+    | GQFT4
+    | GQFTI4
+    | GQFT5
+    | GQFTI5
+    | GCR
+    | GCRD
     | GCR2
     | GCR2D
     | GCR3
     | GCR3D
     | GCR4
     | GCR4D
+    | GCR5
+    | GCR5D
     | GCR8
     | GCR8D
     | GGate GateIdent

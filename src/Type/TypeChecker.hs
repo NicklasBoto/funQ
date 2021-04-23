@@ -1,258 +1,341 @@
-{-# LANGUAGE GeneralisedNewtypeDeriving #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
+
 module Type.TypeChecker where
-
-import AST.AST 
-import qualified Data.Map as M
--- import qualified Parser.Abs as P (Gate(..))
-import Control.Monad.Except
+import AST.AST
+import Control.Monad.Except hiding (throwError)
+import qualified Control.Monad.Except as EX
+import Control.Monad.Reader
 import Control.Monad.State
-import Data.Either
-import Prelude hiding (GT)
-{-
-(>=>), (><) :: Type -> Type -> Type
-(>=>) = (:=>)
-(><)  = (:><)
+import qualified Data.Map as M
+import qualified Data.Set as S
+import Data.String
+import Data.Maybe
 
-data Named
-    = Bound Integer
-    | Free String
-    deriving (Ord, Eq, Show)
+runCheck :: Check a -> Either TypeError a
+runCheck c = evalState (runReaderT (runExceptT c) M.empty) emptyErrorEnv
 
-type Context = M.Map Named Type
+-- | Typecheck a program.
+--   Returns TypeError on failure an unit on success.
+typecheck :: Program -> Either TypeError ()
+typecheck program = evalState (runReaderT (runExceptT (typecheckP program)) top) emptyErrorEnv
+    where
+        top = buildTopEnv program
 
-data Err 
-    = NoSuchGateError
-    | TypeMismatchError Type Type
-    | TypeNonFactorizableError Type
-    | NotInScopeError Named
-    | Fail String
-    deriving Show
+-- | Parse a typecheck a program encoded as a string.
+tcStr :: String -> Either TypeError ()
+tcStr = typecheck . run
 
-newtype Check a = MkCheck (StateT Context (Except Err) a)
-    deriving (Functor, Applicative, Monad, MonadError Err, MonadState Context)
+inferExp :: String -> Either TypeError Type
+inferExp s = runCheck $ infer p
+    where [Func _ _ p] = run $ "f : T f = " ++ s
 
-instance MonadFail Check where
-    fail = throwError . Fail
+parseExp :: String -> Term
+parseExp s = p
+    where [Func _ _ p] = run $ "f : T f = " ++ s
 
-runResult :: Check a -> Either Err a
-runResult (MkCheck s) = runExcept $ evalStateT s M.empty
+-- | All type errors that can occur.
+data ErrorTypes
+    = NotFunction Type         -- ^ A type was expected to be a function but was not.
+    | Mismatch Type Type       -- ^ Expected a type but found another type.
+    | NotProduct Type          -- ^ A type was expected to be a product but was not.
+    | NotLinearTop String      -- ^ A function that is linear used many times.
+    | NotLinearTerm Term Type  -- ^ A term that breaks a linearity constraint
+    | NoCommonSuper Type Type  -- ^ No common supertype was found
+    | NotInScope String        -- ^ A function was not in scope.
+    | DuplicateFunction String -- ^ A function was defined multiple times.
+    deriving Eq
 
-getResult :: Check a -> a
-getResult r = case runResult r of
-    Right r -> r
-    Left  e -> error $ show e
+data TypeError = TError String ErrorTypes
+    deriving Eq
 
-tcFile :: FilePath -> IO [Err]
-tcFile p = typecheckProgram <$> runFile p
+instance Show TypeError where
+    show (TError where' why) =
+        "Type error in function " ++ where' ++ ":\n" ++ show why
 
-tc :: String -> [Err]
-tc = typecheckProgram . run
+throwError :: ErrorTypes -> Check a
+throwError err = do
+    name <- gets currentFun
+    EX.throwError (TError name err)
 
-typecheckProgram :: [Function] -> [Err]
-typecheckProgram prog = lefts $ map (run' . uncurry (typecheck 0) . f) prog
-    where f (Func _ typ term) = (term, typ)
-          context = buildProgramContext prog
-          run' (MkCheck s) = runExcept $ evalStateT s context
+instance Show ErrorTypes where
+    show (NotFunction t) = 
+        "Type '" ++ show t ++ "' is not a function type"
 
-buildProgramContext :: Program -> Context
-buildProgramContext = M.fromList . map f
-       where f (Func name typ _) = (Free name, typ)
+    show (Mismatch e a) =
+        "Couldn't match expected type '" ++ show e ++
+        "' with actual type '" ++ show a ++ "'"
 
--- f : (Bit -o (QBit -o Bit))
--- f = \x.\y.x
+    show (NotProduct t) =
+        "Not a factorizable type '" ++ show t ++ "'"
 
--- ca f -> [x : Bit, y : QBit ], x
+    show (NotLinearTop f) =
+        "Linear function '" ++ f ++ "' is used more than once"
+        
+    show (NotLinearTerm e t) =
+        "Expression breaks linearity constraint: " ++ show (Abs t e)
 
--- typecheck :: Program -> TC Program
--- typ ner
+    show (NoCommonSuper a b) =
+        "Could not find common type for type '" ++ show a ++ "' and type '" ++ show b ++ "'"
 
--- f : QBit -> Bit
--- f = new
+    show (NotInScope v) =
+        "Variable not in scope: " ++ v
 
-baseType :: MonadError Err m => Type -> Type -> m ()
-baseType exp typ = if typ == exp 
-    then return () else throwError $ TypeMismatchError exp typ
+    show (DuplicateFunction f) =
+        "Function '" ++ f ++ "' declared multiple times"
 
-typecheck :: Integer -> Term -> Type -> Check ()
-typecheck i (Abs body) (n :=> p) = do
-    modify $ M.insert (Bound i) n
-    typecheck (i+1) body p
-typecheck i (Idx j) t = do
-    c <- get
-    case M.lookup (Bound j) c of
-        Nothing    -> throwError $ NotInScopeError (Bound j)
-        Just type' -> baseType t type'
-typecheck i (Bit _) t = baseType t TypeBit
-typecheck i (Gate g) t = baseType t =<< inferGate g
-typecheck i New t = baseType t (TypeBit :=> TypeQBit)
-typecheck i Meas t = baseType t (TypeQBit :=> TypeBit)
-typecheck i Unit t = baseType t TypeUnit
-typecheck i (QVar v) t = do
-    c <- get
-    case M.lookup (Free v) c of
-        Nothing -> throwError $ NotInScopeError (Free v)  
-        Just type' -> baseType t type'
-typecheck i (Tup [e]) t = typecheck i e t
-typecheck i (Tup (e:es)) (t :>< t') = typecheck i e t >> typecheck i (Tup es) t'
-typecheck i (Let eq inn) t = do
-    l :>< r <- infer i eq
-    modify $ M.insert (Bound (i+1)) r . M.insert (Bound i) l
-    typecheck (i+2) inn t
-typecheck i (App e1 e2) t = infer i e1 >>= \case
-        (TypeVar v :=> b) -> do
-            --typecheck i e2 (TypeVar v)
-            --if t == b then return () else throwError $ TypeMismatchError t b
-            
+instance IsString Type where
+    fromString t = t'
+        where [Func _ t' _] = run $ "f : " ++ t ++ " f = *"
 
-            te2 <- infer i e2 
+-- | Typecheck the program inside Check monad.
+typecheckP :: Program -> Check ()
+typecheckP program = do
+    -- checkNamesUnique program
+    mapM_ typecheckF program
 
-            modify (M.insert (Bound i) te2)
-            if t == b 
-                then return ()
-                else throwError $ TypeMismatchError t b
-        (a :=> b) -> do
-                te2 <- infer i e2
-                if a == te2 && t == b 
-                    then return () 
-                    else throwError $ TypeMismatchError a te2
-        t'        -> throwError $ TypeMismatchError (t' :=> t) t'
-typecheck i e t = error $ show e
+-- Typechecks the function inside the check monad.
+typecheckF :: Function -> Check ()
+typecheckF (Func name type' term) = do
+    modify $ \s -> s{currentFun=name}
+    t <- infer term
+    if t <: type'
+        then return ()
+        else throwError (Mismatch type' t)
 
--- tc :: [Type] ->
+data ErrorEnv 
+    = ErrorEnv { linenv :: LinEnv
+               , currentFun :: String
+               }
 
--- typecheck i _c (App (Abs term) r) type' = undefined
--- typ upp
--- \0. \1.(here i is 2, c=[0:Typ0,1:Typ1]) 1 
+type LinEnv = S.Set String
+type TopEnv = M.Map String Type
 
-infer :: Integer -> Term -> Check Type
-infer i (QVar v) = do 
-    c <- get 
-    case M.lookup (Free v) c of
-        Just type' -> return type'
-        Nothing    -> throwError $ NotInScopeError (Free v)
-infer i (Idx x)  = do
-    c <- get 
-    let v = Bound (i - x - 1)
-    case M.lookup v c of
-        Just type' -> return type'
-        Nothing -> throwError $ NotInScopeError v
-infer i (Bit _)  = return TypeBit 
-infer i Unit     = return TypeUnit
-infer i (Gate g) = inferGate g
-infer i Meas     = return $ TypeQBit :=> TypeBit
-infer i New      = return $ TypeBit :=> TypeQBit
-infer i (Tup ts) = foldr1 (><) <$> mapM (infer i) ts
-infer i (App l r) = do
-    il <- infer i l 
-    ir <- infer i r
-    inferApp il ir
-infer i (IfEl b true false) = do
-    typecheck i b TypeBit
-    trueType  <- infer i true
-    falseType <- infer i false 
-    inferIf trueType falseType
-infer i (Let eq inn) = do
-    ~(l :>< r) <- checkTup =<< infer i eq
-    modify $  M.insert (Bound (i+1)) r . M.insert (Bound i) l
-    infer (i+2) inn
-infer i (Abs e) = do
-    modify $ M.insert (Bound i) (TypeVar ("a"++ show i)) 
-    et <- infer (i+1) e
-    return $ TypeVar ("a" ++ show i) :=> et
+emptyErrorEnv :: ErrorEnv
+emptyErrorEnv = ErrorEnv S.empty "MEGA URK"
 
---     rightType <- infer i e
---     -- Need to insert, not lookup.
---     c <- get 
---     let varType = M.lookup (Bound i) c
---     return $ varType :=> rightType
---     where
---         varType = M.lookup (Bound i) c
--- -- 
+-- | Builds map between top level names and types.
+buildTopEnv :: Program -> TopEnv
+buildTopEnv program = M.fromList (map addFunc program)
+    where
+        addFunc :: Function -> (String, Type)
+        addFunc (Func name t _) = (name, t)
 
+-- | Ability to throw type errors when type checking.
+type Check = ExceptT TypeError (ReaderT TopEnv (State ErrorEnv))
 
+-- !a !b   a!=b  a <:b   (!Bit >< Bit) <: (Bit >< Bit)
 
--- f : Bit -> QBit -> Bit
--- f = \b . \q 
+-- f : a -o Bit
+-- f x = 0
 
+-- f : (!Bit -o !(Bit -o Bit))
+-- f x y = x
 
--- f = \x . \y . 
+-- f : (Bit -o Bit -o Bit)
+-- f x y = y
 
+-- f : (Bit -o !(Bit -o Bit) -o Bit)
+-- f x y = y x
 
--- f x =
--- (\x.aoeu)y
--- \x.aoeu -> y
+-- f : (Bit -o !(Bit -o QBit))
+-- f x y = new y
 
--- f : Bit -> Bit
--- f x = \y.x
+-- !Bit !Bit
+-- Bit <: !Bit
+-- | Whether a type is a subtype of another type.
+(<:) :: Type -> Type -> Bool
+TypeDup a <: TypeDup b     = TypeDup a <: b       -- (!)
+TypeDup (a1 :>< a2) <: (b1 :>< b2) = TypeDup a1 <: b1 && TypeDup a2 <: b2
+TypeDup a <: b             = a <: b               -- (D)
+(a1 :>< a2) <: (b1 :>< b2) = a1 <: b1 && a2 <: b2 -- (><)
+(a' :=> b) <: (a :=> b')   = a  <: a' && b  <: b' -- (-o)
+a <: b                     = a == b               -- (ax)
 
--- infer (\y.x) [x : Bit] ==> a -> Bit
+-- | Count how many times the variable bound to the head is used.
+headCount :: Term -> Integer
+headCount = headCount' 0
+    where
+        headCount' :: Integer -> Term -> Integer
+        headCount' absl term = case term of
+            Idx i      -> if absl == i then 1 else 0
+            Abs _ e    -> headCount' (absl+1) e
+            App f arg  -> headCount' absl f + headCount' absl arg
+            IfEl c t f -> headCount' absl c + max (headCount' absl t) (headCount' absl f)
+            Tup l r    -> headCount' absl l + headCount' absl r
+            Let eq inn -> headCount' absl eq + headCount' (absl+2) inn
+            _          -> 0
 
----- *
--- (\x.(\y.x)0) : Bit -> Bit []
+checkLinear :: Term -> Type -> Check ()
+checkLinear e = \case
+    TypeDup t -> return ()
+    t         -> if headCount e <= 1
+                    then return ()
+                    else throwError $ NotLinearTerm e t
 
--- (\y.x) 0 : Bit [x : Bit]
----- (\y.x) : a -> Bit [x : Bit]
----- 0 : a [x : Bit, y : a]
----- 0 : Bit [x : Bit, y : Bit]
+infer :: Term -> Check Type
+infer = inferTerm []
 
----- *
--- (\x.(\y.\z.x) 0 1) : Bit -> Bit []
--- (((\y.\z.x) 0) 1) : Bit [x : Bit]
----- 0 [x : Bit, y : Bit, z : a2]
----- 1 [x : Bit, y : Bit, z : Bit]
+-- | Infer the type of a term.
+inferTerm :: [Type] -> Term -> Check Type
+inferTerm _ Unit      = return $ TypeDup TypeUnit
+inferTerm _ (Bit _)   = return $ TypeDup TypeBit
+inferTerm _ New       = return $ TypeDup (TypeBit :=> TypeQBit)
+inferTerm _ Meas      = return $ TypeDup (TypeQBit :=> TypeDup TypeBit)
+inferTerm _ (Gate g)  = return $ inferGate g
+inferTerm ctx (Abs t e) = do
+    top <- ask
+    checkLinear e t
+    et <- inferTerm (t:ctx) e
+    let boundLin = any (isLinear . (ctx !!) . fromIntegral) (freeVars (Abs t e))
+    let freeLin = any isLinear $ mapMaybe (`M.lookup` top) (names e)
+    if boundLin || freeLin
+        then return (t :=> et)
+        else return $ TypeDup (t :=> et)
+inferTerm ctx (Let eq inn) = do
+    teq <- inferTerm ctx eq
+    let nBangs = numBangs teq
+    case debangg teq of
+        (a1 :>< a2) -> do
+            let a1t = addBangs nBangs a1
+            let a2t = addBangs nBangs a2
+            checkLinear inn a2t
+            checkLinear (Abs a2t inn) a1t
+            inferTerm (a2t : a1t : ctx) inn
+        _ -> throwError $ NotProduct teq
+inferTerm ctx (App f arg) = do
+    tf <- inferTerm ctx f
+    argT <- inferTerm ctx arg
+    case debangg tf of
+        (fArg :=> fRet) | argT <: fArg -> return fRet
+                        | otherwise -> throwError $ Mismatch fArg argT
+        _ -> throwError $ NotFunction tf
+inferTerm ctx (Tup l r) = do
+    lt <- inferTerm ctx l
+    rt <- inferTerm ctx r
+    return $ shiftBang (lt :>< rt)
+inferTerm ctx (Idx i) = return $ ctx !! fromIntegral i
+inferTerm _ (Fun fun) = do
+    top <- ask
+    lin <- gets linenv
+    case M.lookup fun top of
+        Nothing -> throwError $ NotInScope fun
+        Just t | isLinear t -> if S.member fun lin
+                                then throwError $ NotLinearTop fun
+                                else modify (\s -> s {linenv = S.insert fun lin}) >> return t
+               | otherwise -> return t
+inferTerm ctx (IfEl c t f) = do
+    tc <- inferTerm ctx c
+    linc <- get
 
---let (var, var)
-checkTup :: Type -> Check Type
-checkTup (l :>< r) = return $ l >< r
-checkTup t         = throwError $ TypeNonFactorizableError t
+    tt <- inferTerm ctx t
+    lint <- gets linenv
+    put linc
 
+    tf <- inferTerm ctx f
+    linf <- gets linenv
 
-inferApp :: Type -> Type -> Check Type 
-inferApp (n :=> p) t
-    | n == t    = return p
-    | otherwise = throwError $ TypeMismatchError n t
+    modify $ \s -> s{linenv=S.union lint linf}
 
-inferIf :: Type -> Type -> Check Type
-inferIf t f
-    | t == f    = return t
-    | otherwise = throwError $ TypeMismatchError t f
+    if tc <: TypeBit 
+        then supremum tt tf
+        else throwError $ Mismatch TypeBit tc
 
+-- | Find the largest commont subtype (greatest lower bound).
+--   Throws error if no common subtype exists.
+infimum :: Type -> Type -> Check Type
+infimum a b | a == b    = return a
+infimum (TypeDup a) (TypeDup b) = TypeDup <$> infimum a b
+infimum (TypeDup a) b = TypeDup <$> infimum a b
+infimum a (TypeDup b) = TypeDup <$> infimum a b
+infimum (a :>< b) (c :>< d) = (:><) <$> infimum  a c <*> infimum b d
+infimum (a :=> b) (c :=> d) = (:=>) <$> supremum a c <*> infimum b d -- NOTE: contravariance of negative type
+infimum a b = throwError (NoCommonSuper a b)
 
--- Func "f" TypeQBit (App New (Bit 0))
+-- | Finds the smallest common supertype (least upper bound).
+--   Throws error if no common supertype exists.
+supremum :: Type -> Type -> Check Type
+supremum a b | a == b = return a
+supremum (TypeDup a) (TypeDup b) = TypeDup <$> supremum a b
+supremum (TypeDup a) b = supremum a b
+supremum a (TypeDup b) = supremum a b
+supremum (a :>< b) (c :>< d) = (:><) <$> supremum a c <*> supremum b d
+supremum (a :=> b) (c :=> d) = (:=>) <$> infimum  a c <*> supremum b d -- NOTE: contravariance of negative type
+supremum a b = throwError (NoCommonSuper a b)
 
-inferGate :: Gate -> Check Type
-inferGate GCNOT = return ((TypeQBit :>< TypeQBit) :=> (TypeQBit :>< TypeQBit))
-inferGate GSWP  = return ((TypeQBit :>< TypeQBit) :=> (TypeQBit :>< TypeQBit))
-inferGate GFRDK = return ((TypeQBit :>< TypeQBit :>< TypeQBit) :=> (TypeQBit :>< TypeQBit :>< TypeQBit))
-inferGate GTOF  = return ((TypeQBit :>< TypeQBit :>< TypeQBit) :=> (TypeQBit :>< TypeQBit :>< TypeQBit))
-inferGate GH    = return (TypeQBit :=> TypeQBit) 
-inferGate GX    = return (TypeQBit :=> TypeQBit) 
-inferGate GY    = return (TypeQBit :=> TypeQBit) 
-inferGate GZ    = return (TypeQBit :=> TypeQBit) 
-inferGate GI    = return (TypeQBit :=> TypeQBit) 
-inferGate GS    = return (TypeQBit :=> TypeQBit) 
-inferGate GT    = return (TypeQBit :=> TypeQBit) 
-inferGate _g    = throwError NoSuchGateError
- 
+-- | Unwraps as many ! as possible from a type.
+debangg :: Type -> Type
+debangg (TypeDup a) = debangg a
+debangg a           = a
 
--- id : Bit -o Bit
--- id = \x . (\y . x) 0
+-- | Moves as many common bangs as possible from inside a tuple to the outside.
+shiftBang :: Type -> Type
+shiftBang (TypeDup a :>< TypeDup b) = TypeDup (shiftBang (a :>< b))
+shiftBang a = a
 
--- tc id []
--- tc (App (\y . x) 0) [x : Bit]
+-- | Return how many ! a type is wrapped in.
+numBangs :: Type -> Integer
+numBangs (TypeDup a) = 1 + numBangs a
+numBangs a = 0
 
--- (\y . x) [x : Bit]
--- x [x : Bit, y : a]
+-- | Wrap a type in some number of !.
+addBangs :: Integer -> Type -> Type
+addBangs 0 a = a
+addBangs n a = addBangs (n-1) (TypeDup a)
 
--- [x : Bit]
--- \y . x : a -> Bit
+-- | Whether a type is linear and not wrapped in !.
+isLinear :: Type -> Bool
+isLinear (TypeDup _) = False
+isLinear _           = True
 
--- App (\y . x : a -> Bit) (0 : Bit) : Bit
+-- | Finds all free de bruijn variables in a term.
+freeVars :: Term -> [Integer] -- todo: make sure it is not off by one and the result integers makes sense according to the callee.
+freeVars = freeVars' 0
+    where
+        freeVars' :: Integer -> Term -> [Integer]
+        freeVars' n (Tup l r)    = freeVars' n l ++ freeVars' n r
+        freeVars' n (App f a)    = freeVars' n f ++ freeVars' n a
+        freeVars' n (Let eq inn) = freeVars' n eq ++ freeVars' (n+2) inn
+        freeVars' n (Abs _ e)    = freeVars' (n+1) e
+        freeVars' n (Idx i)      = [n - i | i >= n]
+        freeVars' _ _            = []
 
+-- | Finds all functions used in a term.
+names :: Term -> [String]
+names (Tup l r)    = names l ++ names r
+names (App f a)    = names f ++ names a
+names (Let eq inn) = names eq ++ names inn
+names (Abs _ e)    = names e
+names (Fun f)      = [f]
+names _            = []
 
-shouldTypecheck1 = "id : Bit -o Bit id x = (\\y.x) 0"
-
-ast = run shouldTypecheck1
--}
+-- | Infer type of a gate.
+inferGate :: Gate -> Type
+inferGate g = TypeDup (arg :=> arg)
+    where
+        arg = foldr (:><) TypeQBit (replicate (n-1) TypeQBit)
+        n = case g of
+                GQFT   -> 1 -- temp
+                GQFTI  -> 1 -- temp
+                GQFT2  -> 2 -- temp
+                GQFTI2 -> 2 -- temp
+                GQFT3  -> 3 -- temp
+                GQFTI3 -> 3 -- temp
+                GQFT4  -> 4 -- temp
+                GQFTI4 -> 4 -- temp
+                GQFT5  -> 5 -- temp
+                GQFTI5 -> 5 -- temp
+                GFRDK  -> 3
+                GTOF   -> 3
+                GSWP   -> 2
+                GCNOT  -> 2
+                GCR    -> 2
+                GCRD   -> 2
+                GCR2   -> 2
+                GCR2D  -> 2
+                GCR3   -> 2
+                GCR3D  -> 2
+                GCR4   -> 2
+                GCR4D  -> 2
+                GCR8   -> 2
+                GCR8D  -> 2
+                _      -> 1

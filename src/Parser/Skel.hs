@@ -35,7 +35,7 @@ transTerm x = case x of
   Parser.Abs.TApp term1 term2 -> failure x
   Parser.Abs.TIfEl term1 term2 term3 -> failure x
   Parser.Abs.TLet letvar letvars term1 term2 -> failure x
-  Parser.Abs.TLamb lambda var term -> failure x
+  Parser.Abs.TLamb lambda funvar type_ term -> failure x
 transLetVar :: Parser.Abs.LetVar -> Result
 transLetVar x = case x of
   Parser.Abs.LVar var -> failure x
@@ -56,7 +56,6 @@ transArg x = case x of
   Parser.Abs.FArg var -> failure x
 transType :: Parser.Abs.Type -> Result
 transType x = case x of
-  Parser.Abs.TypeVar var -> failure x
   Parser.Abs.TypeBit -> failure x
   Parser.Abs.TypeQbit -> failure x
   Parser.Abs.TypeVoid -> failure x
@@ -78,13 +77,24 @@ transGate x = case x of
   Parser.Abs.GFRDK -> failure x
   Parser.Abs.GQFT -> failure x
   Parser.Abs.GQFTI -> failure x
-  Parser.Abs.GCT -> failure x
+  Parser.Abs.GQFT2 -> failure x
+  Parser.Abs.GQFTI2 -> failure x
+  Parser.Abs.GQFT3 -> failure x
+  Parser.Abs.GQFTI3 -> failure x
+  Parser.Abs.GQFT4 -> failure x
+  Parser.Abs.GQFTI4 -> failure x
+  Parser.Abs.GQFT5 -> failure x
+  Parser.Abs.GQFTI5 -> failure x
+  Parser.Abs.GCR -> failure x
+  Parser.Abs.GCRD -> failure x
   Parser.Abs.GCR2 -> failure x
   Parser.Abs.GCR2D -> failure x
   Parser.Abs.GCR3 -> failure x
   Parser.Abs.GCR3D -> failure x
   Parser.Abs.GCR4 -> failure x
   Parser.Abs.GCR4D -> failure x
+  Parser.Abs.GCR5 -> failure x
+  Parser.Abs.GCR5D -> failure x
   Parser.Abs.GCR8 -> failure x
   Parser.Abs.GCR8D -> failure x
   Parser.Abs.GGate gateident -> failure x

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4d52549074a4ab1d8bb1ee03a5b3818df2ea04f19900d6b4ea6d1360753191df
+-- hash: f8bb7ca91910dd5dc5004a8613fe562edd95bf15ab6fe9c29d594b232ec891bb
 
 name:           qfunc
 version:        0.1.0.0
@@ -48,8 +48,6 @@ library
       Parser.Par
       Parser.Print
       Parser.Skel
-      Type.HM
-      Type.STLC
       Type.TypeChecker
       CoinFlip
       Deutsch
@@ -77,7 +75,7 @@ library
         Paths_pkg
   default-language: Haskell2010
 
-executable qfunc-exe
+executable funq
   main-is: Main.hs
   other-modules:
       Paths_qfunc

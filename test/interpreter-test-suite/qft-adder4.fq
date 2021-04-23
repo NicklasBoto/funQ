@@ -1,0 +1,36 @@
+exIntA : (QBit >< QBit >< QBit >< QBit)
+exIntA = (new 0, new 1, new 1, new 1)
+
+exIntB : (QBit >< QBit >< QBit >< QBit)
+exIntB = (new 0, new 1, new 1, new 1)
+
+cAdd : (QBit >< QBit >< QBit >< QBit)
+cAdd =  let (b3, b2, b1, b0) = exIntB in
+        let (a0, a1, a2, a3) = swap4 (QFT4  exIntA) in
+        let (b31, a01) = CR  (b3, a0)   in -- 2^1
+        let (b21, a02) = CR2 (b2, a01)  in -- 2^2
+        let (b11, a03) = CR4 (b1, a02)  in -- 2^3
+        let (b01, a04) = CR8 (b0, a03)  in -- 2^4
+
+        let (b22, a11) = CR  (b21, a1)  in -- 2^1
+        let (b12, a12) = CR2 (b11, a11) in -- 2^2
+        let (b02, a13) = CR4 (b01, a12) in -- 2^3
+
+        let (b13, a21) = CR  (b12, a2)  in -- 2^1
+        let (b03, a22) = CR2 (b02, a21) in -- 2^2
+        
+        let (b04, a31) = CR  (b03, a3)  in -- 2^1
+
+        QFTI4 (swap4 (a04, a13, a22, a31))
+
+swap4 : !((QBit >< QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit))
+swap4 q = let (a,b,c,d) = q in
+           let (a1,d1) = SWAP (a,d) in
+           let (b1,c1) = SWAP (b,c) in
+           (a1,b1,c1,d1)
+
+meas4 : (QBit >< QBit >< QBit >< QBit) -o (Bit >< Bit >< Bit >< Bit)
+meas4 q = let (a,b,c,d) = q in (meas a,meas b,meas c,meas d)
+
+main : Bit >< Bit >< Bit >< Bit
+main = meas4 cAdd

@@ -31,10 +31,12 @@ runAnalysis (PDef fs) = do
   onlyBits fs
   correctNumberOfArgs fs
 
+-- | Checks if main function is defined
 mainDefined :: [FunDec] -> Either SemanticError ()
 mainDefined fs = if any isMain fs then Right () else Left $ NoMainFunction "No main function has been declared"
   where isMain f = funName f == "main"
 
+-- | Checks that function name in type signature matches the name in function definition
 funNameMatch :: [FunDec] -> Either SemanticError ()
 funNameMatch fs = checkSemantics fs isValid genErr errorMsg
   where isValid (FDecl (FunVar s) _ (FDef (Var s') _ _)) = funName' s == s' 
@@ -42,13 +44,15 @@ funNameMatch fs = checkSemantics fs isValid genErr errorMsg
         genErr e   = FunNameMismatch $ "Mismatchig names in function declaration and definition for " ++ e
         errorMsg f = funName f
 
+-- | Checks if multiple function declarations are made fo 
 dupFun :: [FunDec] -> Either SemanticError ()
 dupFun fs = checkSemantics fs isValid genErr errorMsg
-  where isValid f  = length (filter (== funName f) funNames) == 1 -- && not (elem (funName f) funNames)
+  where isValid f  = length (filter (== funName f) funNames) == 1
         funNames   = map funName fs
         genErr e   = DuplicateFunction $ "Duplicate function declarations for " ++ e
         errorMsg f = funName f
 
+-- | 
 unknownGate :: [FunDec] -> Either SemanticError ()
 unknownGate fs = checkSemantics fs isValid genErr errorMsg
   where isValid (FDecl _ _ (FDef _ _ t)) = length (unknownGates t []) == 0
@@ -57,11 +61,12 @@ unknownGate fs = checkSemantics fs isValid genErr errorMsg
         unknownGates (TApp t1 t2) gs                  = gs ++ unknownGates t1 [] ++ unknownGates t2 []
         unknownGates (TIfEl t1 t2 t3) gs              = gs ++ unknownGates t1 [] ++ unknownGates t2 [] ++ unknownGates t3 [] 
         unknownGates (TLet _ _ t1 t2) gs              = gs ++ unknownGates t1 [] ++ unknownGates t2 []
-        unknownGates (TLamb _ _ t1) gs                = gs ++ unknownGates t1 []
+        unknownGates (TLamb _ _ _ t1) gs                = gs ++ unknownGates t1 []
         unknownGates _ gs                             = gs
         genErr e = UnknownGate $ e ++ " are not predefined gates"
         errorMsg (FDecl _ _ (FDef _ _ t)) = concat $ intersperse ", " $ unknownGates t []
-        
+  
+-- | Checks that bits only are       
 onlyBits :: [FunDec] -> Either SemanticError ()
 onlyBits fs = checkSemantics fs isValid genErr errorMsg
   where isValid (FDecl _ _ (FDef _ _ t)) = length (invalidBit t []) == 0
@@ -70,11 +75,12 @@ onlyBits fs = checkSemantics fs isValid genErr errorMsg
         invalidBit (TApp t1 t2) gs      = gs ++ invalidBit t1 [] ++ invalidBit t2 []
         invalidBit (TIfEl t1 t2 t3) gs  = gs ++ invalidBit t1 [] ++ invalidBit t2 [] ++ invalidBit t3 [] 
         invalidBit (TLet _ _ t1 t2) gs  = gs ++ invalidBit t1 [] ++ invalidBit t2 []
-        invalidBit (TLamb _ _ t1) gs    = gs ++ invalidBit t1 []
+        invalidBit (TLamb _ _ _ t1) gs    = gs ++ invalidBit t1 []
         invalidBit _ gs                 = gs
         genErr e = InvalidBit $ "Expected value of bits to be 0 or 1 but got " ++ e
         errorMsg (FDecl _ _ (FDef _ _ t)) = concat $ intersperse ", " $ invalidBit t []
 
+-- | Checks that not too many function arguments are given 
 correctNumberOfArgs :: [FunDec] -> Either SemanticError ()
 correctNumberOfArgs fs = checkSemantics fs isValid genErr errorMsg
   where isValid (FDecl _ t (FDef _ args _)) = length args < size t
@@ -86,6 +92,8 @@ correctNumberOfArgs fs = checkSemantics fs isValid genErr errorMsg
         errorMsg f@(FDecl _ t (FDef _ args _)) = "function " ++ funName f ++ " has " ++ (show $ length args) ++ " arguments but it only takes " ++ (show $ size t - 1)
 
 -- Utils
+-- | Iterates functions, checks given predicate and collects all errors, then
+-- | prints entire error. 
 checkSemantics :: [FunDec] -> (FunDec -> Bool) -> (String -> SemanticError) -> (FunDec -> String) -> Either SemanticError ()
 checkSemantics fs isValid err errMsg = if null errors then Right () else Left $ err errors 
   where errors = concat $ intersperse ", " $ unique $ check fs []
@@ -95,11 +103,9 @@ checkSemantics fs isValid err errMsg = if null errors then Right () else Left $ 
         unique = Set.toList . Set.fromList
 
 takeUntil :: String -> String -> String
-takeUntil xs [] = [] 
-takeUntil [] ys = [] 
-takeUntil xs (y:ys) = if isPrefixOf xs (y:ys)
-                      then []
-                      else y:(takeUntil xs (tail (y:ys)))
+takeUntil _ [] = [] 
+takeUntil [] _ = [] 
+takeUntil xs (y:ys) = if isPrefixOf xs (y:ys) then [] else y:(takeUntil xs (tail (y:ys)))
 
 funName :: FunDec -> String 
 funName (FDecl _ _ (FDef (Var s) _ _)) = s

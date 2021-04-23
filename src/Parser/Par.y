@@ -40,32 +40,44 @@ import Parser.Lex
   '><' { PT _ (TS _ 9) }
   'Bit' { PT _ (TS _ 10) }
   'CNOT' { PT _ (TS _ 11) }
-  'CR2' { PT _ (TS _ 12) }
-  'CR2D' { PT _ (TS _ 13) }
-  'CR3' { PT _ (TS _ 14) }
-  'CR4' { PT _ (TS _ 15) }
-  'CR4D' { PT _ (TS _ 16) }
-  'CR8' { PT _ (TS _ 17) }
-  'CR8D' { PT _ (TS _ 18) }
-  'CT' { PT _ (TS _ 19) }
-  'FREDKIN' { PT _ (TS _ 20) }
-  'H' { PT _ (TS _ 21) }
-  'I' { PT _ (TS _ 22) }
-  'QBit' { PT _ (TS _ 23) }
-  'QFT' { PT _ (TS _ 24) }
-  'QFTI' { PT _ (TS _ 25) }
-  'S' { PT _ (TS _ 26) }
-  'SWAP' { PT _ (TS _ 27) }
-  'T' { PT _ (TS _ 28) }
-  'TOFFOLI' { PT _ (TS _ 29) }
-  'X' { PT _ (TS _ 30) }
-  'Y' { PT _ (TS _ 31) }
-  'Z' { PT _ (TS _ 32) }
-  'else' { PT _ (TS _ 33) }
-  'if' { PT _ (TS _ 34) }
-  'in' { PT _ (TS _ 35) }
-  'let' { PT _ (TS _ 36) }
-  'then' { PT _ (TS _ 37) }
+  'CR' { PT _ (TS _ 12) }
+  'CR2' { PT _ (TS _ 13) }
+  'CR2D' { PT _ (TS _ 14) }
+  'CR3' { PT _ (TS _ 15) }
+  'CR3D' { PT _ (TS _ 16) }
+  'CR4' { PT _ (TS _ 17) }
+  'CR4D' { PT _ (TS _ 18) }
+  'CR5' { PT _ (TS _ 19) }
+  'CR5D' { PT _ (TS _ 20) }
+  'CR8' { PT _ (TS _ 21) }
+  'CR8D' { PT _ (TS _ 22) }
+  'CRD' { PT _ (TS _ 23) }
+  'FREDKIN' { PT _ (TS _ 24) }
+  'H' { PT _ (TS _ 25) }
+  'I' { PT _ (TS _ 26) }
+  'QBit' { PT _ (TS _ 27) }
+  'QFT' { PT _ (TS _ 28) }
+  'QFT2' { PT _ (TS _ 29) }
+  'QFT3' { PT _ (TS _ 30) }
+  'QFT4' { PT _ (TS _ 31) }
+  'QFT5' { PT _ (TS _ 32) }
+  'QFTI' { PT _ (TS _ 33) }
+  'QFTI2' { PT _ (TS _ 34) }
+  'QFTI3' { PT _ (TS _ 35) }
+  'QFTI4' { PT _ (TS _ 36) }
+  'QFTI5' { PT _ (TS _ 37) }
+  'S' { PT _ (TS _ 38) }
+  'SWAP' { PT _ (TS _ 39) }
+  'T' { PT _ (TS _ 40) }
+  'TOFFOLI' { PT _ (TS _ 41) }
+  'X' { PT _ (TS _ 42) }
+  'Y' { PT _ (TS _ 43) }
+  'Z' { PT _ (TS _ 44) }
+  'else' { PT _ (TS _ 45) }
+  'if' { PT _ (TS _ 46) }
+  'in' { PT _ (TS _ 47) }
+  'let' { PT _ (TS _ 48) }
+  'then' { PT _ (TS _ 49) }
   L_integ  { PT _ (TI $$) }
   L_FunVar { PT _ (T_FunVar $$) }
   L_Var { PT _ (T_Var $$) }
@@ -106,7 +118,7 @@ Term2 : Term2 Term3 { Parser.Abs.TApp $1 $2 } | Term3 { $1 }
 Term1 :: { Parser.Abs.Term }
 Term1 : 'if' Term2 'then' Term 'else' Term { Parser.Abs.TIfEl $2 $4 $6 }
       | 'let' '(' LetVar ',' ListLetVar ')' '=' Term 'in' Term { Parser.Abs.TLet $3 $5 $8 $10 }
-      | Lambda Var '.' Term { Parser.Abs.TLamb $1 $2 $4 }
+      | Lambda FunVar Type '.' Term { Parser.Abs.TLamb $1 $2 $3 $5 }
       | Term2 { $1 }
 
 Term :: { Parser.Abs.Term }
@@ -144,8 +156,7 @@ ListArg :: { [Parser.Abs.Arg] }
 ListArg : {- empty -} { [] } | Arg ListArg { (:) $1 $2 }
 
 Type2 :: { Parser.Abs.Type }
-Type2 : Var { Parser.Abs.TypeVar $1 }
-      | 'Bit' { Parser.Abs.TypeBit }
+Type2 : 'Bit' { Parser.Abs.TypeBit }
       | 'QBit' { Parser.Abs.TypeQbit }
       | 'T' { Parser.Abs.TypeVoid }
       | '!' Type2 { Parser.Abs.TypeDup $2 }
@@ -173,13 +184,24 @@ Gate : 'H' { Parser.Abs.GH }
      | 'FREDKIN' { Parser.Abs.GFRDK }
      | 'QFT' { Parser.Abs.GQFT }
      | 'QFTI' { Parser.Abs.GQFTI }
-     | 'CT' { Parser.Abs.GCT }
+     | 'QFT2' { Parser.Abs.GQFT2 }
+     | 'QFTI2' { Parser.Abs.GQFTI2 }
+     | 'QFT3' { Parser.Abs.GQFT3 }
+     | 'QFTI3' { Parser.Abs.GQFTI3 }
+     | 'QFT4' { Parser.Abs.GQFT4 }
+     | 'QFTI4' { Parser.Abs.GQFTI4 }
+     | 'QFT5' { Parser.Abs.GQFT5 }
+     | 'QFTI5' { Parser.Abs.GQFTI5 }
+     | 'CR' { Parser.Abs.GCR }
+     | 'CRD' { Parser.Abs.GCRD }
      | 'CR2' { Parser.Abs.GCR2 }
      | 'CR2D' { Parser.Abs.GCR2D }
      | 'CR3' { Parser.Abs.GCR3 }
-     | 'CR3' { Parser.Abs.GCR3D }
+     | 'CR3D' { Parser.Abs.GCR3D }
      | 'CR4' { Parser.Abs.GCR4 }
      | 'CR4D' { Parser.Abs.GCR4D }
+     | 'CR5' { Parser.Abs.GCR5 }
+     | 'CR5D' { Parser.Abs.GCR5D }
      | 'CR8' { Parser.Abs.GCR8 }
      | 'CR8D' { Parser.Abs.GCR8D }
      | GateIdent { Parser.Abs.GGate $1 }
