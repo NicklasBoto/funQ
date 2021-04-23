@@ -124,11 +124,11 @@ testadder n = zipWithM (runtest ((doublefst . head) inputsX)) (take n (drop 8 in
 
 runtest :: Bit -> (Bit, Bit, Bit) -> (Bit, Bit, Bit) -> IO ()
 runtest x a b = do
-  res <- (run . measureAll) (cAdd (new 0) (cAdd (new 1) (cAdd (new 1) (setup a b))))
+  res <- (run . measureAll) (cAdd (new 0) a (cAdd (new 1) a (cAdd (new 1) a (setup b))))
   prettyprint res
   where prettyprint r = putStrLn $ show a ++ "\t" ++ show b ++ "\t" ++ show r ++ "\t" ++
                                    show (correct r) ++ "\t" ++ show (toInt a) ++ "\t" ++ show (toInt b) ++ "\t" ++ show (toInt r)
-        correct r = (3*(toInt a) + toInt b) `mod` 2^3 == toInt r
+        correct r = (2*(toInt a) + toInt b) `mod` 2^3 == toInt r
         toInt :: (Bit,Bit,Bit) -> Int
         toInt = toDec . reverse . toList
         toList :: (Bit,Bit,Bit) -> [Bit]
@@ -137,38 +137,32 @@ runtest x a b = do
         toDec []     = 0
         toDec (b:bs) = fromEnum b + 2*toDec bs
 
-cAdd :: QM QBit -> QM [(QBit,QBit,QBit)] -> QM [(QBit,QBit,QBit)]
-cAdd x q = do
-  [(a2,a1,a0),(b2,b1,b0)] <- q
+cAdd :: QM QBit -> (Bit,Bit,Bit) -> QM (QBit, QBit, QBit) -> QM (QBit, QBit, QBit)
+cAdd x (a2,a1,a0) q = do
+  (b2,b1,b0) <- q
   x1 <- x
   qft 3 [b2,b1,b0]
   swap (b2,b0)
-  ccphase (x1,a2,b2) (2/2)
-  ccphase (x1,a1,b1) (2/2)
-  ccphase (x1,a0,b0) (2/2)
-  ccphase (x1,a1,b2) (2/4)
-  ccphase (x1,a0,b1) (2/4)
-  ccphase (x1,a0,b2) (2/8)
+  if a2 == 1 then cphase (x1,b2) (1/2) else cphase (x1,b2) 0
+  if a1 == 1 then cphase (x1,b1) (1/2) else cphase (x1,b1) 0
+  if a0 == 1 then cphase (x1,b0) (1/2) else cphase (x1,b0) 0
+  if a1 == 1 then cphase (x1,b2) (1/4) else cphase (x1,b2) 0
+  if a0 == 1 then cphase (x1,b1) (1/4) else cphase (x1,b1) 0
+  if a0 == 1 then cphase (x1,b2) (1/8) else cphase (x1,b2) 0
   swap (b2,b0)
   qftDagger 3 [b2,b1,b0]
-  -- out2 <- measure a2
-  -- out1 <- measure a1
-  -- out0 <- measure a0
-  return $ (a2,a1,a0) : [(b2,b1,b0)]
+  return (b2,b1,b0)
 
-setup :: (Bit, Bit, Bit) -> (Bit, Bit, Bit) -> QM [(QBit,QBit,QBit)]
-setup (a2,a1,a0) (b2,b1,b0) = do
+setup :: (Bit, Bit, Bit) -> QM (QBit,QBit,QBit)
+setup (b2,b1,b0) = do
   b21 <- new b2
   b11 <- new b1
   b01 <- new b0
-  a21 <- new a2
-  a11 <- new a1
-  a01 <- new a0
-  return $ (a21,a11,a01) : [(b21,b11,b01)]
+  return (b21,b11,b01)
 
-measureAll :: QM [(QBit, QBit, QBit)] -> QM (Bit,Bit,Bit)
+measureAll :: QM (QBit, QBit, QBit) -> QM (Bit,Bit,Bit)
 measureAll q = do
-  _:[(b2,b1,b0)] <- q
+  (b2,b1,b0) <- q
   out2 <- measure b2
   out1 <- measure b1
   out0 <- measure b0
