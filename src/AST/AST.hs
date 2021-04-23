@@ -16,6 +16,7 @@ module AST.AST
     , runFile
     , run
     , reverseType
+    , AST.AST.Bit(..)
     )
     where
 
@@ -50,7 +51,7 @@ nameL (P.LVar v) = name v
 data Term
     = Idx  Integer      -- bound
     | Fun String        -- free
-    | Bit  Bit
+    | Bit AST.AST.Bit
     | Gate Gate
     | Tup  Term Term
     | App  Term Term
@@ -62,6 +63,8 @@ data Term
     | Unit
     deriving Eq
 
+data Bit = BZero | BOne
+  deriving (Eq, Ord, Show, Read)
 instance Show Function where
     show (Func n t e) = "\n" ++ n ++ " : " ++ show t ++ "\n"
                              ++ n ++ " = " ++ show e ++ "\n"
@@ -122,7 +125,8 @@ makeImTerm env (P.TIfEl cond true false) =
 makeImTerm env (P.TLet x [y] eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv y x env) inn)
 makeImTerm env (P.TLet x (y:ys) eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv y x env) (P.TLet y ys (toTerm y) inn))
 makeImTerm env (P.TTup (P.Tuple t ts)) = foldr1 Tup $ map (makeImTerm env) (t:ts)
-makeImTerm _env (P.TBit b) = Bit b
+makeImTerm _env (P.TBit (BBit 0)) = Bit BZero 
+makeImTerm _env (P.TBit (BBit 1)) = Bit BOne 
 makeImTerm _env (P.TGate g) = Gate g
 makeImTerm _env P.TStar = Unit
 
@@ -193,7 +197,8 @@ reverseImFunction (Func name type' term) = P.FDecl (P.FunVar name) (reverseType 
 reverseImTerm :: Integer -> Term -> P.Term
 reverseImTerm env (Idx idx)    = P.TVar $ P.Var $ 'x' : show (env - idx - 1)
 reverseImTerm env (Fun s)      = P.TVar $ P.Var s
-reverseImTerm env (Bit b)      = P.TBit b
+reverseImTerm env (Bit BZero)  = P.TBit $ P.BBit 0
+reverseImTerm env (Bit BOne)   = P.TBit $ P.BBit 1
 reverseImTerm env (Gate g)     = P.TGate g
 reverseImTerm env (Tup l r)    = P.TTup $ P.Tuple (reverseImTerm env l) [reverseImTerm env r] -- FIXME
 reverseImTerm env (App  t1 t2) = P.TApp (reverseImTerm env t1) (reverseImTerm env t2)

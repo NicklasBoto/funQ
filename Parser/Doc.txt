@@ -37,13 +37,10 @@ Lambda literals are recognized by the regular expression
 The set of reserved words is the set of terminals appearing in the grammar. Those reserved words that consist of non-letter characters are called symbols, and they are treated in a different way from those that are similar to identifiers. The lexer follows rules familiar from languages like Haskell, C, and Java, including longest match and spacing conventions.
 
 The reserved words used in Parser are the following:
-  | ``Bit`` | ``CNOT`` | ``CR`` | ``CR2``
-  | ``CR2D`` | ``CR3`` | ``CR3D`` | ``CR4``
-  | ``CR4D`` | ``CR5`` | ``CR5D`` | ``CR8``
-  | ``CR8D`` | ``CRD`` | ``FREDKIN`` | ``H``
-  | ``I`` | ``QBit`` | ``QFT`` | ``QFT2``
-  | ``QFT3`` | ``QFT4`` | ``QFT5`` | ``QFTI``
-  | ``QFTI2`` | ``QFTI3`` | ``QFTI4`` | ``QFTI5``
+  | ``Bit`` | ``CNOT`` | ``CR2`` | ``CR2D``
+  | ``CR3`` | ``CR4`` | ``CR4D`` | ``CR8``
+  | ``CR8D`` | ``CT`` | ``FREDKIN`` | ``H``
+  | ``I`` | ``QBit`` | ``QFT`` | ``QFTI``
   | ``S`` | ``SWAP`` | ``T`` | ``TOFFOLI``
   | ``X`` | ``Y`` | ``Z`` | ``else``
   | ``if`` | ``in`` | ``let`` | ``then``
@@ -73,7 +70,7 @@ All other symbols are terminals.
   |  |  **|**  | //Term3//
   | //Term1// | -> | ``if`` //Term2// ``then`` //Term// ``else`` //Term//
   |  |  **|**  | ``let`` ``(`` //LetVar// ``,`` //[LetVar]// ``)`` ``=`` //Term// ``in`` //Term//
-  |  |  **|**  | //Lambda// //FunVar// //Type// ``.`` //Term//
+  |  |  **|**  | //Lambda// //Var// ``.`` //Term//
   |  |  **|**  | //Term2//
   | //Term// | -> | //Term1//
   | //LetVar// | -> | //Var//
@@ -90,7 +87,8 @@ All other symbols are terminals.
   | //Arg// | -> | //Var//
   | //[Arg]// | -> | **eps**
   |  |  **|**  | //Arg// //[Arg]//
-  | //Type2// | -> | ``Bit``
+  | //Type2// | -> | //Var//
+  |  |  **|**  | ``Bit``
   |  |  **|**  | ``QBit``
   |  |  **|**  | ``T``
   |  |  **|**  | ``!`` //Type2//
@@ -112,24 +110,13 @@ All other symbols are terminals.
   |  |  **|**  | ``FREDKIN``
   |  |  **|**  | ``QFT``
   |  |  **|**  | ``QFTI``
-  |  |  **|**  | ``QFT2``
-  |  |  **|**  | ``QFTI2``
-  |  |  **|**  | ``QFT3``
-  |  |  **|**  | ``QFTI3``
-  |  |  **|**  | ``QFT4``
-  |  |  **|**  | ``QFTI4``
-  |  |  **|**  | ``QFT5``
-  |  |  **|**  | ``QFTI5``
-  |  |  **|**  | ``CR``
-  |  |  **|**  | ``CRD``
+  |  |  **|**  | ``CT``
   |  |  **|**  | ``CR2``
   |  |  **|**  | ``CR2D``
   |  |  **|**  | ``CR3``
-  |  |  **|**  | ``CR3D``
+  |  |  **|**  | ``CR3``
   |  |  **|**  | ``CR4``
   |  |  **|**  | ``CR4D``
-  |  |  **|**  | ``CR5``
-  |  |  **|**  | ``CR5D``
   |  |  **|**  | ``CR8``
   |  |  **|**  | ``CR8D``
   |  |  **|**  | //GateIdent//

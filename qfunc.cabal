@@ -36,6 +36,7 @@ library
       FunQ
       Interpreter.Interpreter
       Interpreter.Main
+      SemanticAnalysis.SemanticAnalysis
       Lib.Core
       Lib.Gates
       Lib.Internal.Core
