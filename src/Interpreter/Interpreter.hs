@@ -32,10 +32,10 @@ instance Show Value where
     show (VTup a b)    = "⟨" ++ show a ++ "," ++ show b ++ "⟩"
     show (VQBit q)     = "p" ++ show (link q)
     show VUnit         = "*"
-    show (VAbs _ t e) = show (A.Abs t e)
+    show (VAbs _ t e)  = show (A.Abs t e)
     show VNew          = "new"
     show VMeas         = "measure"
-    show (VGate g)     = printTree g
+    show (VGate g)     = show g
 
 
 
@@ -65,7 +65,7 @@ data Value
     | VAbs [Value] A.Type A.Term
     | VNew 
     | VMeas
-    | VGate Gate
+    | VGate A.Gate
 
 -- | Term evaluator
 eval :: Env -> A.Term -> Eval Value
@@ -87,29 +87,29 @@ eval env = \case
 
     A.App e1 e2 -> case e1 of
         A.Gate g -> case g of
-            Abs.GH      -> runGate  Q.hadamard e2 env
-            Abs.GX      -> runGate  Q.pauliX e2 env
-            Abs.GY      -> runGate  Q.pauliY e2 env
-            Abs.GZ      -> runGate  Q.pauliZ e2 env
-            Abs.GI      -> runGate  Q.identity e2 env
-            Abs.GT      -> runGate  Q.phasePi8 e2 env
-            Abs.GS      -> runGate  Q.phase e2 env
-            Abs.GCNOT   -> run2Gate Q.cnot e2 env
-            Abs.GTOF    -> run3Gate Q.toffoli e2 env
-            Abs.GSWP    -> run2Gate Q.swap e2 env
-            Abs.GFRDK   -> run3Gate Q.fredkin e2 env
-            Abs.GQFT n  -> runQFT   (Q.qft $ fromInteger n) e2 env
-            Abs.GQFTI n -> runQFT   (Q.qftDagger $ fromInteger n) e2 env
-            Abs.GCR     -> run2Gate (`Q.cphase` ( 1/2)) e2 env
-            Abs.GCRD    -> run2Gate (`Q.cphase` (-1/2)) e2 env
-            Abs.GCR2    -> run2Gate (`Q.cphase` ( 1/4)) e2 env
-            Abs.GCR2D   -> run2Gate (`Q.cphase` (-1/4)) e2 env
-            Abs.GCR3    -> run2Gate (`Q.cphase` ( 1/3)) e2 env
-            Abs.GCR3D   -> run2Gate (`Q.cphase` (-1/3)) e2 env
-            Abs.GCR4    -> run2Gate (`Q.cphase` ( 1/8)) e2 env
-            Abs.GCR4D   -> run2Gate (`Q.cphase` (-1/8)) e2 env
-            Abs.GCR8    -> run2Gate (`Q.cphase` ( 1/16)) e2 env
-            Abs.GCR8D   -> run2Gate (`Q.cphase` (-1/16)) e2 env
+            A.GH      -> runGate  Q.hadamard e2 env
+            A.GX      -> runGate  Q.pauliX e2 env
+            A.GY      -> runGate  Q.pauliY e2 env
+            A.GZ      -> runGate  Q.pauliZ e2 env
+            A.GI      -> runGate  Q.identity e2 env
+            A.GT      -> runGate  Q.phasePi8 e2 env
+            A.GS      -> runGate  Q.phase e2 env
+            A.GCNOT   -> run2Gate Q.cnot e2 env
+            A.GTOF    -> run3Gate Q.toffoli e2 env
+            A.GSWP    -> run2Gate Q.swap e2 env
+            A.GFRDK   -> run3Gate Q.fredkin e2 env
+            A.GQFT n  -> runQFT   (Q.qft n) e2 env
+            A.GQFTI n -> runQFT   (Q.qftDagger n) e2 env
+            A.GCR     -> run2Gate (`Q.cphase` ( 1/2)) e2 env
+            A.GCRD    -> run2Gate (`Q.cphase` (-1/2)) e2 env
+            A.GCR2    -> run2Gate (`Q.cphase` ( 1/4)) e2 env
+            A.GCR2D   -> run2Gate (`Q.cphase` (-1/4)) e2 env
+            A.GCR3    -> run2Gate (`Q.cphase` ( 1/3)) e2 env
+            A.GCR3D   -> run2Gate (`Q.cphase` (-1/3)) e2 env
+            A.GCR4    -> run2Gate (`Q.cphase` ( 1/8)) e2 env
+            A.GCR4D   -> run2Gate (`Q.cphase` (-1/8)) e2 env
+            A.GCR8    -> run2Gate (`Q.cphase` ( 1/16)) e2 env
+            A.GCR8D   -> run2Gate (`Q.cphase` (-1/16)) e2 env
 
         A.New -> do
             VBit b' <- eval env e2

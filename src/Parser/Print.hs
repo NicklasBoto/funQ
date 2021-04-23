@@ -191,8 +191,6 @@ instance Print Parser.Abs.Gate where
     Parser.Abs.GTOF -> prPrec i 0 (concatD [doc (showString "TOFFOLI")])
     Parser.Abs.GSWP -> prPrec i 0 (concatD [doc (showString "SWAP")])
     Parser.Abs.GFRDK -> prPrec i 0 (concatD [doc (showString "FREDKIN")])
-    Parser.Abs.GQFT n -> prPrec i 0 (concatD [doc (showString "QFT"), prt 0 n])
-    Parser.Abs.GQFTI n -> prPrec i 0 (concatD [doc (showString "QFTI"), prt 0 n])
     Parser.Abs.GCR -> prPrec i 0 (concatD [doc (showString "CR")])
     Parser.Abs.GCRD -> prPrec i 0 (concatD [doc (showString "CRD")])
     Parser.Abs.GCR2 -> prPrec i 0 (concatD [doc (showString "CR2")])

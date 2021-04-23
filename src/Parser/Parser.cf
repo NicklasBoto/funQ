@@ -38,7 +38,7 @@ token FunVar (lower (letter | digit | '_' | '\'')* (' ')* ':') ;
 token Var (lower (letter | digit | '_' | '\'')*) ;
 
 --- GateIdent ---
-token GateIdent ((upper)+) ;
+token GateIdent (upper (upper | digit)*) ;
 
 --- Lambda token ---
 -- token Lambda char (0xBB) ;
@@ -65,8 +65,6 @@ GCNOT  . Gate ::= "CNOT"         ;
 GTOF   . Gate ::= "TOFFOLI"      ;
 GSWP   . Gate ::= "SWAP"         ;
 GFRDK  . Gate ::= "FREDKIN"      ;
-GQFT   . Gate ::= "QFT"  Integer ;
-GQFTI  . Gate ::= "QFTI" Integer ;
 GCR    . Gate ::= "CR"           ;
 GCRD   . Gate ::= "CRD"          ;
 GCR2   . Gate ::= "CR2"          ;

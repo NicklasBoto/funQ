@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Type.TypeChecker where
-import AST.AST
+import AST.AST as A
 import Control.Monad.Except hiding (throwError)
 import qualified Control.Monad.Except as EX
 import Control.Monad.Reader
@@ -309,10 +309,10 @@ names (Fun f)      = [f]
 names _            = []
 
 -- | Infer type of a gate.
-inferGate :: Gate -> Type
+inferGate :: A.Gate -> Type
 inferGate g = TypeDup (arg :=> arg)
     where
-        arg = foldr (:><) TypeQBit (replicate ((fromInteger n)-1) TypeQBit)
+        arg = foldr (:><) TypeQBit (replicate (n-1) TypeQBit)
         n = case g of
                 GQFT n  -> n
                 GQFTI n -> n

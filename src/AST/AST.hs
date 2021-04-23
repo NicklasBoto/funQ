@@ -4,7 +4,7 @@ module AST.AST
     , Function(..)
     , Term(..)
     , Type(..)
-    , Gate(..)
+    , AST.AST.Gate(..)
 
      -- * Term functions
     , toIm
@@ -17,14 +17,14 @@ module AST.AST
     , run
     , reverseType
     , AST.AST.Bit(..)
-    )
+    ) 
     where
 
 import Parser.Par ( myLexer, pProgram )
 import Parser.Print ( printTree )
 import qualified Parser.Abs as P
 import qualified Data.Map as M
-import Parser.Abs (Gate(..), Bit(..))
+import Data.Char ( digitToInt )
 
 type Env = M.Map String Integer
 
@@ -62,6 +62,35 @@ data Term
     | Meas
     | Unit
     deriving Eq
+
+data Gate
+    = GH
+    | GX
+    | GY
+    | GZ
+    | GI
+    | GS
+    | GT
+    | GCNOT
+    | GTOF
+    | GSWP
+    | GFRDK
+    | GQFT Int
+    | GQFTI Int
+    | GCR
+    | GCRD
+    | GCR2
+    | GCR2D
+    | GCR3
+    | GCR3D
+    | GCR4
+    | GCR4D
+    | GCR5
+    | GCR5D
+    | GCR8
+    | GCR8D
+    | GGate P.GateIdent
+  deriving (Eq, Ord, Show, Read)
 
 data Bit = BZero | BOne
   deriving (Eq, Ord, Show, Read)
@@ -125,9 +154,12 @@ makeImTerm env (P.TIfEl cond true false) =
 makeImTerm env (P.TLet x [y] eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv y x env) inn)
 makeImTerm env (P.TLet x (y:ys) eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv y x env) (P.TLet y ys (toTerm y) inn))
 makeImTerm env (P.TTup (P.Tuple t ts)) = foldr1 Tup $ map (makeImTerm env) (t:ts)
-makeImTerm _env (P.TBit (BBit 0)) = Bit BZero 
-makeImTerm _env (P.TBit (BBit 1)) = Bit BOne 
-makeImTerm _env (P.TGate g) = Gate g
+makeImTerm _env (P.TBit (P.BBit 0)) = Bit BZero 
+makeImTerm _env (P.TBit (P.BBit 1)) = Bit BOne 
+makeImTerm _env (P.TGate (P.GGate (P.GateIdent g))) 
+    | init g == "QFT"  = Gate $ GQFT (digitToInt $ last g)
+    | init g == "QFTI" = Gate $ GQFTI (digitToInt $ last g)
+makeImTerm _env (P.TGate g) = Gate $ gateToASTGate g 
 makeImTerm _env P.TStar = Unit
 
 letEnv :: P.LetVar -> P.LetVar -> Env -> Env
@@ -199,7 +231,7 @@ reverseImTerm env (Idx idx)    = P.TVar $ P.Var $ 'x' : show (env - idx - 1)
 reverseImTerm env (Fun s)      = P.TVar $ P.Var s
 reverseImTerm env (Bit BZero)  = P.TBit $ P.BBit 0
 reverseImTerm env (Bit BOne)   = P.TBit $ P.BBit 1
-reverseImTerm env (Gate g)     = P.TGate g
+reverseImTerm env (Gate g)     = undefined -- P.TGate g --FIXME
 reverseImTerm env (Tup l r)    = P.TTup $ P.Tuple (reverseImTerm env l) [reverseImTerm env r] -- FIXME
 reverseImTerm env (App  t1 t2) = P.TApp (reverseImTerm env t1) (reverseImTerm env t2)
 reverseImTerm env (IfEl c t e) = P.TIfEl (reverseImTerm env c) (reverseImTerm env t) (reverseImTerm env e)
@@ -229,6 +261,20 @@ propTestFile path = do
 
 runFile :: FilePath -> IO Program
 runFile path = run <$> readFile path
+
+gateToASTGate :: P.Gate -> Gate 
+gateToASTGate g = case g of
+    P.GH    -> GH
+    P.GX    -> GX
+    P.GY    -> GY
+    P.GZ    -> GZ
+    P.GI    -> GI
+    P.GS    -> GS
+    P.GT    -> AST.AST.GT
+    P.GCNOT -> GCNOT
+    P.GTOF  -> GTOF
+    P.GSWP  -> GSWP
+    P.GFRDK -> GFRDK  
 
 -- cause this might vanish from Parser.Abs
 -- instance C.Show Type where

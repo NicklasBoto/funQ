@@ -56,20 +56,18 @@ import Parser.Lex
   'H' { PT _ (TS _ 25) }
   'I' { PT _ (TS _ 26) }
   'QBit' { PT _ (TS _ 27) }
-  'QFT' { PT _ (TS _ 28) }
-  'QFTI' { PT _ (TS _ 29) }
-  'S' { PT _ (TS _ 30) }
-  'SWAP' { PT _ (TS _ 31) }
-  'T' { PT _ (TS _ 32) }
-  'TOFFOLI' { PT _ (TS _ 33) }
-  'X' { PT _ (TS _ 34) }
-  'Y' { PT _ (TS _ 35) }
-  'Z' { PT _ (TS _ 36) }
-  'else' { PT _ (TS _ 37) }
-  'if' { PT _ (TS _ 38) }
-  'in' { PT _ (TS _ 39) }
-  'let' { PT _ (TS _ 40) }
-  'then' { PT _ (TS _ 41) }
+  'S' { PT _ (TS _ 28) }
+  'SWAP' { PT _ (TS _ 29) }
+  'T' { PT _ (TS _ 30) }
+  'TOFFOLI' { PT _ (TS _ 31) }
+  'X' { PT _ (TS _ 32) }
+  'Y' { PT _ (TS _ 33) }
+  'Z' { PT _ (TS _ 34) }
+  'else' { PT _ (TS _ 35) }
+  'if' { PT _ (TS _ 36) }
+  'in' { PT _ (TS _ 37) }
+  'let' { PT _ (TS _ 38) }
+  'then' { PT _ (TS _ 39) }
   L_integ  { PT _ (TI $$) }
   L_FunVar { PT _ (T_FunVar $$) }
   L_Var { PT _ (T_Var $$) }
@@ -174,8 +172,6 @@ Gate : 'H' { Parser.Abs.GH }
      | 'TOFFOLI' { Parser.Abs.GTOF }
      | 'SWAP' { Parser.Abs.GSWP }
      | 'FREDKIN' { Parser.Abs.GFRDK }
-     | 'QFT' Integer { Parser.Abs.GQFT $2 }
-     | 'QFTI' Integer { Parser.Abs.GQFTI $2 }
      | 'CR' { Parser.Abs.GCR }
      | 'CRD' { Parser.Abs.GCRD }
      | 'CR2' { Parser.Abs.GCR2 }

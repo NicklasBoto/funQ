@@ -75,8 +75,6 @@ data Gate
     | GTOF
     | GSWP
     | GFRDK
-    | GQFT Integer
-    | GQFTI Integer
     | GCR
     | GCRD
     | GCR2
