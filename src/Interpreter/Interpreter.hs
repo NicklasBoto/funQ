@@ -56,7 +56,7 @@ instance Show Value where
     show (VTup a b)    = "⟨" ++ show a ++ "," ++ show b ++ "⟩"
     show (VQBit q)     = "p" ++ show (link q)
     show VUnit         = "*"
-    show (VAbs _ t e) = show (A.Abs t e)
+    show (VAbs _ t e)  = show (A.Abs t e)
     show VNew          = "new"
     show VMeas         = "measure"
     show (VGate g)     = printTree g

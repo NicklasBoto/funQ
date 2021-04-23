@@ -1,6 +1,6 @@
 {-# language LambdaCase #-}
 
-module Interpreter.Main where
+module Interpreter.Run where
 
 import qualified FunQ as Q
 import qualified AST.AST as A
@@ -15,7 +15,7 @@ import Control.Monad.Except
       runExceptT,
       withExceptT, replicateM, zipWithM )
 import Data.Bifunctor ( Bifunctor(bimap) )
-import Control.Exception (try)
+import Control.Exception (Exception, try)
 import qualified Type.TypeChecker as TC
 import Data.List
 import Data.Maybe
@@ -31,31 +31,6 @@ import Data.Maybe
 -- * inte ska dö om interpreter/typechecker failar
 -- * coolt: kunna loada en fil och köra funktioner
 -- * kunna skriva run [filnamn] utan hela sökvägen -> letar i subdirectories efter filen
-
--- | Runs the funq interpreter.
-main :: IO ()
-main = runInputT defaultSettings loop
-  where
-    loop :: InputT IO ()
-    loop = do
-      minput <- getInputLine "λ: "
-      case minput of
-          Nothing -> return ()
-          Just ":q" -> return ()
-          Just ":help" -> outputStrLn ":q to quit, :run filename to run a file, type to expressions" >> loop
-          Just input -> do
-            let w = words input
-            case head w of 
-              ":run" -> do
-                case length w of
-                  1 -> outputStrLn "Need to specify file to run" >> loop
-                  _ -> do
-                    outputStrLn $ "runs " ++ (w !! 1)
-                    liftIO $ runIO (w !! 1)
-                    loop
-              _ -> do
-                liftIO $ runTerminalIO $ "main : T main = " ++ input
-                loop
 
 type Run a = ExceptT Error IO a
 
@@ -99,6 +74,7 @@ readfile path = do
     Left  _ -> throwError $ NoSuchFile path
     Right s -> return s
 
+parse :: String -> Run A.Program
 parse = toErr (pProgram . myLexer) ParseError A.toIm
 
 typecheck :: A.Program -> Run A.Program
@@ -115,6 +91,19 @@ runTerminal s = do
   typ <- toErr (TC.runCheck . TC.infer) TypeError id term
   val <- eval p
   return (val, typ)
+
+runProgram :: A.Program -> Run (I.Value, A.Type)
+runProgram p = do
+  typecheck p
+  val <- eval p
+  typ <- case lookup "main" [(n,t) | A.Func n t _ <- p] of
+    Nothing -> throwError $ ValueError $ I.NoMainFunction "bad error handling"
+    Just  t -> return t
+  return (val, typ)
+
+parseExp :: [Char] -> A.Term
+parseExp e = t
+  where [A.Func _ _ t] = A.run ("f : T f = " ++ e)
 
 eval :: A.Program -> Run I.Value
 eval = withExceptT ValueError . mapExceptT Q.run . I.interpret
@@ -165,7 +154,7 @@ prettystats :: (Int, Double, Int) -> String
 prettystats (a,b,c) = concatMap show ((fillzeros . toBin) a) ++ ": " ++ "\t" ++ (show . truncateboi) b ++ "%" ++ "\t" ++ show c
   where toBin 0 = []
         toBin n | n `mod` 2 == 1 = toBin (n `div` 2) ++ [1]
-        toBin n | n `mod` 2 == 0 = toBin (n `div` 2) ++ [0]
+                | even n         = toBin (n `div` 2) ++ [0]
         truncateboi d = (fromIntegral . truncate) (10000*(d :: Double))/100
         fillzeros as = if length as == 4 then as else replicate (4 - length as) 0 ++ as
 

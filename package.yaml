@@ -35,6 +35,7 @@ dependencies:
 - array
 - containers
 - haskeline
+- repline == 0.4.0.0
 - turtle
 - parsec
 

@@ -12,7 +12,10 @@ import Data.String
 import Data.Maybe
 
 runCheck :: Check a -> Either TypeError a
-runCheck c = evalState (runReaderT (runExceptT c) M.empty) emptyErrorEnv
+runCheck c = runCheckWith c M.empty emptyErrorEnv
+
+runCheckWith :: Check a -> TopEnv -> ErrorEnv -> Either TypeError a
+runCheckWith c t = evalState (runReaderT (runExceptT c) t)
 
 -- | Typecheck a program.
 --   Returns TypeError on failure an unit on success.
