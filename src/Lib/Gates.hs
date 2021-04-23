@@ -26,6 +26,7 @@ module Lib.Gates (
     , qft
     , qftDagger
     , cphase
+    , ccphase
 ) where
 
 import Lib.Internal.Gates
@@ -179,6 +180,13 @@ cphase (c, t) p = do
   let g = controlMatrix size c t (phasemat (p :: Double)) 
   applyGate g
   return (c,t)
+
+ccphase :: (QBit, QBit, QBit) -> Double -> QM (QBit, QBit, QBit)
+ccphase (c1,c2,t) p = do
+  (_, size) <- getState
+  let g = ccontrolMatrix size c1 c2 t (phasemat (p :: Double)) 
+  applyGate g
+  return (c1,c2,t)
 
 identity :: QBit -> QM QBit
 identity = runGate idmat

@@ -70,6 +70,7 @@ library
     , numbers
     , parsec
     , turtle
+    , monadlist
   if false
     other-modules:
         Paths_pkg

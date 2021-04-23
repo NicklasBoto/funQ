@@ -34,9 +34,9 @@ Lambda literals are recognized by the regular expression
 The set of reserved words is the set of terminals appearing in the grammar. Those reserved words that consist of non-letter characters are called symbols, and they are treated in a different way from those that are similar to identifiers. The lexer follows rules familiar from languages like Haskell, C, and Java, including longest match and spacing conventions.
 
 The reserved words used in Parser are the following:
-  | ``Bit`` | ``CNOT`` | ``CR`` | ``CR2``
-  | ``CR2D`` | ``CR3`` | ``CR3D`` | ``CR4``
-  | ``CR4D`` | ``CR5`` | ``CR5D`` | ``CR8``
+  | ``Bit`` | ``CCR`` | ``CCR2`` | ``CCR4``
+  | ``CCR8`` | ``CNOT`` | ``CR`` | ``CR2``
+  | ``CR2D`` | ``CR4`` | ``CR4D`` | ``CR8``
   | ``CR8D`` | ``CRD`` | ``FREDKIN`` | ``H``
   | ``I`` | ``QBit`` | ``QFT`` | ``QFT2``
   | ``QFT3`` | ``QFT4`` | ``QFT5`` | ``QFTI``
@@ -122,14 +122,14 @@ All other symbols are terminals.
   |  |  **|**  | ``CRD``
   |  |  **|**  | ``CR2``
   |  |  **|**  | ``CR2D``
-  |  |  **|**  | ``CR3``
-  |  |  **|**  | ``CR3D``
   |  |  **|**  | ``CR4``
   |  |  **|**  | ``CR4D``
-  |  |  **|**  | ``CR5``
-  |  |  **|**  | ``CR5D``
   |  |  **|**  | ``CR8``
   |  |  **|**  | ``CR8D``
+  |  |  **|**  | ``CCR``
+  |  |  **|**  | ``CCR2``
+  |  |  **|**  | ``CCR4``
+  |  |  **|**  | ``CCR8``
   |  |  **|**  | //GateIdent//
 
 

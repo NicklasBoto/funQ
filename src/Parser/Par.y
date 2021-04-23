@@ -67,16 +67,16 @@ import Parser.Lex
   '=' { PT _ (TS _ 10) }
   '><' { PT _ (TS _ 11) }
   'Bit' { PT _ (TS _ 12) }
-  'CNOT' { PT _ (TS _ 13) }
-  'CR' { PT _ (TS _ 14) }
-  'CR2' { PT _ (TS _ 15) }
-  'CR2D' { PT _ (TS _ 16) }
-  'CR3' { PT _ (TS _ 17) }
-  'CR3D' { PT _ (TS _ 18) }
-  'CR4' { PT _ (TS _ 19) }
-  'CR4D' { PT _ (TS _ 20) }
-  'CR5' { PT _ (TS _ 21) }
-  'CR5D' { PT _ (TS _ 22) }
+  'CCR' { PT _ (TS _ 13) }
+  'CCR2' { PT _ (TS _ 14) }
+  'CCR4' { PT _ (TS _ 15) }
+  'CCR8' { PT _ (TS _ 16) }
+  'CNOT' { PT _ (TS _ 17) }
+  'CR' { PT _ (TS _ 18) }
+  'CR2' { PT _ (TS _ 19) }
+  'CR2D' { PT _ (TS _ 20) }
+  'CR4' { PT _ (TS _ 21) }
+  'CR4D' { PT _ (TS _ 22) }
   'CR8' { PT _ (TS _ 23) }
   'CR8D' { PT _ (TS _ 24) }
   'CRD' { PT _ (TS _ 25) }
@@ -220,14 +220,14 @@ Gate : 'H' { Parser.Abs.GH }
      | 'CRD' { Parser.Abs.GCRD }
      | 'CR2' { Parser.Abs.GCR2 }
      | 'CR2D' { Parser.Abs.GCR2D }
-     | 'CR3' { Parser.Abs.GCR3 }
-     | 'CR3D' { Parser.Abs.GCR3D }
      | 'CR4' { Parser.Abs.GCR4 }
      | 'CR4D' { Parser.Abs.GCR4D }
-     | 'CR5' { Parser.Abs.GCR5 }
-     | 'CR5D' { Parser.Abs.GCR5D }
      | 'CR8' { Parser.Abs.GCR8 }
      | 'CR8D' { Parser.Abs.GCR8D }
+     | 'CCR' { Parser.Abs.GCCR }
+     | 'CCR2' { Parser.Abs.GCCR2 }
+     | 'CCR4' { Parser.Abs.GCCR4 }
+     | 'CCR8' { Parser.Abs.GCCR8 }
      | GateIdent { Parser.Abs.GGate $1 }
 {
 

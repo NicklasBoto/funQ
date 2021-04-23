@@ -92,14 +92,14 @@ Grammar
 	Gate -> 'CRD'                                      (83)
 	Gate -> 'CR2'                                      (84)
 	Gate -> 'CR2D'                                     (85)
-	Gate -> 'CR3'                                      (86)
-	Gate -> 'CR3D'                                     (87)
-	Gate -> 'CR4'                                      (88)
-	Gate -> 'CR4D'                                     (89)
-	Gate -> 'CR5'                                      (90)
-	Gate -> 'CR5D'                                     (91)
-	Gate -> 'CR8'                                      (92)
-	Gate -> 'CR8D'                                     (93)
+	Gate -> 'CR4'                                      (86)
+	Gate -> 'CR4D'                                     (87)
+	Gate -> 'CR8'                                      (88)
+	Gate -> 'CR8D'                                     (89)
+	Gate -> 'CCR'                                      (90)
+	Gate -> 'CCR2'                                     (91)
+	Gate -> 'CCR4'                                     (92)
+	Gate -> 'CCR8'                                     (93)
 	Gate -> GateIdent                                  (94)
 
 -----------------------------------------------------------------------------
@@ -117,16 +117,16 @@ Terminals
 	'='            { PT _ (TS _ 10) }
 	'><'           { PT _ (TS _ 11) }
 	'Bit'          { PT _ (TS _ 12) }
-	'CNOT'         { PT _ (TS _ 13) }
-	'CR'           { PT _ (TS _ 14) }
-	'CR2'          { PT _ (TS _ 15) }
-	'CR2D'         { PT _ (TS _ 16) }
-	'CR3'          { PT _ (TS _ 17) }
-	'CR3D'         { PT _ (TS _ 18) }
-	'CR4'          { PT _ (TS _ 19) }
-	'CR4D'         { PT _ (TS _ 20) }
-	'CR5'          { PT _ (TS _ 21) }
-	'CR5D'         { PT _ (TS _ 22) }
+	'CCR'          { PT _ (TS _ 13) }
+	'CCR2'         { PT _ (TS _ 14) }
+	'CCR4'         { PT _ (TS _ 15) }
+	'CCR8'         { PT _ (TS _ 16) }
+	'CNOT'         { PT _ (TS _ 17) }
+	'CR'           { PT _ (TS _ 18) }
+	'CR2'          { PT _ (TS _ 19) }
+	'CR2D'         { PT _ (TS _ 20) }
+	'CR4'          { PT _ (TS _ 21) }
+	'CR4D'         { PT _ (TS _ 22) }
 	'CR8'          { PT _ (TS _ 23) }
 	'CR8D'         { PT _ (TS _ 24) }
 	'CRD'          { PT _ (TS _ 25) }
@@ -228,16 +228,16 @@ State 1
 	'*'            shift, and enter state 92
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -278,16 +278,16 @@ State 2
 	'*'            shift, and enter state 92
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -329,16 +329,16 @@ State 3
 	'*'            shift, and enter state 92
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -385,16 +385,16 @@ State 4
 	'*'            shift, and enter state 92
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -466,16 +466,16 @@ State 8
 	'*'            shift, and enter state 92
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -608,16 +608,16 @@ State 17
 State 18
 
 
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -673,16 +673,16 @@ State 21
 	','            reduce using rule 94
 	'0'            reduce using rule 94
 	'1'            reduce using rule 94
+	'CCR'          reduce using rule 94
+	'CCR2'         reduce using rule 94
+	'CCR4'         reduce using rule 94
+	'CCR8'         reduce using rule 94
 	'CNOT'         reduce using rule 94
 	'CR'           reduce using rule 94
 	'CR2'          reduce using rule 94
 	'CR2D'         reduce using rule 94
-	'CR3'          reduce using rule 94
-	'CR3D'         reduce using rule 94
 	'CR4'          reduce using rule 94
 	'CR4D'         reduce using rule 94
-	'CR5'          reduce using rule 94
-	'CR5D'         reduce using rule 94
 	'CR8'          reduce using rule 94
 	'CR8D'         reduce using rule 94
 	'CRD'          reduce using rule 94
@@ -724,423 +724,7 @@ State 22
 
 State 23
 
-	Gate -> 'CNOT' .                                    (rule 68)
-
-	'('            reduce using rule 68
-	')'            reduce using rule 68
-	'*'            reduce using rule 68
-	','            reduce using rule 68
-	'0'            reduce using rule 68
-	'1'            reduce using rule 68
-	'CNOT'         reduce using rule 68
-	'CR'           reduce using rule 68
-	'CR2'          reduce using rule 68
-	'CR2D'         reduce using rule 68
-	'CR3'          reduce using rule 68
-	'CR3D'         reduce using rule 68
-	'CR4'          reduce using rule 68
-	'CR4D'         reduce using rule 68
-	'CR5'          reduce using rule 68
-	'CR5D'         reduce using rule 68
-	'CR8'          reduce using rule 68
-	'CR8D'         reduce using rule 68
-	'CRD'          reduce using rule 68
-	'FREDKIN'      reduce using rule 68
-	'H'            reduce using rule 68
-	'I'            reduce using rule 68
-	'QFT'          reduce using rule 68
-	'QFT2'         reduce using rule 68
-	'QFT3'         reduce using rule 68
-	'QFT4'         reduce using rule 68
-	'QFT5'         reduce using rule 68
-	'QFTI'         reduce using rule 68
-	'QFTI2'        reduce using rule 68
-	'QFTI3'        reduce using rule 68
-	'QFTI4'        reduce using rule 68
-	'QFTI5'        reduce using rule 68
-	'S'            reduce using rule 68
-	'SWAP'         reduce using rule 68
-	'T'            reduce using rule 68
-	'TOFFOLI'      reduce using rule 68
-	'X'            reduce using rule 68
-	'Y'            reduce using rule 68
-	'Z'            reduce using rule 68
-	'else'         reduce using rule 68
-	'in'           reduce using rule 68
-	'then'         reduce using rule 68
-	L_FunVar       reduce using rule 68
-	L_Var          reduce using rule 68
-	L_GateIdent    reduce using rule 68
-	%eof           reduce using rule 68
-
-
-State 24
-
-	Gate -> 'CR' .                                      (rule 82)
-
-	'('            reduce using rule 82
-	')'            reduce using rule 82
-	'*'            reduce using rule 82
-	','            reduce using rule 82
-	'0'            reduce using rule 82
-	'1'            reduce using rule 82
-	'CNOT'         reduce using rule 82
-	'CR'           reduce using rule 82
-	'CR2'          reduce using rule 82
-	'CR2D'         reduce using rule 82
-	'CR3'          reduce using rule 82
-	'CR3D'         reduce using rule 82
-	'CR4'          reduce using rule 82
-	'CR4D'         reduce using rule 82
-	'CR5'          reduce using rule 82
-	'CR5D'         reduce using rule 82
-	'CR8'          reduce using rule 82
-	'CR8D'         reduce using rule 82
-	'CRD'          reduce using rule 82
-	'FREDKIN'      reduce using rule 82
-	'H'            reduce using rule 82
-	'I'            reduce using rule 82
-	'QFT'          reduce using rule 82
-	'QFT2'         reduce using rule 82
-	'QFT3'         reduce using rule 82
-	'QFT4'         reduce using rule 82
-	'QFT5'         reduce using rule 82
-	'QFTI'         reduce using rule 82
-	'QFTI2'        reduce using rule 82
-	'QFTI3'        reduce using rule 82
-	'QFTI4'        reduce using rule 82
-	'QFTI5'        reduce using rule 82
-	'S'            reduce using rule 82
-	'SWAP'         reduce using rule 82
-	'T'            reduce using rule 82
-	'TOFFOLI'      reduce using rule 82
-	'X'            reduce using rule 82
-	'Y'            reduce using rule 82
-	'Z'            reduce using rule 82
-	'else'         reduce using rule 82
-	'in'           reduce using rule 82
-	'then'         reduce using rule 82
-	L_FunVar       reduce using rule 82
-	L_Var          reduce using rule 82
-	L_GateIdent    reduce using rule 82
-	%eof           reduce using rule 82
-
-
-State 25
-
-	Gate -> 'CR2' .                                     (rule 84)
-
-	'('            reduce using rule 84
-	')'            reduce using rule 84
-	'*'            reduce using rule 84
-	','            reduce using rule 84
-	'0'            reduce using rule 84
-	'1'            reduce using rule 84
-	'CNOT'         reduce using rule 84
-	'CR'           reduce using rule 84
-	'CR2'          reduce using rule 84
-	'CR2D'         reduce using rule 84
-	'CR3'          reduce using rule 84
-	'CR3D'         reduce using rule 84
-	'CR4'          reduce using rule 84
-	'CR4D'         reduce using rule 84
-	'CR5'          reduce using rule 84
-	'CR5D'         reduce using rule 84
-	'CR8'          reduce using rule 84
-	'CR8D'         reduce using rule 84
-	'CRD'          reduce using rule 84
-	'FREDKIN'      reduce using rule 84
-	'H'            reduce using rule 84
-	'I'            reduce using rule 84
-	'QFT'          reduce using rule 84
-	'QFT2'         reduce using rule 84
-	'QFT3'         reduce using rule 84
-	'QFT4'         reduce using rule 84
-	'QFT5'         reduce using rule 84
-	'QFTI'         reduce using rule 84
-	'QFTI2'        reduce using rule 84
-	'QFTI3'        reduce using rule 84
-	'QFTI4'        reduce using rule 84
-	'QFTI5'        reduce using rule 84
-	'S'            reduce using rule 84
-	'SWAP'         reduce using rule 84
-	'T'            reduce using rule 84
-	'TOFFOLI'      reduce using rule 84
-	'X'            reduce using rule 84
-	'Y'            reduce using rule 84
-	'Z'            reduce using rule 84
-	'else'         reduce using rule 84
-	'in'           reduce using rule 84
-	'then'         reduce using rule 84
-	L_FunVar       reduce using rule 84
-	L_Var          reduce using rule 84
-	L_GateIdent    reduce using rule 84
-	%eof           reduce using rule 84
-
-
-State 26
-
-	Gate -> 'CR2D' .                                    (rule 85)
-
-	'('            reduce using rule 85
-	')'            reduce using rule 85
-	'*'            reduce using rule 85
-	','            reduce using rule 85
-	'0'            reduce using rule 85
-	'1'            reduce using rule 85
-	'CNOT'         reduce using rule 85
-	'CR'           reduce using rule 85
-	'CR2'          reduce using rule 85
-	'CR2D'         reduce using rule 85
-	'CR3'          reduce using rule 85
-	'CR3D'         reduce using rule 85
-	'CR4'          reduce using rule 85
-	'CR4D'         reduce using rule 85
-	'CR5'          reduce using rule 85
-	'CR5D'         reduce using rule 85
-	'CR8'          reduce using rule 85
-	'CR8D'         reduce using rule 85
-	'CRD'          reduce using rule 85
-	'FREDKIN'      reduce using rule 85
-	'H'            reduce using rule 85
-	'I'            reduce using rule 85
-	'QFT'          reduce using rule 85
-	'QFT2'         reduce using rule 85
-	'QFT3'         reduce using rule 85
-	'QFT4'         reduce using rule 85
-	'QFT5'         reduce using rule 85
-	'QFTI'         reduce using rule 85
-	'QFTI2'        reduce using rule 85
-	'QFTI3'        reduce using rule 85
-	'QFTI4'        reduce using rule 85
-	'QFTI5'        reduce using rule 85
-	'S'            reduce using rule 85
-	'SWAP'         reduce using rule 85
-	'T'            reduce using rule 85
-	'TOFFOLI'      reduce using rule 85
-	'X'            reduce using rule 85
-	'Y'            reduce using rule 85
-	'Z'            reduce using rule 85
-	'else'         reduce using rule 85
-	'in'           reduce using rule 85
-	'then'         reduce using rule 85
-	L_FunVar       reduce using rule 85
-	L_Var          reduce using rule 85
-	L_GateIdent    reduce using rule 85
-	%eof           reduce using rule 85
-
-
-State 27
-
-	Gate -> 'CR3' .                                     (rule 86)
-
-	'('            reduce using rule 86
-	')'            reduce using rule 86
-	'*'            reduce using rule 86
-	','            reduce using rule 86
-	'0'            reduce using rule 86
-	'1'            reduce using rule 86
-	'CNOT'         reduce using rule 86
-	'CR'           reduce using rule 86
-	'CR2'          reduce using rule 86
-	'CR2D'         reduce using rule 86
-	'CR3'          reduce using rule 86
-	'CR3D'         reduce using rule 86
-	'CR4'          reduce using rule 86
-	'CR4D'         reduce using rule 86
-	'CR5'          reduce using rule 86
-	'CR5D'         reduce using rule 86
-	'CR8'          reduce using rule 86
-	'CR8D'         reduce using rule 86
-	'CRD'          reduce using rule 86
-	'FREDKIN'      reduce using rule 86
-	'H'            reduce using rule 86
-	'I'            reduce using rule 86
-	'QFT'          reduce using rule 86
-	'QFT2'         reduce using rule 86
-	'QFT3'         reduce using rule 86
-	'QFT4'         reduce using rule 86
-	'QFT5'         reduce using rule 86
-	'QFTI'         reduce using rule 86
-	'QFTI2'        reduce using rule 86
-	'QFTI3'        reduce using rule 86
-	'QFTI4'        reduce using rule 86
-	'QFTI5'        reduce using rule 86
-	'S'            reduce using rule 86
-	'SWAP'         reduce using rule 86
-	'T'            reduce using rule 86
-	'TOFFOLI'      reduce using rule 86
-	'X'            reduce using rule 86
-	'Y'            reduce using rule 86
-	'Z'            reduce using rule 86
-	'else'         reduce using rule 86
-	'in'           reduce using rule 86
-	'then'         reduce using rule 86
-	L_FunVar       reduce using rule 86
-	L_Var          reduce using rule 86
-	L_GateIdent    reduce using rule 86
-	%eof           reduce using rule 86
-
-
-State 28
-
-	Gate -> 'CR3D' .                                    (rule 87)
-
-	'('            reduce using rule 87
-	')'            reduce using rule 87
-	'*'            reduce using rule 87
-	','            reduce using rule 87
-	'0'            reduce using rule 87
-	'1'            reduce using rule 87
-	'CNOT'         reduce using rule 87
-	'CR'           reduce using rule 87
-	'CR2'          reduce using rule 87
-	'CR2D'         reduce using rule 87
-	'CR3'          reduce using rule 87
-	'CR3D'         reduce using rule 87
-	'CR4'          reduce using rule 87
-	'CR4D'         reduce using rule 87
-	'CR5'          reduce using rule 87
-	'CR5D'         reduce using rule 87
-	'CR8'          reduce using rule 87
-	'CR8D'         reduce using rule 87
-	'CRD'          reduce using rule 87
-	'FREDKIN'      reduce using rule 87
-	'H'            reduce using rule 87
-	'I'            reduce using rule 87
-	'QFT'          reduce using rule 87
-	'QFT2'         reduce using rule 87
-	'QFT3'         reduce using rule 87
-	'QFT4'         reduce using rule 87
-	'QFT5'         reduce using rule 87
-	'QFTI'         reduce using rule 87
-	'QFTI2'        reduce using rule 87
-	'QFTI3'        reduce using rule 87
-	'QFTI4'        reduce using rule 87
-	'QFTI5'        reduce using rule 87
-	'S'            reduce using rule 87
-	'SWAP'         reduce using rule 87
-	'T'            reduce using rule 87
-	'TOFFOLI'      reduce using rule 87
-	'X'            reduce using rule 87
-	'Y'            reduce using rule 87
-	'Z'            reduce using rule 87
-	'else'         reduce using rule 87
-	'in'           reduce using rule 87
-	'then'         reduce using rule 87
-	L_FunVar       reduce using rule 87
-	L_Var          reduce using rule 87
-	L_GateIdent    reduce using rule 87
-	%eof           reduce using rule 87
-
-
-State 29
-
-	Gate -> 'CR4' .                                     (rule 88)
-
-	'('            reduce using rule 88
-	')'            reduce using rule 88
-	'*'            reduce using rule 88
-	','            reduce using rule 88
-	'0'            reduce using rule 88
-	'1'            reduce using rule 88
-	'CNOT'         reduce using rule 88
-	'CR'           reduce using rule 88
-	'CR2'          reduce using rule 88
-	'CR2D'         reduce using rule 88
-	'CR3'          reduce using rule 88
-	'CR3D'         reduce using rule 88
-	'CR4'          reduce using rule 88
-	'CR4D'         reduce using rule 88
-	'CR5'          reduce using rule 88
-	'CR5D'         reduce using rule 88
-	'CR8'          reduce using rule 88
-	'CR8D'         reduce using rule 88
-	'CRD'          reduce using rule 88
-	'FREDKIN'      reduce using rule 88
-	'H'            reduce using rule 88
-	'I'            reduce using rule 88
-	'QFT'          reduce using rule 88
-	'QFT2'         reduce using rule 88
-	'QFT3'         reduce using rule 88
-	'QFT4'         reduce using rule 88
-	'QFT5'         reduce using rule 88
-	'QFTI'         reduce using rule 88
-	'QFTI2'        reduce using rule 88
-	'QFTI3'        reduce using rule 88
-	'QFTI4'        reduce using rule 88
-	'QFTI5'        reduce using rule 88
-	'S'            reduce using rule 88
-	'SWAP'         reduce using rule 88
-	'T'            reduce using rule 88
-	'TOFFOLI'      reduce using rule 88
-	'X'            reduce using rule 88
-	'Y'            reduce using rule 88
-	'Z'            reduce using rule 88
-	'else'         reduce using rule 88
-	'in'           reduce using rule 88
-	'then'         reduce using rule 88
-	L_FunVar       reduce using rule 88
-	L_Var          reduce using rule 88
-	L_GateIdent    reduce using rule 88
-	%eof           reduce using rule 88
-
-
-State 30
-
-	Gate -> 'CR4D' .                                    (rule 89)
-
-	'('            reduce using rule 89
-	')'            reduce using rule 89
-	'*'            reduce using rule 89
-	','            reduce using rule 89
-	'0'            reduce using rule 89
-	'1'            reduce using rule 89
-	'CNOT'         reduce using rule 89
-	'CR'           reduce using rule 89
-	'CR2'          reduce using rule 89
-	'CR2D'         reduce using rule 89
-	'CR3'          reduce using rule 89
-	'CR3D'         reduce using rule 89
-	'CR4'          reduce using rule 89
-	'CR4D'         reduce using rule 89
-	'CR5'          reduce using rule 89
-	'CR5D'         reduce using rule 89
-	'CR8'          reduce using rule 89
-	'CR8D'         reduce using rule 89
-	'CRD'          reduce using rule 89
-	'FREDKIN'      reduce using rule 89
-	'H'            reduce using rule 89
-	'I'            reduce using rule 89
-	'QFT'          reduce using rule 89
-	'QFT2'         reduce using rule 89
-	'QFT3'         reduce using rule 89
-	'QFT4'         reduce using rule 89
-	'QFT5'         reduce using rule 89
-	'QFTI'         reduce using rule 89
-	'QFTI2'        reduce using rule 89
-	'QFTI3'        reduce using rule 89
-	'QFTI4'        reduce using rule 89
-	'QFTI5'        reduce using rule 89
-	'S'            reduce using rule 89
-	'SWAP'         reduce using rule 89
-	'T'            reduce using rule 89
-	'TOFFOLI'      reduce using rule 89
-	'X'            reduce using rule 89
-	'Y'            reduce using rule 89
-	'Z'            reduce using rule 89
-	'else'         reduce using rule 89
-	'in'           reduce using rule 89
-	'then'         reduce using rule 89
-	L_FunVar       reduce using rule 89
-	L_Var          reduce using rule 89
-	L_GateIdent    reduce using rule 89
-	%eof           reduce using rule 89
-
-
-State 31
-
-	Gate -> 'CR5' .                                     (rule 90)
+	Gate -> 'CCR' .                                     (rule 90)
 
 	'('            reduce using rule 90
 	')'            reduce using rule 90
@@ -1148,16 +732,16 @@ State 31
 	','            reduce using rule 90
 	'0'            reduce using rule 90
 	'1'            reduce using rule 90
+	'CCR'          reduce using rule 90
+	'CCR2'         reduce using rule 90
+	'CCR4'         reduce using rule 90
+	'CCR8'         reduce using rule 90
 	'CNOT'         reduce using rule 90
 	'CR'           reduce using rule 90
 	'CR2'          reduce using rule 90
 	'CR2D'         reduce using rule 90
-	'CR3'          reduce using rule 90
-	'CR3D'         reduce using rule 90
 	'CR4'          reduce using rule 90
 	'CR4D'         reduce using rule 90
-	'CR5'          reduce using rule 90
-	'CR5D'         reduce using rule 90
 	'CR8'          reduce using rule 90
 	'CR8D'         reduce using rule 90
 	'CRD'          reduce using rule 90
@@ -1190,9 +774,9 @@ State 31
 	%eof           reduce using rule 90
 
 
-State 32
+State 24
 
-	Gate -> 'CR5D' .                                    (rule 91)
+	Gate -> 'CCR2' .                                    (rule 91)
 
 	'('            reduce using rule 91
 	')'            reduce using rule 91
@@ -1200,16 +784,16 @@ State 32
 	','            reduce using rule 91
 	'0'            reduce using rule 91
 	'1'            reduce using rule 91
+	'CCR'          reduce using rule 91
+	'CCR2'         reduce using rule 91
+	'CCR4'         reduce using rule 91
+	'CCR8'         reduce using rule 91
 	'CNOT'         reduce using rule 91
 	'CR'           reduce using rule 91
 	'CR2'          reduce using rule 91
 	'CR2D'         reduce using rule 91
-	'CR3'          reduce using rule 91
-	'CR3D'         reduce using rule 91
 	'CR4'          reduce using rule 91
 	'CR4D'         reduce using rule 91
-	'CR5'          reduce using rule 91
-	'CR5D'         reduce using rule 91
 	'CR8'          reduce using rule 91
 	'CR8D'         reduce using rule 91
 	'CRD'          reduce using rule 91
@@ -1242,9 +826,9 @@ State 32
 	%eof           reduce using rule 91
 
 
-State 33
+State 25
 
-	Gate -> 'CR8' .                                     (rule 92)
+	Gate -> 'CCR4' .                                    (rule 92)
 
 	'('            reduce using rule 92
 	')'            reduce using rule 92
@@ -1252,16 +836,16 @@ State 33
 	','            reduce using rule 92
 	'0'            reduce using rule 92
 	'1'            reduce using rule 92
+	'CCR'          reduce using rule 92
+	'CCR2'         reduce using rule 92
+	'CCR4'         reduce using rule 92
+	'CCR8'         reduce using rule 92
 	'CNOT'         reduce using rule 92
 	'CR'           reduce using rule 92
 	'CR2'          reduce using rule 92
 	'CR2D'         reduce using rule 92
-	'CR3'          reduce using rule 92
-	'CR3D'         reduce using rule 92
 	'CR4'          reduce using rule 92
 	'CR4D'         reduce using rule 92
-	'CR5'          reduce using rule 92
-	'CR5D'         reduce using rule 92
 	'CR8'          reduce using rule 92
 	'CR8D'         reduce using rule 92
 	'CRD'          reduce using rule 92
@@ -1294,9 +878,9 @@ State 33
 	%eof           reduce using rule 92
 
 
-State 34
+State 26
 
-	Gate -> 'CR8D' .                                    (rule 93)
+	Gate -> 'CCR8' .                                    (rule 93)
 
 	'('            reduce using rule 93
 	')'            reduce using rule 93
@@ -1304,16 +888,16 @@ State 34
 	','            reduce using rule 93
 	'0'            reduce using rule 93
 	'1'            reduce using rule 93
+	'CCR'          reduce using rule 93
+	'CCR2'         reduce using rule 93
+	'CCR4'         reduce using rule 93
+	'CCR8'         reduce using rule 93
 	'CNOT'         reduce using rule 93
 	'CR'           reduce using rule 93
 	'CR2'          reduce using rule 93
 	'CR2D'         reduce using rule 93
-	'CR3'          reduce using rule 93
-	'CR3D'         reduce using rule 93
 	'CR4'          reduce using rule 93
 	'CR4D'         reduce using rule 93
-	'CR5'          reduce using rule 93
-	'CR5D'         reduce using rule 93
 	'CR8'          reduce using rule 93
 	'CR8D'         reduce using rule 93
 	'CRD'          reduce using rule 93
@@ -1346,6 +930,422 @@ State 34
 	%eof           reduce using rule 93
 
 
+State 27
+
+	Gate -> 'CNOT' .                                    (rule 68)
+
+	'('            reduce using rule 68
+	')'            reduce using rule 68
+	'*'            reduce using rule 68
+	','            reduce using rule 68
+	'0'            reduce using rule 68
+	'1'            reduce using rule 68
+	'CCR'          reduce using rule 68
+	'CCR2'         reduce using rule 68
+	'CCR4'         reduce using rule 68
+	'CCR8'         reduce using rule 68
+	'CNOT'         reduce using rule 68
+	'CR'           reduce using rule 68
+	'CR2'          reduce using rule 68
+	'CR2D'         reduce using rule 68
+	'CR4'          reduce using rule 68
+	'CR4D'         reduce using rule 68
+	'CR8'          reduce using rule 68
+	'CR8D'         reduce using rule 68
+	'CRD'          reduce using rule 68
+	'FREDKIN'      reduce using rule 68
+	'H'            reduce using rule 68
+	'I'            reduce using rule 68
+	'QFT'          reduce using rule 68
+	'QFT2'         reduce using rule 68
+	'QFT3'         reduce using rule 68
+	'QFT4'         reduce using rule 68
+	'QFT5'         reduce using rule 68
+	'QFTI'         reduce using rule 68
+	'QFTI2'        reduce using rule 68
+	'QFTI3'        reduce using rule 68
+	'QFTI4'        reduce using rule 68
+	'QFTI5'        reduce using rule 68
+	'S'            reduce using rule 68
+	'SWAP'         reduce using rule 68
+	'T'            reduce using rule 68
+	'TOFFOLI'      reduce using rule 68
+	'X'            reduce using rule 68
+	'Y'            reduce using rule 68
+	'Z'            reduce using rule 68
+	'else'         reduce using rule 68
+	'in'           reduce using rule 68
+	'then'         reduce using rule 68
+	L_FunVar       reduce using rule 68
+	L_Var          reduce using rule 68
+	L_GateIdent    reduce using rule 68
+	%eof           reduce using rule 68
+
+
+State 28
+
+	Gate -> 'CR' .                                      (rule 82)
+
+	'('            reduce using rule 82
+	')'            reduce using rule 82
+	'*'            reduce using rule 82
+	','            reduce using rule 82
+	'0'            reduce using rule 82
+	'1'            reduce using rule 82
+	'CCR'          reduce using rule 82
+	'CCR2'         reduce using rule 82
+	'CCR4'         reduce using rule 82
+	'CCR8'         reduce using rule 82
+	'CNOT'         reduce using rule 82
+	'CR'           reduce using rule 82
+	'CR2'          reduce using rule 82
+	'CR2D'         reduce using rule 82
+	'CR4'          reduce using rule 82
+	'CR4D'         reduce using rule 82
+	'CR8'          reduce using rule 82
+	'CR8D'         reduce using rule 82
+	'CRD'          reduce using rule 82
+	'FREDKIN'      reduce using rule 82
+	'H'            reduce using rule 82
+	'I'            reduce using rule 82
+	'QFT'          reduce using rule 82
+	'QFT2'         reduce using rule 82
+	'QFT3'         reduce using rule 82
+	'QFT4'         reduce using rule 82
+	'QFT5'         reduce using rule 82
+	'QFTI'         reduce using rule 82
+	'QFTI2'        reduce using rule 82
+	'QFTI3'        reduce using rule 82
+	'QFTI4'        reduce using rule 82
+	'QFTI5'        reduce using rule 82
+	'S'            reduce using rule 82
+	'SWAP'         reduce using rule 82
+	'T'            reduce using rule 82
+	'TOFFOLI'      reduce using rule 82
+	'X'            reduce using rule 82
+	'Y'            reduce using rule 82
+	'Z'            reduce using rule 82
+	'else'         reduce using rule 82
+	'in'           reduce using rule 82
+	'then'         reduce using rule 82
+	L_FunVar       reduce using rule 82
+	L_Var          reduce using rule 82
+	L_GateIdent    reduce using rule 82
+	%eof           reduce using rule 82
+
+
+State 29
+
+	Gate -> 'CR2' .                                     (rule 84)
+
+	'('            reduce using rule 84
+	')'            reduce using rule 84
+	'*'            reduce using rule 84
+	','            reduce using rule 84
+	'0'            reduce using rule 84
+	'1'            reduce using rule 84
+	'CCR'          reduce using rule 84
+	'CCR2'         reduce using rule 84
+	'CCR4'         reduce using rule 84
+	'CCR8'         reduce using rule 84
+	'CNOT'         reduce using rule 84
+	'CR'           reduce using rule 84
+	'CR2'          reduce using rule 84
+	'CR2D'         reduce using rule 84
+	'CR4'          reduce using rule 84
+	'CR4D'         reduce using rule 84
+	'CR8'          reduce using rule 84
+	'CR8D'         reduce using rule 84
+	'CRD'          reduce using rule 84
+	'FREDKIN'      reduce using rule 84
+	'H'            reduce using rule 84
+	'I'            reduce using rule 84
+	'QFT'          reduce using rule 84
+	'QFT2'         reduce using rule 84
+	'QFT3'         reduce using rule 84
+	'QFT4'         reduce using rule 84
+	'QFT5'         reduce using rule 84
+	'QFTI'         reduce using rule 84
+	'QFTI2'        reduce using rule 84
+	'QFTI3'        reduce using rule 84
+	'QFTI4'        reduce using rule 84
+	'QFTI5'        reduce using rule 84
+	'S'            reduce using rule 84
+	'SWAP'         reduce using rule 84
+	'T'            reduce using rule 84
+	'TOFFOLI'      reduce using rule 84
+	'X'            reduce using rule 84
+	'Y'            reduce using rule 84
+	'Z'            reduce using rule 84
+	'else'         reduce using rule 84
+	'in'           reduce using rule 84
+	'then'         reduce using rule 84
+	L_FunVar       reduce using rule 84
+	L_Var          reduce using rule 84
+	L_GateIdent    reduce using rule 84
+	%eof           reduce using rule 84
+
+
+State 30
+
+	Gate -> 'CR2D' .                                    (rule 85)
+
+	'('            reduce using rule 85
+	')'            reduce using rule 85
+	'*'            reduce using rule 85
+	','            reduce using rule 85
+	'0'            reduce using rule 85
+	'1'            reduce using rule 85
+	'CCR'          reduce using rule 85
+	'CCR2'         reduce using rule 85
+	'CCR4'         reduce using rule 85
+	'CCR8'         reduce using rule 85
+	'CNOT'         reduce using rule 85
+	'CR'           reduce using rule 85
+	'CR2'          reduce using rule 85
+	'CR2D'         reduce using rule 85
+	'CR4'          reduce using rule 85
+	'CR4D'         reduce using rule 85
+	'CR8'          reduce using rule 85
+	'CR8D'         reduce using rule 85
+	'CRD'          reduce using rule 85
+	'FREDKIN'      reduce using rule 85
+	'H'            reduce using rule 85
+	'I'            reduce using rule 85
+	'QFT'          reduce using rule 85
+	'QFT2'         reduce using rule 85
+	'QFT3'         reduce using rule 85
+	'QFT4'         reduce using rule 85
+	'QFT5'         reduce using rule 85
+	'QFTI'         reduce using rule 85
+	'QFTI2'        reduce using rule 85
+	'QFTI3'        reduce using rule 85
+	'QFTI4'        reduce using rule 85
+	'QFTI5'        reduce using rule 85
+	'S'            reduce using rule 85
+	'SWAP'         reduce using rule 85
+	'T'            reduce using rule 85
+	'TOFFOLI'      reduce using rule 85
+	'X'            reduce using rule 85
+	'Y'            reduce using rule 85
+	'Z'            reduce using rule 85
+	'else'         reduce using rule 85
+	'in'           reduce using rule 85
+	'then'         reduce using rule 85
+	L_FunVar       reduce using rule 85
+	L_Var          reduce using rule 85
+	L_GateIdent    reduce using rule 85
+	%eof           reduce using rule 85
+
+
+State 31
+
+	Gate -> 'CR4' .                                     (rule 86)
+
+	'('            reduce using rule 86
+	')'            reduce using rule 86
+	'*'            reduce using rule 86
+	','            reduce using rule 86
+	'0'            reduce using rule 86
+	'1'            reduce using rule 86
+	'CCR'          reduce using rule 86
+	'CCR2'         reduce using rule 86
+	'CCR4'         reduce using rule 86
+	'CCR8'         reduce using rule 86
+	'CNOT'         reduce using rule 86
+	'CR'           reduce using rule 86
+	'CR2'          reduce using rule 86
+	'CR2D'         reduce using rule 86
+	'CR4'          reduce using rule 86
+	'CR4D'         reduce using rule 86
+	'CR8'          reduce using rule 86
+	'CR8D'         reduce using rule 86
+	'CRD'          reduce using rule 86
+	'FREDKIN'      reduce using rule 86
+	'H'            reduce using rule 86
+	'I'            reduce using rule 86
+	'QFT'          reduce using rule 86
+	'QFT2'         reduce using rule 86
+	'QFT3'         reduce using rule 86
+	'QFT4'         reduce using rule 86
+	'QFT5'         reduce using rule 86
+	'QFTI'         reduce using rule 86
+	'QFTI2'        reduce using rule 86
+	'QFTI3'        reduce using rule 86
+	'QFTI4'        reduce using rule 86
+	'QFTI5'        reduce using rule 86
+	'S'            reduce using rule 86
+	'SWAP'         reduce using rule 86
+	'T'            reduce using rule 86
+	'TOFFOLI'      reduce using rule 86
+	'X'            reduce using rule 86
+	'Y'            reduce using rule 86
+	'Z'            reduce using rule 86
+	'else'         reduce using rule 86
+	'in'           reduce using rule 86
+	'then'         reduce using rule 86
+	L_FunVar       reduce using rule 86
+	L_Var          reduce using rule 86
+	L_GateIdent    reduce using rule 86
+	%eof           reduce using rule 86
+
+
+State 32
+
+	Gate -> 'CR4D' .                                    (rule 87)
+
+	'('            reduce using rule 87
+	')'            reduce using rule 87
+	'*'            reduce using rule 87
+	','            reduce using rule 87
+	'0'            reduce using rule 87
+	'1'            reduce using rule 87
+	'CCR'          reduce using rule 87
+	'CCR2'         reduce using rule 87
+	'CCR4'         reduce using rule 87
+	'CCR8'         reduce using rule 87
+	'CNOT'         reduce using rule 87
+	'CR'           reduce using rule 87
+	'CR2'          reduce using rule 87
+	'CR2D'         reduce using rule 87
+	'CR4'          reduce using rule 87
+	'CR4D'         reduce using rule 87
+	'CR8'          reduce using rule 87
+	'CR8D'         reduce using rule 87
+	'CRD'          reduce using rule 87
+	'FREDKIN'      reduce using rule 87
+	'H'            reduce using rule 87
+	'I'            reduce using rule 87
+	'QFT'          reduce using rule 87
+	'QFT2'         reduce using rule 87
+	'QFT3'         reduce using rule 87
+	'QFT4'         reduce using rule 87
+	'QFT5'         reduce using rule 87
+	'QFTI'         reduce using rule 87
+	'QFTI2'        reduce using rule 87
+	'QFTI3'        reduce using rule 87
+	'QFTI4'        reduce using rule 87
+	'QFTI5'        reduce using rule 87
+	'S'            reduce using rule 87
+	'SWAP'         reduce using rule 87
+	'T'            reduce using rule 87
+	'TOFFOLI'      reduce using rule 87
+	'X'            reduce using rule 87
+	'Y'            reduce using rule 87
+	'Z'            reduce using rule 87
+	'else'         reduce using rule 87
+	'in'           reduce using rule 87
+	'then'         reduce using rule 87
+	L_FunVar       reduce using rule 87
+	L_Var          reduce using rule 87
+	L_GateIdent    reduce using rule 87
+	%eof           reduce using rule 87
+
+
+State 33
+
+	Gate -> 'CR8' .                                     (rule 88)
+
+	'('            reduce using rule 88
+	')'            reduce using rule 88
+	'*'            reduce using rule 88
+	','            reduce using rule 88
+	'0'            reduce using rule 88
+	'1'            reduce using rule 88
+	'CCR'          reduce using rule 88
+	'CCR2'         reduce using rule 88
+	'CCR4'         reduce using rule 88
+	'CCR8'         reduce using rule 88
+	'CNOT'         reduce using rule 88
+	'CR'           reduce using rule 88
+	'CR2'          reduce using rule 88
+	'CR2D'         reduce using rule 88
+	'CR4'          reduce using rule 88
+	'CR4D'         reduce using rule 88
+	'CR8'          reduce using rule 88
+	'CR8D'         reduce using rule 88
+	'CRD'          reduce using rule 88
+	'FREDKIN'      reduce using rule 88
+	'H'            reduce using rule 88
+	'I'            reduce using rule 88
+	'QFT'          reduce using rule 88
+	'QFT2'         reduce using rule 88
+	'QFT3'         reduce using rule 88
+	'QFT4'         reduce using rule 88
+	'QFT5'         reduce using rule 88
+	'QFTI'         reduce using rule 88
+	'QFTI2'        reduce using rule 88
+	'QFTI3'        reduce using rule 88
+	'QFTI4'        reduce using rule 88
+	'QFTI5'        reduce using rule 88
+	'S'            reduce using rule 88
+	'SWAP'         reduce using rule 88
+	'T'            reduce using rule 88
+	'TOFFOLI'      reduce using rule 88
+	'X'            reduce using rule 88
+	'Y'            reduce using rule 88
+	'Z'            reduce using rule 88
+	'else'         reduce using rule 88
+	'in'           reduce using rule 88
+	'then'         reduce using rule 88
+	L_FunVar       reduce using rule 88
+	L_Var          reduce using rule 88
+	L_GateIdent    reduce using rule 88
+	%eof           reduce using rule 88
+
+
+State 34
+
+	Gate -> 'CR8D' .                                    (rule 89)
+
+	'('            reduce using rule 89
+	')'            reduce using rule 89
+	'*'            reduce using rule 89
+	','            reduce using rule 89
+	'0'            reduce using rule 89
+	'1'            reduce using rule 89
+	'CCR'          reduce using rule 89
+	'CCR2'         reduce using rule 89
+	'CCR4'         reduce using rule 89
+	'CCR8'         reduce using rule 89
+	'CNOT'         reduce using rule 89
+	'CR'           reduce using rule 89
+	'CR2'          reduce using rule 89
+	'CR2D'         reduce using rule 89
+	'CR4'          reduce using rule 89
+	'CR4D'         reduce using rule 89
+	'CR8'          reduce using rule 89
+	'CR8D'         reduce using rule 89
+	'CRD'          reduce using rule 89
+	'FREDKIN'      reduce using rule 89
+	'H'            reduce using rule 89
+	'I'            reduce using rule 89
+	'QFT'          reduce using rule 89
+	'QFT2'         reduce using rule 89
+	'QFT3'         reduce using rule 89
+	'QFT4'         reduce using rule 89
+	'QFT5'         reduce using rule 89
+	'QFTI'         reduce using rule 89
+	'QFTI2'        reduce using rule 89
+	'QFTI3'        reduce using rule 89
+	'QFTI4'        reduce using rule 89
+	'QFTI5'        reduce using rule 89
+	'S'            reduce using rule 89
+	'SWAP'         reduce using rule 89
+	'T'            reduce using rule 89
+	'TOFFOLI'      reduce using rule 89
+	'X'            reduce using rule 89
+	'Y'            reduce using rule 89
+	'Z'            reduce using rule 89
+	'else'         reduce using rule 89
+	'in'           reduce using rule 89
+	'then'         reduce using rule 89
+	L_FunVar       reduce using rule 89
+	L_Var          reduce using rule 89
+	L_GateIdent    reduce using rule 89
+	%eof           reduce using rule 89
+
+
 State 35
 
 	Gate -> 'CRD' .                                     (rule 83)
@@ -1356,16 +1356,16 @@ State 35
 	','            reduce using rule 83
 	'0'            reduce using rule 83
 	'1'            reduce using rule 83
+	'CCR'          reduce using rule 83
+	'CCR2'         reduce using rule 83
+	'CCR4'         reduce using rule 83
+	'CCR8'         reduce using rule 83
 	'CNOT'         reduce using rule 83
 	'CR'           reduce using rule 83
 	'CR2'          reduce using rule 83
 	'CR2D'         reduce using rule 83
-	'CR3'          reduce using rule 83
-	'CR3D'         reduce using rule 83
 	'CR4'          reduce using rule 83
 	'CR4D'         reduce using rule 83
-	'CR5'          reduce using rule 83
-	'CR5D'         reduce using rule 83
 	'CR8'          reduce using rule 83
 	'CR8D'         reduce using rule 83
 	'CRD'          reduce using rule 83
@@ -1408,16 +1408,16 @@ State 36
 	','            reduce using rule 71
 	'0'            reduce using rule 71
 	'1'            reduce using rule 71
+	'CCR'          reduce using rule 71
+	'CCR2'         reduce using rule 71
+	'CCR4'         reduce using rule 71
+	'CCR8'         reduce using rule 71
 	'CNOT'         reduce using rule 71
 	'CR'           reduce using rule 71
 	'CR2'          reduce using rule 71
 	'CR2D'         reduce using rule 71
-	'CR3'          reduce using rule 71
-	'CR3D'         reduce using rule 71
 	'CR4'          reduce using rule 71
 	'CR4D'         reduce using rule 71
-	'CR5'          reduce using rule 71
-	'CR5D'         reduce using rule 71
 	'CR8'          reduce using rule 71
 	'CR8D'         reduce using rule 71
 	'CRD'          reduce using rule 71
@@ -1460,16 +1460,16 @@ State 37
 	','            reduce using rule 61
 	'0'            reduce using rule 61
 	'1'            reduce using rule 61
+	'CCR'          reduce using rule 61
+	'CCR2'         reduce using rule 61
+	'CCR4'         reduce using rule 61
+	'CCR8'         reduce using rule 61
 	'CNOT'         reduce using rule 61
 	'CR'           reduce using rule 61
 	'CR2'          reduce using rule 61
 	'CR2D'         reduce using rule 61
-	'CR3'          reduce using rule 61
-	'CR3D'         reduce using rule 61
 	'CR4'          reduce using rule 61
 	'CR4D'         reduce using rule 61
-	'CR5'          reduce using rule 61
-	'CR5D'         reduce using rule 61
 	'CR8'          reduce using rule 61
 	'CR8D'         reduce using rule 61
 	'CRD'          reduce using rule 61
@@ -1512,16 +1512,16 @@ State 38
 	','            reduce using rule 65
 	'0'            reduce using rule 65
 	'1'            reduce using rule 65
+	'CCR'          reduce using rule 65
+	'CCR2'         reduce using rule 65
+	'CCR4'         reduce using rule 65
+	'CCR8'         reduce using rule 65
 	'CNOT'         reduce using rule 65
 	'CR'           reduce using rule 65
 	'CR2'          reduce using rule 65
 	'CR2D'         reduce using rule 65
-	'CR3'          reduce using rule 65
-	'CR3D'         reduce using rule 65
 	'CR4'          reduce using rule 65
 	'CR4D'         reduce using rule 65
-	'CR5'          reduce using rule 65
-	'CR5D'         reduce using rule 65
 	'CR8'          reduce using rule 65
 	'CR8D'         reduce using rule 65
 	'CRD'          reduce using rule 65
@@ -1564,16 +1564,16 @@ State 39
 	','            reduce using rule 72
 	'0'            reduce using rule 72
 	'1'            reduce using rule 72
+	'CCR'          reduce using rule 72
+	'CCR2'         reduce using rule 72
+	'CCR4'         reduce using rule 72
+	'CCR8'         reduce using rule 72
 	'CNOT'         reduce using rule 72
 	'CR'           reduce using rule 72
 	'CR2'          reduce using rule 72
 	'CR2D'         reduce using rule 72
-	'CR3'          reduce using rule 72
-	'CR3D'         reduce using rule 72
 	'CR4'          reduce using rule 72
 	'CR4D'         reduce using rule 72
-	'CR5'          reduce using rule 72
-	'CR5D'         reduce using rule 72
 	'CR8'          reduce using rule 72
 	'CR8D'         reduce using rule 72
 	'CRD'          reduce using rule 72
@@ -1616,16 +1616,16 @@ State 40
 	','            reduce using rule 74
 	'0'            reduce using rule 74
 	'1'            reduce using rule 74
+	'CCR'          reduce using rule 74
+	'CCR2'         reduce using rule 74
+	'CCR4'         reduce using rule 74
+	'CCR8'         reduce using rule 74
 	'CNOT'         reduce using rule 74
 	'CR'           reduce using rule 74
 	'CR2'          reduce using rule 74
 	'CR2D'         reduce using rule 74
-	'CR3'          reduce using rule 74
-	'CR3D'         reduce using rule 74
 	'CR4'          reduce using rule 74
 	'CR4D'         reduce using rule 74
-	'CR5'          reduce using rule 74
-	'CR5D'         reduce using rule 74
 	'CR8'          reduce using rule 74
 	'CR8D'         reduce using rule 74
 	'CRD'          reduce using rule 74
@@ -1668,16 +1668,16 @@ State 41
 	','            reduce using rule 76
 	'0'            reduce using rule 76
 	'1'            reduce using rule 76
+	'CCR'          reduce using rule 76
+	'CCR2'         reduce using rule 76
+	'CCR4'         reduce using rule 76
+	'CCR8'         reduce using rule 76
 	'CNOT'         reduce using rule 76
 	'CR'           reduce using rule 76
 	'CR2'          reduce using rule 76
 	'CR2D'         reduce using rule 76
-	'CR3'          reduce using rule 76
-	'CR3D'         reduce using rule 76
 	'CR4'          reduce using rule 76
 	'CR4D'         reduce using rule 76
-	'CR5'          reduce using rule 76
-	'CR5D'         reduce using rule 76
 	'CR8'          reduce using rule 76
 	'CR8D'         reduce using rule 76
 	'CRD'          reduce using rule 76
@@ -1720,16 +1720,16 @@ State 42
 	','            reduce using rule 78
 	'0'            reduce using rule 78
 	'1'            reduce using rule 78
+	'CCR'          reduce using rule 78
+	'CCR2'         reduce using rule 78
+	'CCR4'         reduce using rule 78
+	'CCR8'         reduce using rule 78
 	'CNOT'         reduce using rule 78
 	'CR'           reduce using rule 78
 	'CR2'          reduce using rule 78
 	'CR2D'         reduce using rule 78
-	'CR3'          reduce using rule 78
-	'CR3D'         reduce using rule 78
 	'CR4'          reduce using rule 78
 	'CR4D'         reduce using rule 78
-	'CR5'          reduce using rule 78
-	'CR5D'         reduce using rule 78
 	'CR8'          reduce using rule 78
 	'CR8D'         reduce using rule 78
 	'CRD'          reduce using rule 78
@@ -1772,16 +1772,16 @@ State 43
 	','            reduce using rule 80
 	'0'            reduce using rule 80
 	'1'            reduce using rule 80
+	'CCR'          reduce using rule 80
+	'CCR2'         reduce using rule 80
+	'CCR4'         reduce using rule 80
+	'CCR8'         reduce using rule 80
 	'CNOT'         reduce using rule 80
 	'CR'           reduce using rule 80
 	'CR2'          reduce using rule 80
 	'CR2D'         reduce using rule 80
-	'CR3'          reduce using rule 80
-	'CR3D'         reduce using rule 80
 	'CR4'          reduce using rule 80
 	'CR4D'         reduce using rule 80
-	'CR5'          reduce using rule 80
-	'CR5D'         reduce using rule 80
 	'CR8'          reduce using rule 80
 	'CR8D'         reduce using rule 80
 	'CRD'          reduce using rule 80
@@ -1824,16 +1824,16 @@ State 44
 	','            reduce using rule 73
 	'0'            reduce using rule 73
 	'1'            reduce using rule 73
+	'CCR'          reduce using rule 73
+	'CCR2'         reduce using rule 73
+	'CCR4'         reduce using rule 73
+	'CCR8'         reduce using rule 73
 	'CNOT'         reduce using rule 73
 	'CR'           reduce using rule 73
 	'CR2'          reduce using rule 73
 	'CR2D'         reduce using rule 73
-	'CR3'          reduce using rule 73
-	'CR3D'         reduce using rule 73
 	'CR4'          reduce using rule 73
 	'CR4D'         reduce using rule 73
-	'CR5'          reduce using rule 73
-	'CR5D'         reduce using rule 73
 	'CR8'          reduce using rule 73
 	'CR8D'         reduce using rule 73
 	'CRD'          reduce using rule 73
@@ -1876,16 +1876,16 @@ State 45
 	','            reduce using rule 75
 	'0'            reduce using rule 75
 	'1'            reduce using rule 75
+	'CCR'          reduce using rule 75
+	'CCR2'         reduce using rule 75
+	'CCR4'         reduce using rule 75
+	'CCR8'         reduce using rule 75
 	'CNOT'         reduce using rule 75
 	'CR'           reduce using rule 75
 	'CR2'          reduce using rule 75
 	'CR2D'         reduce using rule 75
-	'CR3'          reduce using rule 75
-	'CR3D'         reduce using rule 75
 	'CR4'          reduce using rule 75
 	'CR4D'         reduce using rule 75
-	'CR5'          reduce using rule 75
-	'CR5D'         reduce using rule 75
 	'CR8'          reduce using rule 75
 	'CR8D'         reduce using rule 75
 	'CRD'          reduce using rule 75
@@ -1928,16 +1928,16 @@ State 46
 	','            reduce using rule 77
 	'0'            reduce using rule 77
 	'1'            reduce using rule 77
+	'CCR'          reduce using rule 77
+	'CCR2'         reduce using rule 77
+	'CCR4'         reduce using rule 77
+	'CCR8'         reduce using rule 77
 	'CNOT'         reduce using rule 77
 	'CR'           reduce using rule 77
 	'CR2'          reduce using rule 77
 	'CR2D'         reduce using rule 77
-	'CR3'          reduce using rule 77
-	'CR3D'         reduce using rule 77
 	'CR4'          reduce using rule 77
 	'CR4D'         reduce using rule 77
-	'CR5'          reduce using rule 77
-	'CR5D'         reduce using rule 77
 	'CR8'          reduce using rule 77
 	'CR8D'         reduce using rule 77
 	'CRD'          reduce using rule 77
@@ -1980,16 +1980,16 @@ State 47
 	','            reduce using rule 79
 	'0'            reduce using rule 79
 	'1'            reduce using rule 79
+	'CCR'          reduce using rule 79
+	'CCR2'         reduce using rule 79
+	'CCR4'         reduce using rule 79
+	'CCR8'         reduce using rule 79
 	'CNOT'         reduce using rule 79
 	'CR'           reduce using rule 79
 	'CR2'          reduce using rule 79
 	'CR2D'         reduce using rule 79
-	'CR3'          reduce using rule 79
-	'CR3D'         reduce using rule 79
 	'CR4'          reduce using rule 79
 	'CR4D'         reduce using rule 79
-	'CR5'          reduce using rule 79
-	'CR5D'         reduce using rule 79
 	'CR8'          reduce using rule 79
 	'CR8D'         reduce using rule 79
 	'CRD'          reduce using rule 79
@@ -2032,16 +2032,16 @@ State 48
 	','            reduce using rule 81
 	'0'            reduce using rule 81
 	'1'            reduce using rule 81
+	'CCR'          reduce using rule 81
+	'CCR2'         reduce using rule 81
+	'CCR4'         reduce using rule 81
+	'CCR8'         reduce using rule 81
 	'CNOT'         reduce using rule 81
 	'CR'           reduce using rule 81
 	'CR2'          reduce using rule 81
 	'CR2D'         reduce using rule 81
-	'CR3'          reduce using rule 81
-	'CR3D'         reduce using rule 81
 	'CR4'          reduce using rule 81
 	'CR4D'         reduce using rule 81
-	'CR5'          reduce using rule 81
-	'CR5D'         reduce using rule 81
 	'CR8'          reduce using rule 81
 	'CR8D'         reduce using rule 81
 	'CRD'          reduce using rule 81
@@ -2084,16 +2084,16 @@ State 49
 	','            reduce using rule 66
 	'0'            reduce using rule 66
 	'1'            reduce using rule 66
+	'CCR'          reduce using rule 66
+	'CCR2'         reduce using rule 66
+	'CCR4'         reduce using rule 66
+	'CCR8'         reduce using rule 66
 	'CNOT'         reduce using rule 66
 	'CR'           reduce using rule 66
 	'CR2'          reduce using rule 66
 	'CR2D'         reduce using rule 66
-	'CR3'          reduce using rule 66
-	'CR3D'         reduce using rule 66
 	'CR4'          reduce using rule 66
 	'CR4D'         reduce using rule 66
-	'CR5'          reduce using rule 66
-	'CR5D'         reduce using rule 66
 	'CR8'          reduce using rule 66
 	'CR8D'         reduce using rule 66
 	'CRD'          reduce using rule 66
@@ -2136,16 +2136,16 @@ State 50
 	','            reduce using rule 70
 	'0'            reduce using rule 70
 	'1'            reduce using rule 70
+	'CCR'          reduce using rule 70
+	'CCR2'         reduce using rule 70
+	'CCR4'         reduce using rule 70
+	'CCR8'         reduce using rule 70
 	'CNOT'         reduce using rule 70
 	'CR'           reduce using rule 70
 	'CR2'          reduce using rule 70
 	'CR2D'         reduce using rule 70
-	'CR3'          reduce using rule 70
-	'CR3D'         reduce using rule 70
 	'CR4'          reduce using rule 70
 	'CR4D'         reduce using rule 70
-	'CR5'          reduce using rule 70
-	'CR5D'         reduce using rule 70
 	'CR8'          reduce using rule 70
 	'CR8D'         reduce using rule 70
 	'CRD'          reduce using rule 70
@@ -2188,16 +2188,16 @@ State 51
 	','            reduce using rule 67
 	'0'            reduce using rule 67
 	'1'            reduce using rule 67
+	'CCR'          reduce using rule 67
+	'CCR2'         reduce using rule 67
+	'CCR4'         reduce using rule 67
+	'CCR8'         reduce using rule 67
 	'CNOT'         reduce using rule 67
 	'CR'           reduce using rule 67
 	'CR2'          reduce using rule 67
 	'CR2D'         reduce using rule 67
-	'CR3'          reduce using rule 67
-	'CR3D'         reduce using rule 67
 	'CR4'          reduce using rule 67
 	'CR4D'         reduce using rule 67
-	'CR5'          reduce using rule 67
-	'CR5D'         reduce using rule 67
 	'CR8'          reduce using rule 67
 	'CR8D'         reduce using rule 67
 	'CRD'          reduce using rule 67
@@ -2240,16 +2240,16 @@ State 52
 	','            reduce using rule 69
 	'0'            reduce using rule 69
 	'1'            reduce using rule 69
+	'CCR'          reduce using rule 69
+	'CCR2'         reduce using rule 69
+	'CCR4'         reduce using rule 69
+	'CCR8'         reduce using rule 69
 	'CNOT'         reduce using rule 69
 	'CR'           reduce using rule 69
 	'CR2'          reduce using rule 69
 	'CR2D'         reduce using rule 69
-	'CR3'          reduce using rule 69
-	'CR3D'         reduce using rule 69
 	'CR4'          reduce using rule 69
 	'CR4D'         reduce using rule 69
-	'CR5'          reduce using rule 69
-	'CR5D'         reduce using rule 69
 	'CR8'          reduce using rule 69
 	'CR8D'         reduce using rule 69
 	'CRD'          reduce using rule 69
@@ -2292,16 +2292,16 @@ State 53
 	','            reduce using rule 62
 	'0'            reduce using rule 62
 	'1'            reduce using rule 62
+	'CCR'          reduce using rule 62
+	'CCR2'         reduce using rule 62
+	'CCR4'         reduce using rule 62
+	'CCR8'         reduce using rule 62
 	'CNOT'         reduce using rule 62
 	'CR'           reduce using rule 62
 	'CR2'          reduce using rule 62
 	'CR2D'         reduce using rule 62
-	'CR3'          reduce using rule 62
-	'CR3D'         reduce using rule 62
 	'CR4'          reduce using rule 62
 	'CR4D'         reduce using rule 62
-	'CR5'          reduce using rule 62
-	'CR5D'         reduce using rule 62
 	'CR8'          reduce using rule 62
 	'CR8D'         reduce using rule 62
 	'CRD'          reduce using rule 62
@@ -2344,16 +2344,16 @@ State 54
 	','            reduce using rule 63
 	'0'            reduce using rule 63
 	'1'            reduce using rule 63
+	'CCR'          reduce using rule 63
+	'CCR2'         reduce using rule 63
+	'CCR4'         reduce using rule 63
+	'CCR8'         reduce using rule 63
 	'CNOT'         reduce using rule 63
 	'CR'           reduce using rule 63
 	'CR2'          reduce using rule 63
 	'CR2D'         reduce using rule 63
-	'CR3'          reduce using rule 63
-	'CR3D'         reduce using rule 63
 	'CR4'          reduce using rule 63
 	'CR4D'         reduce using rule 63
-	'CR5'          reduce using rule 63
-	'CR5D'         reduce using rule 63
 	'CR8'          reduce using rule 63
 	'CR8D'         reduce using rule 63
 	'CRD'          reduce using rule 63
@@ -2396,16 +2396,16 @@ State 55
 	','            reduce using rule 64
 	'0'            reduce using rule 64
 	'1'            reduce using rule 64
+	'CCR'          reduce using rule 64
+	'CCR2'         reduce using rule 64
+	'CCR4'         reduce using rule 64
+	'CCR8'         reduce using rule 64
 	'CNOT'         reduce using rule 64
 	'CR'           reduce using rule 64
 	'CR2'          reduce using rule 64
 	'CR2D'         reduce using rule 64
-	'CR3'          reduce using rule 64
-	'CR3D'         reduce using rule 64
 	'CR4'          reduce using rule 64
 	'CR4D'         reduce using rule 64
-	'CR5'          reduce using rule 64
-	'CR5D'         reduce using rule 64
 	'CR8'          reduce using rule 64
 	'CR8D'         reduce using rule 64
 	'CRD'          reduce using rule 64
@@ -2448,16 +2448,16 @@ State 56
 	','            reduce using rule 21
 	'0'            reduce using rule 21
 	'1'            reduce using rule 21
+	'CCR'          reduce using rule 21
+	'CCR2'         reduce using rule 21
+	'CCR4'         reduce using rule 21
+	'CCR8'         reduce using rule 21
 	'CNOT'         reduce using rule 21
 	'CR'           reduce using rule 21
 	'CR2'          reduce using rule 21
 	'CR2D'         reduce using rule 21
-	'CR3'          reduce using rule 21
-	'CR3D'         reduce using rule 21
 	'CR4'          reduce using rule 21
 	'CR4D'         reduce using rule 21
-	'CR5'          reduce using rule 21
-	'CR5D'         reduce using rule 21
 	'CR8'          reduce using rule 21
 	'CR8D'         reduce using rule 21
 	'CRD'          reduce using rule 21
@@ -2636,16 +2636,16 @@ State 70
 	'0'            reduce using rule 20
 	'1'            reduce using rule 20
 	'='            reduce using rule 20
+	'CCR'          reduce using rule 20
+	'CCR2'         reduce using rule 20
+	'CCR4'         reduce using rule 20
+	'CCR8'         reduce using rule 20
 	'CNOT'         reduce using rule 20
 	'CR'           reduce using rule 20
 	'CR2'          reduce using rule 20
 	'CR2D'         reduce using rule 20
-	'CR3'          reduce using rule 20
-	'CR3D'         reduce using rule 20
 	'CR4'          reduce using rule 20
 	'CR4D'         reduce using rule 20
-	'CR5'          reduce using rule 20
-	'CR5D'         reduce using rule 20
 	'CR8'          reduce using rule 20
 	'CR8D'         reduce using rule 20
 	'CRD'          reduce using rule 20
@@ -2759,16 +2759,16 @@ State 79
 	','            reduce using rule 43
 	'0'            reduce using rule 43
 	'1'            reduce using rule 43
+	'CCR'          reduce using rule 43
+	'CCR2'         reduce using rule 43
+	'CCR4'         reduce using rule 43
+	'CCR8'         reduce using rule 43
 	'CNOT'         reduce using rule 43
 	'CR'           reduce using rule 43
 	'CR2'          reduce using rule 43
 	'CR2D'         reduce using rule 43
-	'CR3'          reduce using rule 43
-	'CR3D'         reduce using rule 43
 	'CR4'          reduce using rule 43
 	'CR4D'         reduce using rule 43
-	'CR5'          reduce using rule 43
-	'CR5D'         reduce using rule 43
 	'CR8'          reduce using rule 43
 	'CR8D'         reduce using rule 43
 	'CRD'          reduce using rule 43
@@ -2811,16 +2811,16 @@ State 80
 	','            reduce using rule 44
 	'0'            reduce using rule 44
 	'1'            reduce using rule 44
+	'CCR'          reduce using rule 44
+	'CCR2'         reduce using rule 44
+	'CCR4'         reduce using rule 44
+	'CCR8'         reduce using rule 44
 	'CNOT'         reduce using rule 44
 	'CR'           reduce using rule 44
 	'CR2'          reduce using rule 44
 	'CR2D'         reduce using rule 44
-	'CR3'          reduce using rule 44
-	'CR3D'         reduce using rule 44
 	'CR4'          reduce using rule 44
 	'CR4D'         reduce using rule 44
-	'CR5'          reduce using rule 44
-	'CR5D'         reduce using rule 44
 	'CR8'          reduce using rule 44
 	'CR8D'         reduce using rule 44
 	'CRD'          reduce using rule 44
@@ -2863,16 +2863,16 @@ State 81
 	','            reduce using rule 24
 	'0'            reduce using rule 24
 	'1'            reduce using rule 24
+	'CCR'          reduce using rule 24
+	'CCR2'         reduce using rule 24
+	'CCR4'         reduce using rule 24
+	'CCR8'         reduce using rule 24
 	'CNOT'         reduce using rule 24
 	'CR'           reduce using rule 24
 	'CR2'          reduce using rule 24
 	'CR2D'         reduce using rule 24
-	'CR3'          reduce using rule 24
-	'CR3D'         reduce using rule 24
 	'CR4'          reduce using rule 24
 	'CR4D'         reduce using rule 24
-	'CR5'          reduce using rule 24
-	'CR5D'         reduce using rule 24
 	'CR8'          reduce using rule 24
 	'CR8D'         reduce using rule 24
 	'CRD'          reduce using rule 24
@@ -2923,16 +2923,16 @@ State 83
 	','            reduce using rule 31
 	'0'            reduce using rule 31
 	'1'            reduce using rule 31
+	'CCR'          reduce using rule 31
+	'CCR2'         reduce using rule 31
+	'CCR4'         reduce using rule 31
+	'CCR8'         reduce using rule 31
 	'CNOT'         reduce using rule 31
 	'CR'           reduce using rule 31
 	'CR2'          reduce using rule 31
 	'CR2D'         reduce using rule 31
-	'CR3'          reduce using rule 31
-	'CR3D'         reduce using rule 31
 	'CR4'          reduce using rule 31
 	'CR4D'         reduce using rule 31
-	'CR5'          reduce using rule 31
-	'CR5D'         reduce using rule 31
 	'CR8'          reduce using rule 31
 	'CR8D'         reduce using rule 31
 	'CRD'          reduce using rule 31
@@ -2976,16 +2976,16 @@ State 84
 	','            reduce using rule 35
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -3055,16 +3055,16 @@ State 87
 	','            reduce using rule 27
 	'0'            reduce using rule 27
 	'1'            reduce using rule 27
+	'CCR'          reduce using rule 27
+	'CCR2'         reduce using rule 27
+	'CCR4'         reduce using rule 27
+	'CCR8'         reduce using rule 27
 	'CNOT'         reduce using rule 27
 	'CR'           reduce using rule 27
 	'CR2'          reduce using rule 27
 	'CR2D'         reduce using rule 27
-	'CR3'          reduce using rule 27
-	'CR3D'         reduce using rule 27
 	'CR4'          reduce using rule 27
 	'CR4D'         reduce using rule 27
-	'CR5'          reduce using rule 27
-	'CR5D'         reduce using rule 27
 	'CR8'          reduce using rule 27
 	'CR8D'         reduce using rule 27
 	'CRD'          reduce using rule 27
@@ -3114,16 +3114,16 @@ State 89
 	','            reduce using rule 25
 	'0'            reduce using rule 25
 	'1'            reduce using rule 25
+	'CCR'          reduce using rule 25
+	'CCR2'         reduce using rule 25
+	'CCR4'         reduce using rule 25
+	'CCR8'         reduce using rule 25
 	'CNOT'         reduce using rule 25
 	'CR'           reduce using rule 25
 	'CR2'          reduce using rule 25
 	'CR2D'         reduce using rule 25
-	'CR3'          reduce using rule 25
-	'CR3D'         reduce using rule 25
 	'CR4'          reduce using rule 25
 	'CR4D'         reduce using rule 25
-	'CR5'          reduce using rule 25
-	'CR5D'         reduce using rule 25
 	'CR8'          reduce using rule 25
 	'CR8D'         reduce using rule 25
 	'CRD'          reduce using rule 25
@@ -3166,16 +3166,16 @@ State 90
 	','            reduce using rule 26
 	'0'            reduce using rule 26
 	'1'            reduce using rule 26
+	'CCR'          reduce using rule 26
+	'CCR2'         reduce using rule 26
+	'CCR4'         reduce using rule 26
+	'CCR8'         reduce using rule 26
 	'CNOT'         reduce using rule 26
 	'CR'           reduce using rule 26
 	'CR2'          reduce using rule 26
 	'CR2D'         reduce using rule 26
-	'CR3'          reduce using rule 26
-	'CR3D'         reduce using rule 26
 	'CR4'          reduce using rule 26
 	'CR4D'         reduce using rule 26
-	'CR5'          reduce using rule 26
-	'CR5D'         reduce using rule 26
 	'CR8'          reduce using rule 26
 	'CR8D'         reduce using rule 26
 	'CRD'          reduce using rule 26
@@ -3217,16 +3217,16 @@ State 91
 	'*'            shift, and enter state 92
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -3277,16 +3277,16 @@ State 92
 	','            reduce using rule 28
 	'0'            reduce using rule 28
 	'1'            reduce using rule 28
+	'CCR'          reduce using rule 28
+	'CCR2'         reduce using rule 28
+	'CCR4'         reduce using rule 28
+	'CCR8'         reduce using rule 28
 	'CNOT'         reduce using rule 28
 	'CR'           reduce using rule 28
 	'CR2'          reduce using rule 28
 	'CR2D'         reduce using rule 28
-	'CR3'          reduce using rule 28
-	'CR3D'         reduce using rule 28
 	'CR4'          reduce using rule 28
 	'CR4D'         reduce using rule 28
-	'CR5'          reduce using rule 28
-	'CR5D'         reduce using rule 28
 	'CR8'          reduce using rule 28
 	'CR8D'         reduce using rule 28
 	'CRD'          reduce using rule 28
@@ -3327,16 +3327,16 @@ State 93
 	'*'            shift, and enter state 92
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -3400,16 +3400,16 @@ State 97
 	'*'            shift, and enter state 92
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -3506,16 +3506,16 @@ State 104
 	'*'            shift, and enter state 92
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -3581,16 +3581,16 @@ State 108
 	','            reduce using rule 30
 	'0'            reduce using rule 30
 	'1'            reduce using rule 30
+	'CCR'          reduce using rule 30
+	'CCR2'         reduce using rule 30
+	'CCR4'         reduce using rule 30
+	'CCR8'         reduce using rule 30
 	'CNOT'         reduce using rule 30
 	'CR'           reduce using rule 30
 	'CR2'          reduce using rule 30
 	'CR2D'         reduce using rule 30
-	'CR3'          reduce using rule 30
-	'CR3D'         reduce using rule 30
 	'CR4'          reduce using rule 30
 	'CR4D'         reduce using rule 30
-	'CR5'          reduce using rule 30
-	'CR5D'         reduce using rule 30
 	'CR8'          reduce using rule 30
 	'CR8D'         reduce using rule 30
 	'CRD'          reduce using rule 30
@@ -3658,16 +3658,16 @@ State 112
 	'*'            shift, and enter state 92
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -3719,16 +3719,16 @@ State 114
 	'*'            shift, and enter state 92
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -3900,16 +3900,16 @@ State 127
 	'*'            shift, and enter state 92
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -3983,16 +3983,16 @@ State 131
 	','            reduce using rule 29
 	'0'            reduce using rule 29
 	'1'            reduce using rule 29
+	'CCR'          reduce using rule 29
+	'CCR2'         reduce using rule 29
+	'CCR4'         reduce using rule 29
+	'CCR8'         reduce using rule 29
 	'CNOT'         reduce using rule 29
 	'CR'           reduce using rule 29
 	'CR2'          reduce using rule 29
 	'CR2D'         reduce using rule 29
-	'CR3'          reduce using rule 29
-	'CR3D'         reduce using rule 29
 	'CR4'          reduce using rule 29
 	'CR4D'         reduce using rule 29
-	'CR5'          reduce using rule 29
-	'CR5D'         reduce using rule 29
 	'CR8'          reduce using rule 29
 	'CR8D'         reduce using rule 29
 	'CRD'          reduce using rule 29
@@ -4033,16 +4033,16 @@ State 132
 	'*'            shift, and enter state 92
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -4092,16 +4092,16 @@ State 133
 	'*'            shift, and enter state 92
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -4189,16 +4189,16 @@ State 139
 	'*'            shift, and enter state 92
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -4269,16 +4269,16 @@ State 142
 	','            reduce using rule 40
 	'0'            reduce using rule 40
 	'1'            reduce using rule 40
+	'CCR'          reduce using rule 40
+	'CCR2'         reduce using rule 40
+	'CCR4'         reduce using rule 40
+	'CCR8'         reduce using rule 40
 	'CNOT'         reduce using rule 40
 	'CR'           reduce using rule 40
 	'CR2'          reduce using rule 40
 	'CR2D'         reduce using rule 40
-	'CR3'          reduce using rule 40
-	'CR3D'         reduce using rule 40
 	'CR4'          reduce using rule 40
 	'CR4D'         reduce using rule 40
-	'CR5'          reduce using rule 40
-	'CR5D'         reduce using rule 40
 	'CR8'          reduce using rule 40
 	'CR8D'         reduce using rule 40
 	'CRD'          reduce using rule 40
@@ -4319,16 +4319,16 @@ State 143
 	'*'            shift, and enter state 92
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -4403,16 +4403,16 @@ State 147
 	'*'            shift, and enter state 92
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35
@@ -4468,16 +4468,16 @@ State 149
 	'*'            shift, and enter state 92
 	'0'            shift, and enter state 79
 	'1'            shift, and enter state 80
-	'CNOT'         shift, and enter state 23
-	'CR'           shift, and enter state 24
-	'CR2'          shift, and enter state 25
-	'CR2D'         shift, and enter state 26
-	'CR3'          shift, and enter state 27
-	'CR3D'         shift, and enter state 28
-	'CR4'          shift, and enter state 29
-	'CR4D'         shift, and enter state 30
-	'CR5'          shift, and enter state 31
-	'CR5D'         shift, and enter state 32
+	'CCR'          shift, and enter state 23
+	'CCR2'         shift, and enter state 24
+	'CCR4'         shift, and enter state 25
+	'CCR8'         shift, and enter state 26
+	'CNOT'         shift, and enter state 27
+	'CR'           shift, and enter state 28
+	'CR2'          shift, and enter state 29
+	'CR2D'         shift, and enter state 30
+	'CR4'          shift, and enter state 31
+	'CR4D'         shift, and enter state 32
 	'CR8'          shift, and enter state 33
 	'CR8D'         shift, and enter state 34
 	'CRD'          shift, and enter state 35

@@ -79,14 +79,14 @@ data Gate
     | GCRD
     | GCR2
     | GCR2D
-    | GCR3
-    | GCR3D
     | GCR4
     | GCR4D
-    | GCR5
-    | GCR5D
     | GCR8
     | GCR8D
+    | GCCR
+    | GCCR2
+    | GCCR4
+    | GCCR8
     | GGate GateIdent
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 

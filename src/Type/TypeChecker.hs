@@ -279,14 +279,16 @@ inferGate g = TypeDup (arg :=> arg)
                 GQFTI5 -> 5 -- temp
                 GFRDK  -> 3
                 GTOF   -> 3
+                GCCR   -> 3
+                GCCR2  -> 3
+                GCCR4  -> 3
+                GCCR8  -> 3
                 GSWP   -> 2
                 GCNOT  -> 2
                 GCR    -> 2
                 GCRD   -> 2
                 GCR2   -> 2
                 GCR2D  -> 2
-                GCR3   -> 2
-                GCR3D  -> 2
                 GCR4   -> 2
                 GCR4D  -> 2
                 GCR8   -> 2

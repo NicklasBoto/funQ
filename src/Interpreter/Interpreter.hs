@@ -10,7 +10,7 @@ import Lib.QM (link)
 import Data.Functor ( (<&>) )
 import Parser.Abs as Abs
     ( Gate(GS, GH, GX, GY, GZ, GI, GT, GCNOT, GTOF, GSWP, GFRDK, GQFT, GQFTI, 
-      GCR, GCRD, GCR2, GCR2D, GCR3, GCR3D, GCR4, GCR5, GCR5D, GCR4D, GCR8, GCR8D,
+      GCCR, GCCR2, GCCR4, GCCR8, GCR, GCRD, GCR2, GCR2D, GCR4, GCR4D, GCR8, GCR8D,
       GQFT,GQFTI,GQFT2,GQFTI2,GQFT3,GQFTI3,GQFT4,GQFTI4,GQFT5,GQFTI5), 
       Bit(BOne, BZero)  )
 import qualified AST.AST as A
@@ -132,12 +132,14 @@ eval env = \case
             Abs.GQFTI4 -> runQFT   (Q.qftDagger 4) e2 env
             Abs.GQFT5  -> runQFT   (Q.qft 5) e2 env
             Abs.GQFTI5 -> runQFT   (Q.qftDagger 5) e2 env
+            Abs.GCCR   -> run3Gate (`Q.ccphase` ( 1/2)) e2 env
+            Abs.GCCR2  -> run3Gate (`Q.ccphase` ( 1/2)) e2 env
+            Abs.GCCR4  -> run3Gate (`Q.ccphase` ( 1/2)) e2 env
+            Abs.GCCR8  -> run3Gate (`Q.ccphase` ( 1/2)) e2 env
             Abs.GCR    -> run2Gate (`Q.cphase` ( 1/2)) e2 env
             Abs.GCRD   -> run2Gate (`Q.cphase` (-1/2)) e2 env
             Abs.GCR2   -> run2Gate (`Q.cphase` ( 1/4)) e2 env
             Abs.GCR2D  -> run2Gate (`Q.cphase` (-1/4)) e2 env
-            Abs.GCR3   -> run2Gate (`Q.cphase` ( 1/3)) e2 env
-            Abs.GCR3D  -> run2Gate (`Q.cphase` (-1/3)) e2 env
             Abs.GCR4   -> run2Gate (`Q.cphase` ( 1/8)) e2 env
             Abs.GCR4D  -> run2Gate (`Q.cphase` (-1/8)) e2 env
             Abs.GCR8   -> run2Gate (`Q.cphase` ( 1/16)) e2 env
