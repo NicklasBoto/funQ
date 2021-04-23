@@ -47,8 +47,8 @@ main = runInputT defaultSettings loop
             let w = words input
             case head w of
               "run" -> do
-                outputStrLn $ "runs " ++ (w !! 1)
-                liftIO $ runIO (w !! 1)
+                -- outputStrLn $ "runs " ++ (w !! 1)
+                liftIO $ runIO "src/AST/test.fq" -- (w !! 1)
                 loop
               _ -> do
                 liftIO $ runTerminalIO $ "main : a main = " ++ input
@@ -128,7 +128,7 @@ eval :: A.Program -> Run I.Value
 eval = withExceptT ValueError . mapExceptT Q.run . I.interpret
 
 semanticAnalysis :: Program -> Run Program 
-semanticAnalysis = toErr S.semanticAnalysis SemanticError . const <*> id
+semanticAnalysis = toErr S.runAnalysis SemanticError . const <*> id
 
 rundistest :: FilePath -> IO ()
 rundistest path = do

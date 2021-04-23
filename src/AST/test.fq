@@ -7,14 +7,26 @@ args a b = 0
 test : Bit 
 test a = 0
 
--- q : QBit
--- q = new 2
+test1 : Bit
+test1 h s d = 1
+
+-- p : QBit
+-- q = new 0
+
+-- r : QBit
+-- s = new 0
 
 -- f1 : Bit 
 -- f1 = 0
 
 -- f1 : Bit 
 -- f1 = 0
+
+-- f2 : Bit 
+-- f2 = 0
+
+-- f2 : Bit 
+-- f2 = 0
 
 -- f2 : Bit 
 -- f2 = 0
