@@ -25,6 +25,7 @@ import Parser.Lex
 %name pType1 Type1
 %name pType Type
 %name pGate Gate
+%name pInverse Inverse
 -- no lexer declaration
 %monad { Either String } { (>>=) } { return }
 %tokentype {Token}
@@ -57,19 +58,18 @@ import Parser.Lex
   'I' { PT _ (TS _ 26) }
   'QBit' { PT _ (TS _ 27) }
   'QFT' { PT _ (TS _ 28) }
-  'QFTI' { PT _ (TS _ 29) }
-  'S' { PT _ (TS _ 30) }
-  'SWAP' { PT _ (TS _ 31) }
-  'T' { PT _ (TS _ 32) }
-  'TOFFOLI' { PT _ (TS _ 33) }
-  'X' { PT _ (TS _ 34) }
-  'Y' { PT _ (TS _ 35) }
-  'Z' { PT _ (TS _ 36) }
-  'else' { PT _ (TS _ 37) }
-  'if' { PT _ (TS _ 38) }
-  'in' { PT _ (TS _ 39) }
-  'let' { PT _ (TS _ 40) }
-  'then' { PT _ (TS _ 41) }
+  'S' { PT _ (TS _ 29) }
+  'SWAP' { PT _ (TS _ 30) }
+  'T' { PT _ (TS _ 31) }
+  'TOFFOLI' { PT _ (TS _ 32) }
+  'X' { PT _ (TS _ 33) }
+  'Y' { PT _ (TS _ 34) }
+  'Z' { PT _ (TS _ 35) }
+  'else' { PT _ (TS _ 36) }
+  'if' { PT _ (TS _ 37) }
+  'in' { PT _ (TS _ 38) }
+  'let' { PT _ (TS _ 39) }
+  'then' { PT _ (TS _ 40) }
   L_integ  { PT _ (TI $$) }
   L_FunVar { PT _ (T_FunVar $$) }
   L_Var { PT _ (T_Var $$) }
@@ -174,8 +174,7 @@ Gate : 'H' { Parser.Abs.GH }
      | 'TOFFOLI' { Parser.Abs.GTOF }
      | 'SWAP' { Parser.Abs.GSWP }
      | 'FREDKIN' { Parser.Abs.GFRDK }
-     | 'QFT' Integer { Parser.Abs.GQFT $2 }
-     | 'QFTI' Integer { Parser.Abs.GQFTI $2 }
+     | 'QFT' Inverse Integer { Parser.Abs.GQFT $2 $3 }
      | 'CR' { Parser.Abs.GCR }
      | 'CRD' { Parser.Abs.GCRD }
      | 'CR2' { Parser.Abs.GCR2 }
@@ -189,6 +188,10 @@ Gate : 'H' { Parser.Abs.GH }
      | 'CR8' { Parser.Abs.GCR8 }
      | 'CR8D' { Parser.Abs.GCR8D }
      | GateIdent { Parser.Abs.GGate $1 }
+
+Inverse :: { Parser.Abs.Inverse }
+Inverse : 'I' { Parser.Abs.IInverse }
+        | {- empty -} { Parser.Abs.INotInverse }
 {
 
 happyError :: [Token] -> Either String a

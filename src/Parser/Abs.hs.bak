@@ -75,8 +75,7 @@ data Gate
     | GTOF
     | GSWP
     | GFRDK
-    | GQFT Integer
-    | GQFTI Integer
+    | GQFT Inverse Integer
     | GCR
     | GCRD
     | GCR2
@@ -90,5 +89,8 @@ data Gate
     | GCR8
     | GCR8D
     | GGate GateIdent
+  deriving (C.Eq, C.Ord, C.Show, C.Read)
+
+data Inverse = IInverse | INotInverse
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 

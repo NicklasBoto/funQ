@@ -41,10 +41,10 @@ The reserved words used in Parser are the following:
   | ``CR2D`` | ``CR3`` | ``CR3D`` | ``CR4``
   | ``CR4D`` | ``CR5`` | ``CR5D`` | ``CR8``
   | ``CR8D`` | ``CRD`` | ``FREDKIN`` | ``H``
-  | ``I`` | ``QBit`` | ``QFT`` | ``QFTI``
-  | ``S`` | ``SWAP`` | ``T`` | ``TOFFOLI``
-  | ``X`` | ``Y`` | ``Z`` | ``else``
-  | ``if`` | ``in`` | ``let`` | ``then``
+  | ``I`` | ``QBit`` | ``QFT`` | ``S``
+  | ``SWAP`` | ``T`` | ``TOFFOLI`` | ``X``
+  | ``Y`` | ``Z`` | ``else`` | ``if``
+  | ``in`` | ``let`` | ``then`` |
 
 The symbols used in Parser are the following:
   | * | ( | , | )
@@ -108,8 +108,7 @@ All other symbols are terminals.
   |  |  **|**  | ``TOFFOLI``
   |  |  **|**  | ``SWAP``
   |  |  **|**  | ``FREDKIN``
-  |  |  **|**  | ``QFT`` //Integer//
-  |  |  **|**  | ``QFTI`` //Integer//
+  |  |  **|**  | ``QFT`` //Inverse// //Integer//
   |  |  **|**  | ``CR``
   |  |  **|**  | ``CRD``
   |  |  **|**  | ``CR2``
@@ -123,5 +122,7 @@ All other symbols are terminals.
   |  |  **|**  | ``CR8``
   |  |  **|**  | ``CR8D``
   |  |  **|**  | //GateIdent//
+  | //Inverse// | -> | ``I``
+  |  |  **|**  | **eps**
 
 

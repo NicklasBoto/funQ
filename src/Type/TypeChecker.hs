@@ -312,30 +312,22 @@ names _            = []
 inferGate :: Gate -> Type
 inferGate g = TypeDup (arg :=> arg)
     where
-        arg = foldr (:><) TypeQBit (replicate (n-1) TypeQBit)
+        arg = foldr (:><) TypeQBit (replicate ((fromInteger n)-1) TypeQBit)
         n = case g of
-                GQFT   -> 1 -- temp
-                GQFTI  -> 1 -- temp
-                GQFT2  -> 2 -- temp
-                GQFTI2 -> 2 -- temp
-                GQFT3  -> 3 -- temp
-                GQFTI3 -> 3 -- temp
-                GQFT4  -> 4 -- temp
-                GQFTI4 -> 4 -- temp
-                GQFT5  -> 5 -- temp
-                GQFTI5 -> 5 -- temp
-                GFRDK  -> 3
-                GTOF   -> 3
-                GSWP   -> 2
-                GCNOT  -> 2
-                GCR    -> 2
-                GCRD   -> 2
-                GCR2   -> 2
-                GCR2D  -> 2
-                GCR3   -> 2
-                GCR3D  -> 2
-                GCR4   -> 2
-                GCR4D  -> 2
-                GCR8   -> 2
-                GCR8D  -> 2
-                _      -> 1
+                GQFT n  -> n
+                GQFTI n -> n
+                GFRDK   -> 3
+                GTOF    -> 3
+                GSWP    -> 2
+                GCNOT   -> 2
+                GCR     -> 2
+                GCRD    -> 2
+                GCR2    -> 2
+                GCR2D   -> 2
+                GCR3    -> 2
+                GCR3D   -> 2
+                GCR4    -> 2
+                GCR4D   -> 2
+                GCR8    -> 2
+                GCR8D   -> 2
+                _       -> 1
