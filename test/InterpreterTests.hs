@@ -29,14 +29,6 @@ runTest (fileName, expectedValue) b = do
 testPath :: String -> String
 testPath testName = "test/interpreter-test-suite/" ++ testName
 
--- TODO: tågmys
--- få stateT att fungera
--- gör alla tests i en .fq-fil
--- fixa bättre show-instans för tuples (nu visas nestade tuples)
--- runTestsDebug: printa mer saker
--- kolla över errors vi får när vi build:ar/kompilerar
--- 3-qbit-gates
--- fixa syntax highlighting
 tests :: [(FilePath, String)]
 tests =
   [ 
@@ -47,7 +39,7 @@ tests =
     ("let-tup-q.fq", "0"),
     ("let-tup.fq", "0"),
     ("partial-app-cnot.fq", "1"),
-    -- ("partial-app-comp.fq", "0"), TODO
+    ("partial-app-comp.fq", "0"),
     ("partial-app-new.fq",  "1"),
     ("partial-app-meas.fq", "0"),
     ("pauliX.fq", "1"),
@@ -64,10 +56,6 @@ tests =
     ("teleport.fq", "1"),
     ("nested-let.fq", "0"),
     ("deutsch.fq", "1"),
-    -- ("qpe.fq", "⟨0,0,1⟩")
-    -- TODO ("toffoli.fq")
-    -- TODO ("fredkin.fq",  "0"),
-    -- TODO ("qft1.fq",     "0"),
     ("qft5.fq",     "⟨1,⟨0,⟨1,⟨0,1⟩⟩⟩⟩"),
     ("qft4.fq",     "⟨0,⟨1,⟨0,1⟩⟩⟩"),
     ("qft3.fq",     "⟨0,⟨1,0⟩⟩"),
