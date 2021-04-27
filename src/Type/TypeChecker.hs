@@ -314,20 +314,12 @@ inferGate g = TypeDup (arg :=> arg)
     where
         arg = foldr (:><) TypeQBit (replicate (n-1) TypeQBit)
         n = case g of
-                GQFT n  -> n
-                GQFTI n -> n
                 GFRDK   -> 3
                 GTOF    -> 3
                 GSWP    -> 2
                 GCNOT   -> 2
-                GCR     -> 2
-                GCRD    -> 2
-                GCR2    -> 2
-                GCR2D   -> 2
-                GCR3    -> 2
-                GCR3D   -> 2
-                GCR4    -> 2
-                GCR4D   -> 2
-                GCR8    -> 2
-                GCR8D   -> 2
+                GQFT n  -> n
+                GQFTI n -> n
+                GCR n   -> n
+                GCRI n  -> n
                 _       -> 1

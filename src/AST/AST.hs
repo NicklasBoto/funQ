@@ -149,8 +149,8 @@ makeImTerm _env (P.TBit (P.BBit 1)) = Bit BOne
 makeImTerm _env (P.TGate (P.GGate (P.GateIdent g))) 
     | init g == "QFT"  = Gate $ GQFT (nums g)
     | init g == "QFTI" = Gate $ GQFTI (nums g)
-    | init g == "CR"   = Gate $ GCR (nums g) 
-    | init g == "CRI"  = Gate $ GCRI (nums g) 
+    | takeWhile isLetter g == "CR" = Gate $ GCR (nums g) 
+    | takeWhile isLetter g == "CRI" = Gate $ GCRI (nums g) 
     where nums = read . dropWhile isLetter
 makeImTerm _env (P.TGate g) = Gate $ gateToASTGate g 
 makeImTerm _env P.TStar = Unit

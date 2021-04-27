@@ -100,19 +100,8 @@ eval env = \case
             A.GFRDK   -> run3Gate Q.fredkin e2 env
             A.GQFT n  -> runQFT   (Q.qft n) e2 env
             A.GQFTI n -> runQFT   (Q.qftDagger n) e2 env
-            -- A.GCR 3   -> run2Gate (`Q.cphase` (1/3)) e2 env
-            -- A.GCRD 3   -> run2Gate (`Q.cphase` (-1/3)) e2 env
-            A.GCR n   -> run2Gate (`Q.cphase` (1/n*2)) e2 env
-            A.GCRD n   -> run2Gate (`Q.cphase` (-1/n*2)) e2 env
-            -- A.GCRD    -> run2Gate (`Q.cphase` (-1/2)) e2 env
-            -- A.GCR2    -> run2Gate (`Q.cphase` ( 1/4)) e2 env
-            -- A.GCR2D   -> run2Gate (`Q.cphase` (-1/4)) e2 env
-            -- A.GCR3    -> run2Gate (`Q.cphase` ( 1/3)) e2 env -- 1/6?
-            -- A.GCR3D   -> run2Gate (`Q.cphase` (-1/3)) e2 env -- -1/6?
-            -- A.GCR4    -> run2Gate (`Q.cphase` ( 1/8)) e2 env
-            -- A.GCR4D   -> run2Gate (`Q.cphase` (-1/8)) e2 env
-            -- A.GCR8    -> run2Gate (`Q.cphase` ( 1/16)) e2 env
-            -- A.GCR8D   -> run2Gate (`Q.cphase` (-1/16)) e2 env
+            A.GCR n   -> run2Gate (`Q.cphase` (1/(fromIntegral n)*2)) e2 env
+            A.GCRI n  -> run2Gate (`Q.cphase` (-1/(fromIntegral n)*2)) e2 env
 
         A.New -> do
             VBit b' <- eval env e2

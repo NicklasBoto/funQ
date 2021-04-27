@@ -61,15 +61,15 @@ unknownGate fs = checkSemantics fs isValid genErr errorMsg
         unknownGates (TGate (GGate (GateIdent g))) gs
           | init g == "QFT" && length g == 4 && (digitToInt $ last g) <= 5 = gs
           | init g == "QFTI" && length g == 5 && (digitToInt $ last g) <= 5 = gs
-          | init g == "CR" && all isDigit (dropWhile isLetter g) = gs
-          | init g == "CRI" && all isDigit (dropWhile isLetter g) = gs
+          | takeWhile isLetter g == "CR" && all isDigit (dropWhile isLetter g) = gs 
+          | takeWhile isLetter g == "CRI" && all isDigit (dropWhile isLetter g) = gs
           | otherwise = gs ++ [g]
         unknownGates (TApp t1 t2) gs                  = gs ++ unknownGates t1 [] ++ unknownGates t2 []
         unknownGates (TIfEl t1 t2 t3) gs              = gs ++ unknownGates t1 [] ++ unknownGates t2 [] ++ unknownGates t3 [] 
         unknownGates (TLet _ _ t1 t2) gs              = gs ++ unknownGates t1 [] ++ unknownGates t2 []
         unknownGates (TLamb _ _ _ t1) gs              = gs ++ unknownGates t1 []
         unknownGates _ gs                             = gs
-        genErr e = UnknownGate $ e ++ " are not predefined gates"
+        genErr e = UnknownGate $ "Gates not recognized: " ++ e
         errorMsg (FDecl _ _ (FDef _ _ t)) = concat $ intersperse ", " $ unknownGates t []
 
 -- | Checks that bits only are       

@@ -1,5 +1,5 @@
 main : QBit 
-main = new 23
+main = new 0
 
 -- args : Bit -o Bit
 -- args a b = 0
