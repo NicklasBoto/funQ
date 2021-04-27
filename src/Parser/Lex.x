@@ -30,7 +30,7 @@ $s ([\' \_]| ($d | $l)) * \  * \:
     { tok (\p s -> PT p (eitherResIdent (T_FunVar . share) s)) }
 $s ([\' \_]| ($d | $l)) *
     { tok (\p s -> PT p (eitherResIdent (T_Var . share) s)) }
-$c +
+$c ($d | $c)*
     { tok (\p s -> PT p (eitherResIdent (T_GateIdent . share) s)) }
 \\
     { tok (\p s -> PT p (eitherResIdent (T_Lambda . share) s)) }
@@ -118,7 +118,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "H" 25 (b "CR2" 13 (b "." 7 (b "*" 4 (b "(" 2 (b "!" 1 N N) (b ")" 3 N N)) (b "-o" 6 (b "," 5 N N) N)) (b "Bit" 10 (b "><" 9 (b "=" 8 N N) N) (b "CR" 12 (b "CNOT" 11 N N) N))) (b "CR5" 19 (b "CR3D" 16 (b "CR3" 15 (b "CR2D" 14 N N) N) (b "CR4D" 18 (b "CR4" 17 N N) N)) (b "CR8D" 22 (b "CR8" 21 (b "CR5D" 20 N N) N) (b "FREDKIN" 24 (b "CRD" 23 N N) N)))) (b "S" 38 (b "QFT5" 32 (b "QFT2" 29 (b "QBit" 27 (b "I" 26 N N) (b "QFT" 28 N N)) (b "QFT4" 31 (b "QFT3" 30 N N) N)) (b "QFTI3" 35 (b "QFTI2" 34 (b "QFTI" 33 N N) N) (b "QFTI5" 37 (b "QFTI4" 36 N N) N))) (b "Z" 44 (b "TOFFOLI" 41 (b "T" 40 (b "SWAP" 39 N N) N) (b "Y" 43 (b "X" 42 N N) N)) (b "in" 47 (b "if" 46 (b "else" 45 N N) N) (b "then" 49 (b "let" 48 N N) N))))
+resWords = b "I" 14 (b "." 7 (b "*" 4 (b "(" 2 (b "!" 1 N N) (b ")" 3 N N)) (b "-o" 6 (b "," 5 N N) N)) (b "CNOT" 11 (b "><" 9 (b "=" 8 N N) (b "Bit" 10 N N)) (b "H" 13 (b "FREDKIN" 12 N N) N))) (b "Y" 21 (b "T" 18 (b "S" 16 (b "QBit" 15 N N) (b "SWAP" 17 N N)) (b "X" 20 (b "TOFFOLI" 19 N N) N)) (b "in" 25 (b "else" 23 (b "Z" 22 N N) (b "if" 24 N N)) (b "then" 27 (b "let" 26 N N) N)))
    where b s n = let bs = s
                  in  B bs (TS bs n)
 
