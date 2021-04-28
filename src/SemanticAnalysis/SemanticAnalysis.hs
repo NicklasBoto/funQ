@@ -45,7 +45,7 @@ funNameMatch fs = checkSemantics fs isValid genErr errorMsg
         genErr e   = FunNameMismatch $ "Mismatchig names in function declaration and definition for " ++ e
         errorMsg f = funName f
 
--- | Checks if multiple function declarations are made fo 
+-- | Checks that no functions are declared more than once
 dupFun :: [FunDec] -> Either SemanticError ()
 dupFun fs = checkSemantics fs isValid genErr errorMsg
   where isValid f  = length (filter (== funName f) funNames) == 1
@@ -53,7 +53,10 @@ dupFun fs = checkSemantics fs isValid genErr errorMsg
         genErr e   = DuplicateFunction $ "Duplicate function declarations for " ++ e
         errorMsg f = funName f
 
--- | 
+-- | Checks that there are no unknown gates present. Primarly, this function checks gates 
+-- | that are acceptable through the catch-all GateIdent term in the grammar. Typically,
+-- | gates that are included as such can not be easily specified without massive repitition
+-- | in the grammar or are generic (for instance the phase shift CR).
 unknownGate :: [FunDec] -> Either SemanticError ()
 unknownGate fs = checkSemantics fs isValid genErr errorMsg
   where isValid (FDecl _ _ (FDef _ _ t)) = length (unknownGates t []) == 0
@@ -72,7 +75,7 @@ unknownGate fs = checkSemantics fs isValid genErr errorMsg
         genErr e = UnknownGate $ "Gates not recognized: " ++ e
         errorMsg (FDecl _ _ (FDef _ _ t)) = concat $ intersperse ", " $ unknownGates t []
 
--- | Checks that bits only are       
+-- | Checks that bits only are accept zero or ones.     
 onlyBits :: [FunDec] -> Either SemanticError ()
 onlyBits fs = checkSemantics fs isValid genErr errorMsg
   where isValid (FDecl _ _ (FDef _ _ t)) = length (invalidBit t []) == 0
@@ -86,7 +89,7 @@ onlyBits fs = checkSemantics fs isValid genErr errorMsg
         genErr e = InvalidBit $ "Expected value of bits to be 0 or 1 but got " ++ e
         errorMsg (FDecl _ _ (FDef _ _ t)) = concat $ intersperse ", " $ invalidBit t []
 
--- | Checks that not too many function arguments are given 
+-- | Checks that not too many function arguments are used for function definition.
 correctNumberOfArgs :: [FunDec] -> Either SemanticError ()
 correctNumberOfArgs fs = checkSemantics fs isValid genErr errorMsg
   where isValid (FDecl _ t (FDef _ args _)) = length args < size t
