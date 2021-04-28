@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE GeneralisedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
 
 module Repl where
@@ -23,7 +24,8 @@ import Text.Parsec
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 
-type Repl = HaskelineT (StateT ReplState (ExceptT Run.Error IO))
+newtype Repl a = Repl { runRepl :: HaskelineT (StateT ReplState (ExceptT Run.Error IO)) a }
+    deriving (Functor, Applicative, Monad, MonadState ReplState)
 
 data Assign = Assign String Type Value
     deriving Show   
@@ -56,6 +58,7 @@ ops = [ ("help"   , helpCmd  )
       , ("run"    , runCmd   )
       , ("version", verCmd   )
       , ("type"   , typeCmd  )
+      , ("env"    , envCmd   )
       ]
 
 helpTexts :: Map.Map String String
@@ -81,9 +84,12 @@ quitCmd, runCmd, verCmd, typeCmd :: String -> Repl ()
 quitCmd _ = abort
 runCmd    = liftIO . Run.runIO
 verCmd  _ = printr $ showVersion version
-typeCmd n = getfun n >>= \case
+typeCmd "" = mapM_ (printr . showType) =<< gets funs
+    where showType (Func n t _) = n ++ " : " ++ show t
+typeCmd n  = getfun n >>= \case
     Nothing    -> printr $ "no such function " ++ n
     Just (_,t) -> printr $ show t
+envCmd _ = mapM_ (printr . show) =<< gets funs
 
 parseAssign :: Stream s m Char => ParsecT s u m [Char]
 parseAssign = manyTill alphaNum (skipMany space >> string "=")
@@ -120,8 +126,12 @@ addLinears term = do
     lin <- gets linenv
     modify $ \s -> s{linenv = Set.union (Set.fromList ns) lin}
 
-compl :: Monad m => WordCompleter m
-compl n = return $ filter (isPrefixOf n) $ map ((':':) . fst) ops
+compl :: WordCompleter (StateT ReplState (ExceptT Run.Error IO))
+compl n = do
+    env <- get funs
+    return $ filter (isPrefixOf n) 
+           $ map ((':':) . fst) ops
+          ++ [n | Func n _ _ <- env]
 
 toIO ex = runExceptT ex >>= \case
   Left  err   -> putStrLn $ "*** Exception, " ++ show err
