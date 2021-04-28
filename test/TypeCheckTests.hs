@@ -4,7 +4,7 @@
 
 module TypeCheckTests where 
 import Type.TypeChecker
-import Test.QuickCheck (quickCheckAll, (===), Property, Testable(property), quickCheck, Arbitrary(..), Gen(..), frequency, elements, generate, sample, withMaxSuccess, (==>), expectFailure)
+import Test.QuickCheck (quickCheckAll, (===), Property, Testable(property), quickCheck, Arbitrary(..), Gen(..), frequency, elements, generate, sample, withMaxSuccess, (==>), expectFailure, Result (Failure))
 import Data.Either (lefts,rights, isLeft, isRight)
 import AST.AST ( Type(TypeDup, (:=>), (:><)) )
 import Control.Monad.Except
@@ -18,7 +18,7 @@ instance Arbitrary Type where
               [ (6, elements ["Bit", "T", "QBit"])
               , (1, (:=>) <$> arbitrary <*> arbitrary)
               , (1, (:><) <$> arbitrary <*> arbitrary)
-              , (2, TypeDup . debangg   <$> arbitrary)
+              , (2, TypeDup <$> arbitrary)
               ]
 
 -- | When typecheck is expected to succeed.
@@ -73,15 +73,22 @@ prop_infimumIdp t = testSup (infimum t t) === Just t
 -- t1 <: t2 = true
 -- sup t1 t2 =? T -o QBit
 -- A <: B ==> supremum A B == B
-prop_subSup t1 t2 = t1 <: t2 ==> (testSup (supremum t1 t2) === Just t2)
+prop_subSup t1 t2 = t1 <: t2 ==> (testSup (supremum t1 t2) .=== Just t2)
 
 -- A <: B ==> infimum A B == A
-prop_subInf t1 t2 = t1 <: t2 ==> (testSup (infimum t1 t2) === Just t1)
+prop_subInf t1 t2 = t1 <: t2 ==> (testSup (infimum t1 t2) .=== Just t1)
 
 x = testSup (supremum "Bit -o QBit" "!Bit -o QBit")
 
 assTest :: Monad m => (t1 -> t2 -> m t2) -> t1 -> t2 -> t1 -> m t2
 assTest f a b c = f a b >>= f c
+
+(.=) :: Type -> Type -> Bool
+s .= t = s <: t && t <: s
+
+(.===) :: Maybe Type -> Maybe Type -> Property
+Just s .=== Just t = property $ s .= t
+_s     .===     _t = property False
 
 
 -- | The inside is (!Bit, !Bit) which makes ! move outside, to !(Bit, Bit)
