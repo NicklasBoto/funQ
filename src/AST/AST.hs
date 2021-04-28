@@ -108,12 +108,12 @@ instance Show Type where
 
 -- | Converts from Parser type to our representation of type.
 convertType :: P.Type -> Type
-convertType P.TypeBit               = TypeBit
-convertType P.TypeQbit              = TypeQBit
-convertType P.TypeVoid              = TypeUnit
-convertType (P.TypeDup type')       = TypeDup (convertType type')
-convertType (P.TypeTens l r)        = convertType l :>< convertType r
-convertType (P.TypeFunc l r)        = convertType l :=> convertType r
+convertType P.TypeBit         = TypeBit
+convertType P.TypeQbit        = TypeQBit
+convertType P.TypeVoid        = TypeUnit
+convertType (P.TypeDup type') = TypeDup (convertType type')
+convertType (P.TypeTens l r)  = convertType l :>< convertType r
+convertType (P.TypeFunc l r)  = convertType l :=> convertType r
 
 -- | Converts from our type to Parser type .
 reverseType :: Type -> P.Type
@@ -167,19 +167,6 @@ makeImFunction (P.FDecl _ t function) = Func name (convertType t) term --(unfun 
     where
         (P.FDef (P.Var name) args body) = function
         term = makeImTerm M.empty $ lambdaize (debangFunc t) args body
-         
-    -- where unfun (P.FunVar x) = init $ filter (/=' ') x
-
--- f : B
--- f = \x : A . (\y : A . y) x 
-
--- f : A -> B -> C
--- f x y = f x y
--- \\y.\\x.aoeu
-
--- aboba : !(B -> C) -> D
--- f : !(A -> !(B -> C) -> D)
--- f x = aboba
 
 -- | Debangs outer level of a type.
 debangFunc :: P.Type -> P.Type
@@ -191,18 +178,6 @@ lambdaize :: P.Type -> [P.Arg] -> P.Term -> P.Term
 lambdaize _t [] body                                    = body 
 lambdaize (P.TypeFunc n p) (P.FArg (P.Var v) : vs) body = P.TLamb (P.Lambda "\\") (P.FunVar v) n (lambdaize p vs body)
 lambdaize (P.TypeDup (P.TypeFunc n p)) (P.FArg (P.Var v) : vs) body = P.TLamb (P.Lambda "\\") (P.FunVar v) n (lambdaize p vs body)
-
--- -- | Convert all functions to lambda abstractions
--- lambdaize :: P.Function -> P.Term
--- lambdaize (P.FDef _ [] term) = term
--- lambdaize (P.FDef n (a:args) body) = P.TLamb lambda name type' term --(unArg a) type' (lambdaize (P.FDef _n args term))
---     where 
---         lambda = P.Lambda "//"
---         (P.FArg name) = a
---         term = lambdaize (P.FDef n args body)
-
-    -- where unArg (P.FArg v) = v
-    --       lambda = P.Lambda "\\"
 
 -- | Translate abstract syntax from parser to intermediate abstract syntax
 toIm :: P.Program -> Program
@@ -224,7 +199,7 @@ reverseImTerm env (Idx idx)    = P.TVar $ P.Var $ 'x' : show (env - idx - 1)
 reverseImTerm env (Fun s)      = P.TVar $ P.Var s
 reverseImTerm env (Bit BZero)  = P.TBit $ P.BBit 0
 reverseImTerm env (Bit BOne)   = P.TBit $ P.BBit 1
-reverseImTerm env (Gate g)     = undefined -- P.TGate g --FIXME
+reverseImTerm env (Gate g)     = P.TGate P.GH -- undefined -- P.TGate g --FIXME
 reverseImTerm env (Tup l r)    = P.TTup $ P.Tuple (reverseImTerm env l) [reverseImTerm env r] -- FIXME
 reverseImTerm env (App  t1 t2) = P.TApp (reverseImTerm env t1) (reverseImTerm env t2)
 reverseImTerm env (IfEl c t e) = P.TIfEl (reverseImTerm env c) (reverseImTerm env t) (reverseImTerm env e)
