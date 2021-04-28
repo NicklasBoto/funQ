@@ -10,13 +10,16 @@ import Lib.QM (link)
 import Parser.Abs as Abs
 import qualified AST.AST as A
 import Parser.Print
+import Debug.Trace
 
 data ValueError
     = NotFunction String
-    | NotApplied String
     | Fail String
-    | IndexTooLarge String
-     deriving Show
+
+instance Show ValueError where
+    show (NotFunction s) = "Function " ++ s ++ " is not defined"
+    show (Fail s) = s
+
 
 type Sig = M.Map String A.Term
 type Eval = ExceptT ValueError Q.QM
@@ -36,8 +39,6 @@ instance Show Value where
     show VNew          = "new"
     show VMeas         = "measure"
     show (VGate g)     = show g
-
-
 
 -- | Main function in interpreter (exported)
 interpret :: [A.Function] -> Eval Value
@@ -68,14 +69,17 @@ data Value
     | VGate A.Gate
 
 -- | Term evaluator
-eval :: Env -> A.Term -> Eval Value
+eval :: Env -> A.Term -> Eval Value 
 eval env = \case
-    A.Idx j -> if j >= fromIntegral (length (values env)) then throwError (IndexTooLarge ("Index" ++ show j ++ "is too large"))
+    A.Idx j -> if j >= fromIntegral (length (values env)) then throwError (Fail ("Index" ++ show j ++ "is too large"))
              else return $ values env !! fromIntegral j
 
     A.Fun s -> case M.lookup s (functions env) of
+        -- map functionnamns till Value (evaluerade term)
+        -- får in funktion, om inte finns i mappen så evaluera och spara i mappen
+        -- om det finns, returnera värdet utan att evaluera funktionen igen
         Just t  -> eval env t
-        Nothing -> throwError $ NotFunction $ "Function " ++ show s ++ " is not defined"
+        Nothing -> throwError $ NotFunction s
 
     A.Bit A.BZero -> return $ VBit 0
     A.Bit A.BOne -> return $ VBit 1
@@ -113,7 +117,7 @@ eval env = \case
             v2 <- eval env e2
             v1 <- eval env e1
             case v1 of
-                VAbs v1 _ a -> eval env{ values = v2 : v1 ++ values env } a
+                VAbs vs _ a -> (trace $ "a: " ++ show a ++ " vs: " ++ show vs ++ " v2: " ++ show v2) eval env{ values = v2 : vs ++ values env } a
                 VNew -> eval env{ values = v2 : values env } (A.App A.New (A.Idx 0))
                 VMeas -> eval env{ values = v2 : values env } (A.App A.Meas (A.Idx 0))
                 (VGate g) -> eval env{ values = v2 : values env } (A.App (A.Gate g) (A.Idx 0))
@@ -128,10 +132,10 @@ eval env = \case
          eval env{ values = x2 : x1 : values env } inn
 
     A.Abs t e  -> return $ VAbs (values env) t e
-    A.Unit   -> return VUnit
-    A.Gate g -> return $ VGate g 
-    A.New    -> return VNew
-    A.Meas   -> return VMeas
+    A.Unit     -> return VUnit
+    A.Gate g   -> return $ VGate g 
+    A.New      -> return VNew
+    A.Meas     -> return VMeas
 
 fromVTup :: Value -> [Value]
 fromVTup (VTup a b) = a : fromVTup b
