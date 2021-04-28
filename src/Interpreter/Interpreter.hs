@@ -4,13 +4,15 @@ module Interpreter.Interpreter where
 
 import qualified Data.Map as M
 import Control.Monad.Except
-    ( MonadTrans(lift), ExceptT, MonadError(throwError) )
+    ( MonadTrans(lift), ExceptT, MonadError(throwError), runExceptT )
+import Control.Monad.State
 import qualified FunQ as Q
 import Lib.QM (link)
 import Parser.Abs as Abs
 import qualified AST.AST as A
 import Parser.Print
-import Debug.Trace
+import Control.Monad.State.Lazy
+
 
 data ValueError
     = NotFunction String
@@ -22,7 +24,8 @@ instance Show ValueError where
 
 
 type Sig = M.Map String A.Term
-type Eval = ExceptT ValueError Q.QM
+type TopLevel = M.Map String Value
+type Eval = ExceptT ValueError (StateT TopLevel Q.QM)
 
 -- | Environment type, stores bound variables & functions
 data Env = Env {
@@ -41,10 +44,10 @@ instance Show Value where
     show (VGate g)     = show g
 
 -- | Main function in interpreter (exported)
-interpret :: [A.Function] -> Eval Value
-interpret fs = do
-    let env = createEnv fs
-    eval env =<< getMainTerm env
+interpret :: [A.Function] -> Q.QM (Either ValueError Value)
+interpret fs = evalStateT (runExceptT main) M.empty
+    where env  = createEnv fs
+          main = getMainTerm env >>= eval env
 
 -- | Creates an environment from a list of functions. 
 createEnv :: [A.Function] -> Env
@@ -109,15 +112,15 @@ eval env = \case
 
         A.New -> do
             VBit b' <- eval env e2
-            lift $ VQBit <$> Q.new b'
+            lift $ lift $ VQBit <$> Q.new b'
         A.Meas -> do
             VQBit q' <- eval env e2
-            lift $ VBit <$> Q.measure q'
+            lift $ lift $ VBit <$> Q.measure q'
         _ -> do
             v2 <- eval env e2
             v1 <- eval env e1
             case v1 of
-                VAbs vs _ a -> (trace $ "a: " ++ show a ++ " vs: " ++ show vs ++ " v2: " ++ show v2) eval env{ values = v2 : vs ++ values env } a
+                VAbs vs _ a -> eval env{ values = v2 : vs ++ values env } a
                 VNew -> eval env{ values = v2 : values env } (A.App A.New (A.Idx 0))
                 VMeas -> eval env{ values = v2 : values env } (A.App A.Meas (A.Idx 0))
                 (VGate g) -> eval env{ values = v2 : values env } (A.App (A.Gate g) (A.Idx 0))
@@ -146,7 +149,7 @@ toVTup = foldr1 VTup
 
 -- | Eval monad print
 printE :: Show a => a -> Eval ()
-printE = lift . Q.io . print
+printE = lift . lift . Q.io . print
 
 -- | Run QFT gate
 runQFT :: ([Q.QBit] -> Q.QM [Q.QBit]) -> A.Term -> Env -> Eval Value
@@ -154,9 +157,9 @@ runQFT g q env = do
     res <- eval env q
     case res of
         (VQBit q') ->
-            VQBit . head <$> lift (g [q'])
+            lift $ VQBit . head <$> lift (g [q'])
         vt@(VTup _ _) -> do
-            b <- lift $ g (unValue (fromVTup vt))
+            b <- lift $ lift $ g (unValue (fromVTup vt))
             return $ toVTup $ map VQBit b
         where unValue []            = []
               unValue (VQBit q:qss) = q : unValue qss
@@ -165,18 +168,18 @@ runQFT g q env = do
 runGate :: (Q.QBit -> Q.QM Q.QBit) -> A.Term -> Env -> Eval Value
 runGate g q env = do
     VQBit q' <- eval env q
-    VQBit <$> lift (g q')
+    lift $ VQBit <$> lift (g q')
 
 -- | Run gate taking two qubits
 run2Gate :: ((Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit)) -> A.Term -> Env -> Eval Value
 run2Gate g q env = do
     VTup (VQBit a) (VQBit b) <- eval env q
-    (p,q) <- lift (g (a,b))
+    (p,q) <- lift $ lift (g (a,b))
     return $ VTup (VQBit p) (VQBit q)
 
 -- | Run gate taking three qubits
 run3Gate :: ((Q.QBit, Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit, Q.QBit)) -> A.Term -> Env -> Eval Value
 run3Gate g q env = do
     [VQBit a, VQBit b, VQBit c] <- fromVTup <$> eval env q
-    toVTup . tupToList <$> lift (g (a,b,c))
+    lift $ toVTup . tupToList <$> lift (g (a,b,c))
         where tupToList (a,b,c) = [VQBit a, VQBit b, VQBit c]

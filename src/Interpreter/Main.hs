@@ -9,16 +9,18 @@ import qualified Interpreter.Interpreter as I
 import System.Console.Haskeline
 import Control.Monad.Except
   ( MonadIO(liftIO),
+      MonadTrans(lift),
       MonadError(throwError),
       ExceptT(..),
       mapExceptT,
       runExceptT,
       withExceptT, replicateM, zipWithM )
-import Data.Bifunctor ( Bifunctor(bimap) )
+import Data.Bifunctor ( Bifunctor(bimap, first) )
 import Control.Exception (try)
 import qualified Type.TypeChecker as TC
 import Data.List
 import Data.Maybe
+import Control.Monad.State.Lazy
 
 import Parser.Abs
 import qualified SemanticAnalysis.SemanticAnalysis as S
@@ -111,7 +113,7 @@ typecheck :: A.Program -> Run A.Program
 typecheck = toErr TC.typecheck TypeError . const <*> id
 
 eval :: A.Program -> Run I.Value
-eval = withExceptT ValueError . mapExceptT Q.run . I.interpret
+eval p = (liftIO $ Q.run $ I.interpret p) >>= ExceptT . return . first ValueError
 
 semanticAnalysis :: Program -> Run Program 
 semanticAnalysis = toErr S.runAnalysis SemanticError . const <*> id
@@ -139,7 +141,7 @@ rundist path runs = do
   evaldist a runs
 
 evaldist :: A.Program -> Int -> Run [I.Value]
-evaldist prg reps = replicateM reps $ (withExceptT ValueError . mapExceptT Q.run . I.interpret) prg
+evaldist prg reps = replicateM reps $ eval prg
 
 gatherResults :: [I.Value] -> IO ()
 gatherResults vals = do
