@@ -196,6 +196,10 @@ prop_subtypeProblem = expectSuccess . tcStr $ "a : Bit a = 0 "
                                 ++ "f : !(Bit -o QBit) f = new "
                                 ++ "test : (QBit >< QBit) test = (\\x:!(Bit -o QBit) . (x a, x b)) f"
 
+-- | Test that can use double abstraction.
+prop_doubleAbs = expectSuccess . tcStr $ "main : (Bit -o Bit) -o (Bit -o Bit) -o Bit -o Bit "
+                                    ++   "main f g x = f (g x)"
+
 -- | Test application of different functions on a lambda abstraction
 prop_appLam    = inferExp "(\\x:Bit.\\y:Bit.(x, new y)) 1 0 " === Right "Bit >< QBit"
 prop_appLam2   = inferExp "(\\x:QBit.\\y:Bit.(x,y)) (new 0) 0" === Right "QBit >< Bit"

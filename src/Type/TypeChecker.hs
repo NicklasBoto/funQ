@@ -296,7 +296,7 @@ freeVars = freeVars' 0
         freeVars' n (App f a)    = freeVars' n f ++ freeVars' n a
         freeVars' n (Let eq inn) = freeVars' n eq ++ freeVars' (n+2) inn
         freeVars' n (Abs _ e)    = freeVars' (n+1) e
-        freeVars' n (Idx i)      = [n - i | i >= n]
+        freeVars' n (Idx i)      = [i - n | i >= n]
         freeVars' _ _            = []
 
 -- | Finds all functions used in a term.

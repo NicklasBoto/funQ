@@ -39,7 +39,7 @@ tests =
     ("let-tup-q.fq", "0"),
     ("let-tup.fq", "0"),
     ("partial-app-cnot.fq", "1"),
-    --("partial-app-comp.fq", "0"),
+    ("partial-app-comp.fq", "0"),
     ("partial-app-new.fq",  "1"),
     ("partial-app-meas.fq", "0"),
     ("pauliX.fq", "1"),
