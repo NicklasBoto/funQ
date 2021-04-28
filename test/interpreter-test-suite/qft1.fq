@@ -1,2 +1,2 @@
 main : Bit
-main = meas (QFTI (QFT (new 0))) -- o
+main = meas (QFTI1 (QFT1 (new 0))) -- 0

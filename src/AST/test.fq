@@ -1,2 +1,8 @@
-f : a >< b -o a
-fst b = let (x,y) = b in x
+q : QBit
+q = H (new 0)_
+
+b : !Bit
+b = measure q
+
+main : !(Bit >< Bit)
+main = (b,b)

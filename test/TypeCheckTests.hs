@@ -2,19 +2,19 @@
 -- {-# LANGUAGE LambdaCase      #-}
 {-# LANGUAGE OverloadedStrings      #-}
 
-module TypeCheckTests where 
+module TypeCheckTests where
 import Type.TypeChecker
 import Test.QuickCheck (quickCheckAll, (===), Property, Testable(property), quickCheck, Arbitrary(..), Gen(..), frequency, elements, generate, sample, withMaxSuccess, (==>), expectFailure, Result (Failure))
 import Data.Either (lefts,rights, isLeft, isRight)
 import AST.AST ( Type(TypeDup, (:=>), (:><)) )
 import Control.Monad.Except
-import Control.Monad.Reader 
-import Control.Monad.State 
+import Control.Monad.Reader
+import Control.Monad.State
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 
 instance Arbitrary Type where
-    arbitrary = frequency 
+    arbitrary = frequency
               [ (6, elements ["Bit", "T", "QBit"])
               , (1, (:=>) <$> arbitrary <*> arbitrary)
               , (1, (:><) <$> arbitrary <*> arbitrary)
@@ -22,7 +22,7 @@ instance Arbitrary Type where
               ]
 
 -- | When typecheck is expected to succeed.
-expectSuccess :: Either e t -> Property 
+expectSuccess :: Either e t -> Property
 expectSuccess = property . isRight
 
 --- When typecheck is expected to fail.
@@ -35,6 +35,8 @@ testSup f = case runCheck f of
     Left _  -> Nothing
 
 infErr = Left . TError "MEGA URK"
+
+tcErr s = Left . TError s
 
 prop_ArgId = expectSuccess $ tcStr "f : !(Bit -o Bit) f x = x"
 prop_LamId = expectSuccess $ tcStr "f : !(Bit -o Bit) f = \\x:Bit.x"
@@ -90,9 +92,11 @@ s .= t = s <: t && t <: s
 Just s .=== Just t = property $ s .= t
 _s     .===     _t = property False
 
-
+-- | Test that linearity for let is working
+prop_letFunDup = expectSuccess $ tcStr $ "f : !Bit -o !Bit -o !(Bit >< Bit) "
+                                      ++ "f x y = let (a,b) = (x,y) in (a,a)"
 -- | The inside is (!Bit, !Bit) which makes ! move outside, to !(Bit, Bit)
-prop_testDupProd = expectSuccess $ tcStr "main: !(Bit >< Bit) main = (0, 0)" 
+prop_testDupProd = expectSuccess $ tcStr "main: !(Bit >< Bit) main = (0, 0)"
 
 -- | Pick out a bit from product using let
 prop_testFst = expectSuccess $ tcStr "main : !(Bit >< T) -o !Bit main x = let (a,b) = x in a"
@@ -114,7 +118,7 @@ prop_ifNormalBit = expectSuccess $ tcStr $ "g : !Bit g = 0"
 
 -- | Test a nonlinear function can be used many times. Should succeed.
 prop_useLinFun = expectSuccess . tcStr $ "f : !(Bit -o Bit) f a = 0 " ++
-                                         "b2 : Bit b2 = f 1 " ++ 
+                                         "b2 : Bit b2 = f 1 " ++
                                          "b3 : Bit b3 = f 1"
 
 -- | Can assign a unlinear bit to a linear bit. Should succeed.
@@ -132,6 +136,9 @@ prop_simpleApp = expectSuccess . tcStr $ "b : QBit b = new 0"
 -- | Test mixed tuple type is valid as long as equal duplicity. Should succeed.
 prop_funInTup = expectSuccess . tcStr $ "main : !(Bit -o QBit) >< Bit " ++  "main = (\\x : !(Bit -o QBit).(x, 0)) new"
 
+-- | Test untyped tuple type is valid. Should succed
+prop_funInTup2 =  expectSuccess $ inferExp "(new 0, \\x:Bit.x)"
+
 -- | Test that a bit can be demoted.
 prop_demoteBitTup = expectSuccess . tcStr $ "main : !Bit >< Bit " ++  "main = (0,0)"
 
@@ -142,7 +149,7 @@ prop_ifGeneral = expectSuccess . tcStr $ "main : Bit -o Bit main x = if x then 0
 prop_dupIf = expectSuccess . tcStr $ "main: !Bit -o (!Bit >< Bit) main x = if x then (x,x) else (x,x)"
 
 -- | Normal if statement.
-prop_ifSig = expectSuccess . tcStr $ "f : !Bit -o !Bit " 
+prop_ifSig = expectSuccess . tcStr $ "f : !Bit -o !Bit "
                                   ++ "f x = if x then 0 else 1"
 
 -- | Test that linear and duplicable terms can be mixed in product.
@@ -191,10 +198,21 @@ prop_etaReduceOk = expectSuccess . tcStr $ "f : Bit -o QBit f = new main : Bit -
 
 -- | f is a function that should be able to take both !Bit and Bit, since !Bit <: Bit.
 -- should succeed
-subtypeProblem = expectSuccess . tcStr $ "a : Bit a = 0 " 
+prop_subtypeProblem = expectSuccess . tcStr $ "a : Bit a = 0 "
                                 ++ "b : !Bit b = 0 "
                                 ++ "f : !(Bit -o QBit) f = new "
                                 ++ "test : (QBit >< QBit) test = (\\x:!(Bit -o QBit) . (x a, x b)) f"
+
+-- | Test that can use double abstraction.
+prop_doubleAbs = expectSuccess . tcStr $ "main : (Bit -o Bit) -o (Bit -o Bit) -o Bit -o Bit "
+                                    ++   "main f g x = f (g x)"
+
+-- | Test application of different functions on a lambda abstraction
+prop_appLam    = inferExp "(\\x:Bit.\\y:Bit.(x, new y)) 1 0 " === Right "Bit >< QBit"
+prop_appLam2   = inferExp "(\\x:QBit.\\y:Bit.(x,y)) (new 0) 0" === Right "QBit >< Bit"
+prop_appLam3   = inferExp "(\\x : !(Bit -o QBit) . (x 0, x 0)) new" === Right "QBit >< QBit"
+prop_appLamLet = inferExp "(\\x:QBit.\\y:Bit.let (a,b) = (x,y) in a) (new 0) 0" === Right "QBit"
+
 
 -- --------------- Tests that should fail -------------------------------
 
@@ -204,7 +222,7 @@ prop_linTermDup = expectError . tcStr $ "q : QBit q = new 0 f : !(T -o QBit) f x
 
 -- -- | Test that a linear function can't be used twice. Should fail.
 prop_useUnlinFun = expectError . tcStr $ "f : Bit -o Bit f a = a " ++
-                                         "b2 : Bit b2 = f 1 " ++ 
+                                         "b2 : Bit b2 = f 1 " ++
                                          "b3 : Bit b3 = f 1"
 
 -- | Test that the output of a linear function cannot be made duplicable ??
@@ -220,96 +238,64 @@ prop_letNoProd = inferExp "(\\x : Bit . let (a,b) = x in a) 0"  === infErr (NotP
 -- -- | "(\\x . if new 0 then x else x) 0" should fail, since new 0 is a qubit
 prop_ifNoBit = inferExp "(\\x:Bit . if new 0 then x else x) 0" === infErr (Mismatch "Bit" "QBit")
 
--- -- | Test that if statements with mismatching types in the then else statements throws an error. 
--- prop_MisMatchingIf = expectErrorWith (UnificationFailError TypeQBit TypeBit) (typecheck $ run "q : QBit q = new 0 f : QBit f = if 1 then q else 0") 
--- -- konstigt att vi får en linjär bit 
+-- | Test that if statements with mismatching types in the then else statements throws an error. 
+prop_misMatchingIf = tcStr "q : QBit q = new 0 f : QBit f = if 1 then q else 0"  === tcErr "f" (NoCommonSuper "QBit" "Bit")
 
--- -- | Test that a linear bit cannot be used in a nonlinear function. Should fail.
--- prop_LinBit = expectErrorWith (TopLevelLinearFail "b") (typecheck . run $ "b : Bit b = 0 " 
---                                                                           ++ "dup : !(Bit >< Bit) dup = (b,b)") 
+-- | Test that a linear bit cannot be used in a nonlinear function. Should fail.
+prop_linBit = tcStr "b : Bit b = 0 dup : !(Bit >< Bit) dup = (b,b)" === tcErr "dup" (NotLinearTop "b")
 
--- -- | Test that the output of a linear function cannot be made duplicable. Should fail.
--- prop_testLinFun = expectError . typecheck . run $ "f : Bit -o Bit " ++
---                                                   "f x = meas (new x) " ++
---                                                   "g : !Bit " ++
---                                                   "g = f 0 "
+-- | Test that the output of a linear function cannot be made duplicable. Should fail.
+prop_testLinFun = tcStr ("f : Bit -o Bit " ++
+                          "f x = meas (new x) " ++
+                          "g : !Bit " ++
+                          "g = f 0 ") === tcErr "g" (Mismatch "!Bit" "Bit")
 
--- -- | Test linearity of single variable, should not be possible to have two references to a linear bit. Should fail.
--- prop_LinRef = expectError . typecheck . run $ "b1 : Bit b1 = 0 " ++
---                                               "b2 : Bit b2 = b1 " ++ 
---                                               "b3 : Bit b3 = b1"
+-- | Test linearity of single variable, should not be possible to have two references to a linear bit and use it. Should fail.
+prop_linRef = tcStr ( "b1 : Bit b1 = 0 " ++
+                      "b2 : Bit b2 = b1 " ++ 
+                      "b3 : Bit b3 = b1" ) === tcErr "b3" (NotLinearTop "b1")
 
--- -- | Test a linear function can't be used twice. Should fail.
--- prop_UseLinFunTwice = expectError . typecheck . run $ "f : Bit -o Bit f a = 0 " ++
---                                                       "b2 : Bit b2 = f 1 " ++ 
---                                                       "b3 : Bit b3 = f 1"
+-- | Test a linear function can't be used twice. Should fail.
+prop_useLinFunTwice = tcStr ("f : Bit -o Bit f a = 0 " ++
+                             "b2 : Bit b2 = f 1 " ++ 
+                             "b3 : Bit b3 = f 1") === tcErr "b3" (NotLinearTop "f")
 
--- -- | Test that an argument cant be used twice in a linear function. Should fail (Subtype error) -- should it be subtype error? or something more informative?
--- prop_test = expectError $ typecheck . run $ "f : Bit -o Bit f g = if g then g else 1" 
+-- | Test that an argument cant be used twice in a linear function. Should fail 
+prop_testLinArg = expectError $ tcStr "f : Bit -o Bit f g = if g then g else 1" 
 
 
--- -- | Passing a linear bit to something that expects an unlinear bit. Should fail (Subtype error)
--- prop_linBitAsUnlinBit = expectError . typecheck . run $ "a : Bit a = 0" ++
---                                      "f : !Bit -o !Bit f b = if b then 0 else 0" ++
---                                      "v : !Bit v = f a"
--- -- | Trying to duplicate a linear tuple, should fail.
--- prop_DupLin = expectError . typecheck . run $ "clone : (Bit >< Bit) -o ((Bit >< Bit) >< (Bit >< Bit)) " ++
---                                               "clone a = (a,a)"
+-- | Passing a linear bit to something that expects an nonlinear bit. Should fail 
+prop_linBitAsUnlinBit = tcStr ("a : Bit a = 0" ++
+                               "f : !Bit -o !Bit f b = if b then 0 else 0" ++
+                               "v : !Bit v = f a") === tcErr "v" (Mismatch "!Bit" "Bit")
+
+-- | Trying to duplicate a linear tuple, should fail.
+prop_dupLin = expectError $ tcStr ("clone : (Bit >< Bit) -o ((Bit >< Bit) >< (Bit >< Bit)) " ++
+                                   "clone a = (a,a)") 
 
 
--- -- | Can't give QBit to !QBit -o !QBit. Should fail.
--- prop_DupFunLinArg = expectError . typecheck . run $ "q : QBit q = new 0 " ++
---                                                     "f : !QBit -o !QBit f x = x " ++
---                                                     "main : !QBit main = f q"
+-- | Can't give QBit to !QBit -o !QBit. Should fail.
+prop_dupFunLinArg = tcStr ("q : QBit q = new 0 " ++
+                           "f : !QBit -o !QBit f x = x " ++
+                           "main : !QBit main = f q") === tcErr "main" (Mismatch "!QBit" "QBit")
 
 -- | Test that a linear bit cannot be used in a non-linear way in an if statement. Should fail.
--- prop_IfUnLin = tcStr "f : Bit -o Bit f g = if g then g else 1" 
+prop_ifUnLin = expectError $ tcStr "f : Bit -o Bit f g = if g then g else 1" 
 
--- -- | Test that it is not possible to create a duplicable qubit. Should fail.
--- prop_DupQbit = expectError . typecheck . run $  "q : !QBit q = new 0"
+-- | Test that it is not possible to create a duplicable qubit. Should fail.
+prop_dupQbit = tcStr  "q : !QBit q = new 0" === tcErr "q" (Mismatch "!QBit" "QBit")
 
--- -- | Test that mismatched duplicity in a product type gives an error. Should fail.
--- prop_linDupExp = expectSuccess $ inferExp "(0, new 0)"
+prop_dupQbitFun = tcStr ("f : !QBit -o !(QBit >< QBit) "
+                      ++ "f x = (x,x) "
+                      ++ "g : !(QBit >< QBit) "
+                      ++ "g = f (new 0)") === tcErr "g" (Mismatch "!QBit" "QBit")
 
-
--- prop_dupQbit = expectError . typecheck . run $ "f : !QBit -o !(QBit >< QBit) "
---                                             ++ "f x = (x,x) "
---                                             ++ "g : !(QBit >< QBit) "
---                                             ++ "g = f (new 0)"
+-- | Test that it is not possible to take a linear bit and return it as nonlinear
+prop_linToDup = expectError $ tcStr "f : (Bit >< Bit) -o !Bit f x = let (a,b) = x in a"
 
 -- -------------- Tests that are not working  -----------------
 
--- prod =  inferExp "(0, \\x.x)"
 
--- -- | Test that the inferred expression have the correct type.  should have type. !a -o !b -o !(a, a) and succeed.
--- -- ?(!a -o !b -o !(a >< a))
--- -- inferred type: ?(?a -o ?(!b -o !(a >< a)))
--- -- Right !a ⊸ !b ⊸ !(a ⊗ a)
--- -- prop_letFunDup = inferExp "\\x.\\y.let (a,b) = (x,y) in (a,a)"  === Right "!a -o !b -o !(a >< a)" -- Right (TypeDup (TypeVar "a") :=>  TypeDup (TypeVar "b") :=> TypeDup (TypeVar "a" :>< TypeVar "a"))
--- prop_letFunDup = expectSuccess $ inferExp "\\x.\\y.let (a,b) = (x,y) in (a,a)"  
-
--- plfd = typecheck . run $ "f : !a -o !b -o !(a >< a) "
---                       ++ "f x y = let (a,b) = (x,y) in (a,a)"
-
--- prop_good = inferExp "(\\x.\\y.(x,y)) 0 (new 0)" === Right "Bit >< QBit"
--- prop_bad = inferExp "(\\x.\\y.(x,y)) (new 0) 0" === Right "QBit >< Bit"
--- prop_ugly = inferExp "(\\x.\\y.let (a,b) = (x,y) in a) (new 0) 0" === Right TypeQBit
-
--- reallyBad = typecheck . run $ "f : (a >< b) -o !b f x = let (a,b) = x in a"
-
--- Need return for quickCheckAll
-
--- -- ?{3}(?{2}(a ⊗  b) ⊸ ?{2}(b)) 
-
--- -- typecheck . run $ "f : (a >< b) -o !b f x = let (a,b) = x in a"
-
--- -- should work, trixa liet med ifsatsen
--- f = typecheck . run $ "f : Bit f = 0 g : Bit g = if 1 then f else f"
-
-
-
--- -- simpler example with same problem
--- stProb = inferExp "(\\x . (x 0, x 0)) new"
 
 -- even simpler example
 -- stp = inferExp "\\x.(x 0, x 0)"

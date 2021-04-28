@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Type.TypeChecker where
-import AST.AST
+import AST.AST as A
 import Control.Monad.Except hiding (throwError)
 import qualified Control.Monad.Except as EX
 import Control.Monad.Reader
@@ -42,7 +42,6 @@ data ErrorTypes
     | NotLinearTerm Term Type  -- ^ A term that breaks a linearity constraint
     | NoCommonSuper Type Type  -- ^ No common supertype was found
     | NotInScope String        -- ^ A function was not in scope.
-    | DuplicateFunction String -- ^ A function was defined multiple times.
     deriving Eq
 
 data TypeError = TError String ErrorTypes
@@ -79,9 +78,6 @@ instance Show ErrorTypes where
 
     show (NotInScope v) =
         "Variable not in scope: " ++ v
-
-    show (DuplicateFunction f) =
-        "Function '" ++ f ++ "' declared multiple times"
 
 instance IsString Type where
     fromString t = t'
@@ -296,7 +292,7 @@ freeVars = freeVars' 0
         freeVars' n (App f a)    = freeVars' n f ++ freeVars' n a
         freeVars' n (Let eq inn) = freeVars' n eq ++ freeVars' (n+2) inn
         freeVars' n (Abs _ e)    = freeVars' (n+1) e
-        freeVars' n (Idx i)      = [n - i | i >= n]
+        freeVars' n (Idx i)      = [i - n | i >= n]
         freeVars' _ _            = []
 
 -- | Finds all functions used in a term.
@@ -309,33 +305,17 @@ names (Fun f)      = [f]
 names _            = []
 
 -- | Infer type of a gate.
-inferGate :: Gate -> Type
+inferGate :: A.Gate -> Type
 inferGate g = TypeDup (arg :=> arg)
     where
         arg = foldr (:><) TypeQBit (replicate (n-1) TypeQBit)
         n = case g of
-                GQFT   -> 1 -- temp
-                GQFTI  -> 1 -- temp
-                GQFT2  -> 2 -- temp
-                GQFTI2 -> 2 -- temp
-                GQFT3  -> 3 -- temp
-                GQFTI3 -> 3 -- temp
-                GQFT4  -> 4 -- temp
-                GQFTI4 -> 4 -- temp
-                GQFT5  -> 5 -- temp
-                GQFTI5 -> 5 -- temp
-                GFRDK  -> 3
-                GTOF   -> 3
-                GSWP   -> 2
-                GCNOT  -> 2
-                GCR    -> 2
-                GCRD   -> 2
-                GCR2   -> 2
-                GCR2D  -> 2
-                GCR3   -> 2
-                GCR3D  -> 2
-                GCR4   -> 2
-                GCR4D  -> 2
-                GCR8   -> 2
-                GCR8D  -> 2
-                _      -> 1
+                GFRDK   -> 3
+                GTOF    -> 3
+                GSWP    -> 2
+                GCNOT   -> 2
+                GQFT n  -> n
+                GQFTI n -> n
+                GCR n   -> n
+                GCRI n  -> n
+                _       -> 1

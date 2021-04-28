@@ -4,7 +4,7 @@ module AST.AST
     , Function(..)
     , Term(..)
     , Type(..)
-    , Gate(..)
+    , AST.AST.Gate(..)
 
      -- * Term functions
     , toIm
@@ -16,14 +16,15 @@ module AST.AST
     , runFile
     , run
     , reverseType
-    )
+    , AST.AST.Bit(..)
+    ) 
     where
 
 import Parser.Par ( myLexer, pProgram )
 import Parser.Print ( printTree )
 import qualified Parser.Abs as P
 import qualified Data.Map as M
-import Parser.Abs (Gate(..), Bit(..))
+import Data.Char
 
 type Env = M.Map String Integer
 
@@ -50,7 +51,7 @@ nameL (P.LVar v) = name v
 data Term
     = Idx  Integer      -- bound
     | Fun String        -- free
-    | Bit  Bit
+    | Bit AST.AST.Bit
     | Gate Gate
     | Tup  Term Term
     | App  Term Term
@@ -62,6 +63,27 @@ data Term
     | Unit
     deriving Eq
 
+data Gate
+    = GH
+    | GX
+    | GY
+    | GZ
+    | GI
+    | GS
+    | GT
+    | GCNOT
+    | GTOF
+    | GSWP
+    | GFRDK
+    | GQFT Int
+    | GQFTI Int
+    | GCR Int
+    | GCRI Int
+    | GGate P.GateIdent
+  deriving (Eq, Ord, Show, Read)
+
+data Bit = BZero | BOne
+  deriving (Eq, Ord, Show, Read)
 instance Show Function where
     show (Func n t e) = "\n" ++ n ++ " : " ++ show t ++ "\n"
                              ++ n ++ " = " ++ show e ++ "\n"
@@ -86,12 +108,12 @@ instance Show Type where
 
 -- | Converts from Parser type to our representation of type.
 convertType :: P.Type -> Type
-convertType P.TypeBit               = TypeBit
-convertType P.TypeQbit              = TypeQBit
-convertType P.TypeVoid              = TypeUnit
-convertType (P.TypeDup type')       = TypeDup (convertType type')
-convertType (P.TypeTens l r)        = convertType l :>< convertType r
-convertType (P.TypeFunc l r)        = convertType l :=> convertType r
+convertType P.TypeBit         = TypeBit
+convertType P.TypeQbit        = TypeQBit
+convertType P.TypeVoid        = TypeUnit
+convertType (P.TypeDup type') = TypeDup (convertType type')
+convertType (P.TypeTens l r)  = convertType l :>< convertType r
+convertType (P.TypeFunc l r)  = convertType l :=> convertType r
 
 -- | Converts from our type to Parser type .
 reverseType :: Type -> P.Type
@@ -122,8 +144,15 @@ makeImTerm env (P.TIfEl cond true false) =
 makeImTerm env (P.TLet x [y] eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv y x env) inn)
 makeImTerm env (P.TLet x (y:ys) eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv y x env) (P.TLet y ys (toTerm y) inn))
 makeImTerm env (P.TTup (P.Tuple t ts)) = foldr1 Tup $ map (makeImTerm env) (t:ts)
-makeImTerm _env (P.TBit b) = Bit b
-makeImTerm _env (P.TGate g) = Gate g
+makeImTerm _env (P.TBit (P.BBit 0)) = Bit BZero 
+makeImTerm _env (P.TBit (P.BBit 1)) = Bit BOne 
+makeImTerm _env (P.TGate (P.GGate (P.GateIdent g))) 
+    | init g == "QFT"  = Gate $ GQFT (nums g)
+    | init g == "QFTI" = Gate $ GQFTI (nums g)
+    | takeWhile isLetter g == "CR" = Gate $ GCR (nums g) 
+    | takeWhile isLetter g == "CRI" = Gate $ GCRI (nums g) 
+    where nums = read . dropWhile isLetter
+makeImTerm _env (P.TGate g) = Gate $ gateToASTGate g 
 makeImTerm _env P.TStar = Unit
 
 letEnv :: P.LetVar -> P.LetVar -> Env -> Env
@@ -138,19 +167,6 @@ makeImFunction (P.FDecl _ t function) = Func name (convertType t) term --(unfun 
     where
         (P.FDef (P.Var name) args body) = function
         term = makeImTerm M.empty $ lambdaize (debangFunc t) args body
-         
-    -- where unfun (P.FunVar x) = init $ filter (/=' ') x
-
--- f : B
--- f = \x : A . (\y : A . y) x 
-
--- f : A -> B -> C
--- f x y = f x y
--- \\y.\\x.aoeu
-
--- aboba : !(B -> C) -> D
--- f : !(A -> !(B -> C) -> D)
--- f x = aboba
 
 -- | Debangs outer level of a type.
 debangFunc :: P.Type -> P.Type
@@ -162,18 +178,6 @@ lambdaize :: P.Type -> [P.Arg] -> P.Term -> P.Term
 lambdaize _t [] body                                    = body 
 lambdaize (P.TypeFunc n p) (P.FArg (P.Var v) : vs) body = P.TLamb (P.Lambda "\\") (P.FunVar v) n (lambdaize p vs body)
 lambdaize (P.TypeDup (P.TypeFunc n p)) (P.FArg (P.Var v) : vs) body = P.TLamb (P.Lambda "\\") (P.FunVar v) n (lambdaize p vs body)
-
--- -- | Convert all functions to lambda abstractions
--- lambdaize :: P.Function -> P.Term
--- lambdaize (P.FDef _ [] term) = term
--- lambdaize (P.FDef n (a:args) body) = P.TLamb lambda name type' term --(unArg a) type' (lambdaize (P.FDef _n args term))
---     where 
---         lambda = P.Lambda "//"
---         (P.FArg name) = a
---         term = lambdaize (P.FDef n args body)
-
-    -- where unArg (P.FArg v) = v
-    --       lambda = P.Lambda "\\"
 
 -- | Translate abstract syntax from parser to intermediate abstract syntax
 toIm :: P.Program -> Program
@@ -193,8 +197,9 @@ reverseImFunction (Func name type' term) = P.FDecl (P.FunVar name) (reverseType 
 reverseImTerm :: Integer -> Term -> P.Term
 reverseImTerm env (Idx idx)    = P.TVar $ P.Var $ 'x' : show (env - idx - 1)
 reverseImTerm env (Fun s)      = P.TVar $ P.Var s
-reverseImTerm env (Bit b)      = P.TBit b
-reverseImTerm env (Gate g)     = P.TGate g
+reverseImTerm env (Bit BZero)  = P.TBit $ P.BBit 0
+reverseImTerm env (Bit BOne)   = P.TBit $ P.BBit 1
+reverseImTerm env (Gate g)     = P.TGate P.GH -- undefined -- P.TGate g --FIXME
 reverseImTerm env (Tup l r)    = P.TTup $ P.Tuple (reverseImTerm env l) [reverseImTerm env r] -- FIXME
 reverseImTerm env (App  t1 t2) = P.TApp (reverseImTerm env t1) (reverseImTerm env t2)
 reverseImTerm env (IfEl c t e) = P.TIfEl (reverseImTerm env c) (reverseImTerm env t) (reverseImTerm env e)
@@ -224,6 +229,20 @@ propTestFile path = do
 
 runFile :: FilePath -> IO Program
 runFile path = run <$> readFile path
+
+gateToASTGate :: P.Gate -> Gate 
+gateToASTGate g = case g of
+    P.GH    -> GH
+    P.GX    -> GX
+    P.GY    -> GY
+    P.GZ    -> GZ
+    P.GI    -> GI
+    P.GS    -> GS
+    P.GT    -> AST.AST.GT
+    P.GCNOT -> GCNOT
+    P.GTOF  -> GTOF
+    P.GSWP  -> GSWP
+    P.GFRDK -> GFRDK  
 
 -- cause this might vanish from Parser.Abs
 -- instance C.Show Type where

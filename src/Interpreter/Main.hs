@@ -9,28 +9,21 @@ import qualified Interpreter.Interpreter as I
 import System.Console.Haskeline
 import Control.Monad.Except
   ( MonadIO(liftIO),
+      MonadTrans(lift),
       MonadError(throwError),
       ExceptT(..),
       mapExceptT,
       runExceptT,
       withExceptT, replicateM, zipWithM )
-import Data.Bifunctor ( Bifunctor(bimap) )
+import Data.Bifunctor ( Bifunctor(bimap, first) )
 import Control.Exception (try)
 import qualified Type.TypeChecker as TC
 import Data.List
 import Data.Maybe
+import Control.Monad.State.Lazy
 
--- TODO:
--- * fixa partial application
--- * sugar for multiple arguments 
-
--- TODO: 
--- * köra fq utryck i cmd (utan att mata in en fil)
--- * flytta ut till direkt under src
--- * koppla ihop med typechecker!
--- * inte ska dö om interpreter/typechecker failar
--- * coolt: kunna loada en fil och köra funktioner
--- * kunna skriva run [filnamn] utan hela sökvägen -> letar i subdirectories efter filen
+import Parser.Abs
+import qualified SemanticAnalysis.SemanticAnalysis as S
 
 -- | Runs the funq interpreter.
 main :: IO ()
@@ -61,6 +54,7 @@ type Run a = ExceptT Error IO a
 
 data Error
   = ParseError String
+  | SemanticError S.SemanticError
   | TypeError TC.TypeError
   | ValueError I.ValueError
   | NoSuchFile FilePath
@@ -68,6 +62,9 @@ data Error
 instance Exception Error
 
 instance Show Error where
+  show (SemanticError e) =
+    "semantic error:\n" ++ show e
+
   show (ParseError e) =
     "syntax error:\n" ++ e
 
@@ -82,27 +79,9 @@ instance Show Error where
 
 -- | Runs funq on a file.
 runIO :: FilePath -> IO ()
-runIO path = runExceptT (run path) >>= \case
+runIO path = runExceptT (readfile path >>= run) >>= \case
   Left  err -> putStrLn $ "*** Exception, " ++ show err
   Right val -> print val
-
-toErr :: (i -> Either e v) -> (e -> Error) -> (v -> o) -> i -> Run o
-toErr f l r = ExceptT . return . bimap l r . f
-
-run :: FilePath -> Run I.Value
-run path = readfile path >>= parse >>= typecheck >>= eval
-
-readfile :: FilePath -> Run String
-readfile path = do
-  e <- liftIO (try (readFile path) :: IO (Either IOError String))
-  case e of
-    Left  _ -> throwError $ NoSuchFile path
-    Right s -> return s
-
-parse = toErr (pProgram . myLexer) ParseError A.toIm
-
-typecheck :: A.Program -> Run A.Program
-typecheck = toErr TC.typecheck TypeError . const <*> id
 
 runTerminalIO :: String -> IO ()
 runTerminalIO s = runExceptT (runTerminal s) >>= \case
@@ -111,15 +90,42 @@ runTerminalIO s = runExceptT (runTerminal s) >>= \case
 
 runTerminal :: String -> Run (I.Value, A.Type)
 runTerminal s = do
-  p@[A.Func _ _ term] <- parse s
+  p@[A.Func _ _ term] <- parse s >>= semanticAnalysis >>= convertAST
   typ <- toErr (TC.runCheck . TC.infer) TypeError id term
   val <- eval p
   return (val, typ)
 
-eval :: A.Program -> Run I.Value
-eval = withExceptT ValueError . mapExceptT Q.run . I.interpret
+readfile :: FilePath -> Run String
+readfile path = do
+  e <- liftIO (try (readFile path) :: IO (Either IOError String))
+  case e of
+    Left  _ -> throwError $ NoSuchFile path
+    Right s -> return s
 
--- | Distribution testing code below
+run :: String -> Run I.Value
+run s = parse s >>= semanticAnalysis >>= convertAST >>= typecheck >>= eval
+
+-- Components
+convertAST :: Program -> Run A.Program
+convertAST = return . A.toIm 
+
+typecheck :: A.Program -> Run A.Program
+typecheck = toErr TC.typecheck TypeError . const <*> id
+
+eval :: A.Program -> Run I.Value
+eval p = (liftIO $ Q.run $ I.interpret p) >>= ExceptT . return . first ValueError
+
+semanticAnalysis :: Program -> Run Program 
+semanticAnalysis = toErr S.runAnalysis SemanticError . const <*> id
+
+-- Utils 
+toErr :: (i -> Either e v) -> (e -> Error) -> (v -> o) -> i -> Run o
+toErr f l r = ExceptT . return . bimap l r . f
+
+parse :: String -> Run Program
+parse s = case (pProgram $ myLexer s) of 
+  Left err  -> throwError $ ParseError err
+  Right b   -> return b
 
 -- | Runs a file some number of times.
 rundistest :: FilePath -> Int -> IO ()
@@ -130,12 +136,12 @@ rundistest path runs = do
     Right r  -> gatherResults r
 
 rundist :: FilePath -> Int -> Run [I.Value]
-rundist path runs = do
-  a <- readfile path >>= parse >>= typecheck
+rundist path runs = do 
+  a <- readfile path >>= parse >>= semanticAnalysis >>= convertAST >>= typecheck
   evaldist a runs
 
 evaldist :: A.Program -> Int -> Run [I.Value]
-evaldist prg reps = replicateM reps $ (withExceptT ValueError . mapExceptT Q.run . I.interpret) prg
+evaldist prg reps = replicateM reps $ eval prg
 
 gatherResults :: [I.Value] -> IO ()
 gatherResults vals = do
@@ -169,31 +175,13 @@ prettystats (a,b,c) = concatMap show ((fillzeros . toBin) a) ++ ": " ++ "\t" ++ 
         truncateboi d = (fromIntegral . truncate) (10000*(d :: Double))/100
         fillzeros as = if length as == 4 then as else replicate (4 - length as) 0 ++ as
 
-
--- | Adder testing code below, non-functional right now
--- runAdderTest :: FilePath -> IO ()
--- runAdderTest path = do
---   ss <- readFile path
---   let indsA = splitInto3 $ findinputinds ss "A"
---   let indsB = splitInto3 $ findinputinds ss "B"
---   let inpsA = splitInto3 (map show inputs1)
---   let inpsB = splitInto3 (map show inputs2)
---   res <- runExceptT (zipWithM4 (runAdder path) indsA indsB inpsA inpsB :: Run [[I.Value]])
---   case res of
---     Left err -> print err
---     Right r  -> print r
-
 runAdder :: FilePath -> [Int] -> [Int] -> [String] -> [String] -> Run [I.Value]
 runAdder path indsA indsB inputsA inputsB = do
   a <- liftIO $ readFile path -- >>= parse >>= typecheck
   let b = applyInputs (words a) indsA inputsA
   let c = unwords $ applyInputs b indsA inputsA
-  q <- parse c >>= typecheck
+  q <- parse c >>= semanticAnalysis >>= convertAST >>= typecheck 
   evaldist q 1
-
-  -- evaldist a 10
--- ta första 3 av varje, applicera, kör, spara resultat, repetera
--- tar in 3 av indexA, 3 av indexB, 3 av värdenA, 3 av värdenB, sträng; ger ut strängen
 
 splitInto3 :: [a] -> [[a]]
 splitInto3 []    = []
