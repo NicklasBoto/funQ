@@ -1,41 +1,8 @@
-main : QBit 
-main = new 0
+q : QBit
+q = H (new 0)_
 
--- args : Bit -o Bit
--- args a b = 0
+b : !Bit
+b = measure q
 
--- test : Bit 
--- test a = 0
-
--- test1 : Bit
--- test1 h s d = 1
-
--- p : QBit
--- q = new 0
-
--- r : QBit
--- s = new 0
-
--- f1 : Bit 
--- f1 = 0
-
--- f1 : Bit 
--- f1 = 0
-
--- f2 : Bit 
--- f2 = 0
-
--- f2 : Bit 
--- f2 = 0
-
--- f2 : Bit 
--- f2 = 0
-
--- f2 : Bit 
--- f2 = 0
-
--- g1 : QBit -o QBit
--- g1 q = UNONE q
-
--- g2 : QBit -o QBit
--- g2 q = UNTWO q
+main : !(Bit >< Bit)
+main = (b,b)

@@ -42,7 +42,6 @@ data ErrorTypes
     | NotLinearTerm Term Type  -- ^ A term that breaks a linearity constraint
     | NoCommonSuper Type Type  -- ^ No common supertype was found
     | NotInScope String        -- ^ A function was not in scope.
-    | DuplicateFunction String -- ^ A function was defined multiple times.
     deriving Eq
 
 data TypeError = TError String ErrorTypes
@@ -79,9 +78,6 @@ instance Show ErrorTypes where
 
     show (NotInScope v) =
         "Variable not in scope: " ++ v
-
-    show (DuplicateFunction f) =
-        "Function '" ++ f ++ "' declared multiple times"
 
 instance IsString Type where
     fromString t = t'

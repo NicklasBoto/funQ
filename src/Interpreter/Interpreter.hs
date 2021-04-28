@@ -4,22 +4,24 @@ module Interpreter.Interpreter where
 
 import qualified Data.Map as M
 import Control.Monad.Except
-    ( MonadTrans(lift), ExceptT, MonadError(throwError) )
+import Control.Monad.State
+    ( StateT, MonadState(get), evalStateT, modify )
 import qualified FunQ as Q
 import Lib.QM (link)
-import Parser.Abs as Abs
 import qualified AST.AST as A
-import Parser.Print
 
 data ValueError
     = NotFunction String
-    | NotApplied String
     | Fail String
-    | IndexTooLarge String
-     deriving Show
+
+instance Show ValueError where
+    show (NotFunction s) = "Function " ++ s ++ " is not defined"
+    show (Fail s) = s
+
 
 type Sig = M.Map String A.Term
-type Eval = ExceptT ValueError Q.QM
+type TopLevel = M.Map String Value
+type Eval = ExceptT ValueError (StateT TopLevel Q.QM)
 
 -- | Environment type, stores bound variables & functions
 data Env = Env {
@@ -37,13 +39,22 @@ instance Show Value where
     show VMeas         = "measure"
     show (VGate g)     = show g
 
-
+-- | Return type
+data Value
+    = VBit Q.Bit
+    | VQBit Q.QBit
+    | VUnit
+    | VTup Value Value
+    | VAbs [Value] A.Type A.Term
+    | VNew 
+    | VMeas
+    | VGate A.Gate
 
 -- | Main function in interpreter (exported)
-interpret :: [A.Function] -> Eval Value
-interpret fs = do
-    let env = createEnv fs
-    eval env =<< getMainTerm env
+interpret :: [A.Function] -> Q.QM (Either ValueError Value)
+interpret fs = evalStateT (runExceptT main) M.empty
+    where env  = createEnv fs
+          main = getMainTerm env >>= eval env
 
 -- | Creates an environment from a list of functions. 
 createEnv :: [A.Function] -> Env
@@ -56,26 +67,22 @@ getMainTerm env = case M.lookup "main" (functions env) of
     Just term -> return term
     Nothing   -> throwError $ Fail "Main function not defined" 
 
--- | Return type
-data Value
-    = VBit Q.Bit
-    | VQBit Q.QBit
-    | VUnit
-    | VTup Value Value
-    | VAbs [Value] A.Type A.Term
-    | VNew 
-    | VMeas
-    | VGate A.Gate
-
 -- | Term evaluator
-eval :: Env -> A.Term -> Eval Value
+eval :: Env -> A.Term -> Eval Value 
 eval env = \case
-    A.Idx j -> if j >= fromIntegral (length (values env)) then throwError (IndexTooLarge ("Index" ++ show j ++ "is too large"))
+    A.Idx j -> if j >= fromIntegral (length (values env)) then throwError (Fail ("Index" ++ show j ++ "is too large"))
              else return $ values env !! fromIntegral j
 
     A.Fun s -> case M.lookup s (functions env) of
-        Just t  -> eval env t
-        Nothing -> throwError $ NotFunction $ "Function " ++ show s ++ " is not defined"
+        Just t  -> do 
+            fs <- get
+            case M.lookup s fs of 
+                (Just v) -> return v 
+                Nothing  -> do 
+                    v <- eval env t
+                    modify (\state -> M.insert s v state)
+                    return v
+        Nothing -> throwError $ NotFunction s
 
     A.Bit A.BZero -> return $ VBit 0
     A.Bit A.BOne -> return $ VBit 1
@@ -105,15 +112,15 @@ eval env = \case
 
         A.New -> do
             VBit b' <- eval env e2
-            lift $ VQBit <$> Q.new b'
+            lift $ lift $ VQBit <$> Q.new b'
         A.Meas -> do
             VQBit q' <- eval env e2
-            lift $ VBit <$> Q.measure q'
+            lift $ lift $ VBit <$> Q.measure q'
         _ -> do
             v2 <- eval env e2
             v1 <- eval env e1
             case v1 of
-                VAbs v1 _ a -> eval env{ values = v2 : v1 ++ values env } a
+                VAbs vs _ a -> eval env{ values = v2 : vs ++ values env } a
                 VNew -> eval env{ values = v2 : values env } (A.App A.New (A.Idx 0))
                 VMeas -> eval env{ values = v2 : values env } (A.App A.Meas (A.Idx 0))
                 (VGate g) -> eval env{ values = v2 : values env } (A.App (A.Gate g) (A.Idx 0))
@@ -128,10 +135,10 @@ eval env = \case
          eval env{ values = x2 : x1 : values env } inn
 
     A.Abs t e  -> return $ VAbs (values env) t e
-    A.Unit   -> return VUnit
-    A.Gate g -> return $ VGate g 
-    A.New    -> return VNew
-    A.Meas   -> return VMeas
+    A.Unit     -> return VUnit
+    A.Gate g   -> return $ VGate g 
+    A.New      -> return VNew
+    A.Meas     -> return VMeas
 
 fromVTup :: Value -> [Value]
 fromVTup (VTup a b) = a : fromVTup b
@@ -142,7 +149,7 @@ toVTup = foldr1 VTup
 
 -- | Eval monad print
 printE :: Show a => a -> Eval ()
-printE = lift . Q.io . print
+printE = lift . lift . Q.io . print
 
 -- | Run QFT gate
 runQFT :: ([Q.QBit] -> Q.QM [Q.QBit]) -> A.Term -> Env -> Eval Value
@@ -150,9 +157,9 @@ runQFT g q env = do
     res <- eval env q
     case res of
         (VQBit q') ->
-            VQBit . head <$> lift (g [q'])
+            lift $ VQBit . head <$> lift (g [q'])
         vt@(VTup _ _) -> do
-            b <- lift $ g (unValue (fromVTup vt))
+            b <- lift $ lift $ g (unValue (fromVTup vt))
             return $ toVTup $ map VQBit b
         where unValue []            = []
               unValue (VQBit q:qss) = q : unValue qss
@@ -161,18 +168,18 @@ runQFT g q env = do
 runGate :: (Q.QBit -> Q.QM Q.QBit) -> A.Term -> Env -> Eval Value
 runGate g q env = do
     VQBit q' <- eval env q
-    VQBit <$> lift (g q')
+    lift $ VQBit <$> lift (g q')
 
 -- | Run gate taking two qubits
 run2Gate :: ((Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit)) -> A.Term -> Env -> Eval Value
 run2Gate g q env = do
     VTup (VQBit a) (VQBit b) <- eval env q
-    (p,q) <- lift (g (a,b))
+    (p,q) <- lift $ lift (g (a,b))
     return $ VTup (VQBit p) (VQBit q)
 
 -- | Run gate taking three qubits
 run3Gate :: ((Q.QBit, Q.QBit, Q.QBit) -> Q.QM (Q.QBit, Q.QBit, Q.QBit)) -> A.Term -> Env -> Eval Value
 run3Gate g q env = do
     [VQBit a, VQBit b, VQBit c] <- fromVTup <$> eval env q
-    toVTup . tupToList <$> lift (g (a,b,c))
+    lift $ toVTup . tupToList <$> lift (g (a,b,c))
         where tupToList (a,b,c) = [VQBit a, VQBit b, VQBit c]
