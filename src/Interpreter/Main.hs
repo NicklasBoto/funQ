@@ -145,9 +145,13 @@ evaldist prg reps = replicateM reps $ eval prg
 
 gatherResults :: [I.Value] -> IO ()
 gatherResults vals = do
+  let nbits = lengthV $ head vals
   let res = countUniques $ map readtup vals
   let stats = stat (length vals) res
-  mapM_ (putStrLn . prettystats) stats
+  mapM_ (putStrLn . prettystats nbits) stats
+    where lengthV :: I.Value -> Int
+          lengthV (I.VBit b)   = 1
+          lengthV (I.VTup _ v) = 1 + lengthV v
 
 readtup :: I.Value -> Int
 readtup = toDec . catchBit . reverse . I.fromVTup
@@ -167,13 +171,13 @@ stat _   []         = []
 stat len ((a,b):as) = (a, dub b/dub len, b) : stat len as
   where dub = fromIntegral . toInteger
 
-prettystats :: (Int, Double, Int) -> String
-prettystats (a,b,c) = concatMap show ((fillzeros . toBin) a) ++ ": " ++ "\t" ++ (show . truncateboi) b ++ "%" ++ "\t" ++ show c
+prettystats :: Int -> (Int, Double, Int) -> String
+prettystats len (a,b,c) = concatMap show ((fillzeros . toBin) a) ++ ": " ++ "\t" ++ (show . truncateboi) b ++ "%" ++ "\t" ++ show c
   where toBin 0 = []
         toBin n | n `mod` 2 == 1 = toBin (n `div` 2) ++ [1]
         toBin n | n `mod` 2 == 0 = toBin (n `div` 2) ++ [0]
         truncateboi d = (fromIntegral . truncate) (10000*(d :: Double))/100
-        fillzeros as = if length as == 4 then as else replicate (4 - length as) 0 ++ as
+        fillzeros as = if length as == len then as else replicate (len - length as) 0 ++ as
 
 runAdder :: FilePath -> [Int] -> [Int] -> [String] -> [String] -> Run [I.Value]
 runAdder path indsA indsB inputsA inputsB = do
