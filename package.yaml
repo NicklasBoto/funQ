@@ -37,6 +37,7 @@ dependencies:
 - haskeline
 - turtle
 - parsec
+- monad-parallel
 
 library:
   when:
