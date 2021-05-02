@@ -35,9 +35,11 @@ dependencies:
 - array
 - containers
 - haskeline
-- repline == 0.4.0.0
+- haskeline >= 0.8.0.0
+- repline >= 0.3.0.0
 - turtle
 - parsec
+- exceptions
 
 library:
   when:

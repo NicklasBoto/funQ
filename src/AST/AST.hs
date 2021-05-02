@@ -35,6 +35,12 @@ type Env = M.Map String Integer
 -- | Representation of functions 
 data Function = Func String Type Term
 
+instance Ord Function where
+    compare (Func a _ _) (Func b _ _) = compare a b
+
+instance Eq Function where
+   Func a _ _ == Func b _ _ = a == b
+
 type Program = [Function]
 
 fname :: P.FunVar -> String
@@ -207,7 +213,7 @@ reverseImTerm env Unit         = P.TStar
 
 run :: String -> Program
 run s = case pProgram (myLexer s) of
-    Left s -> error s
+    Left s -> errorWithoutStackTrace s
     Right p -> toIm p
 
 test :: String -> String
