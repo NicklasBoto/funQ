@@ -1,6 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE GeneralisedNewtypeDeriving #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments #-}
 
 module Repl where
 
@@ -60,21 +59,19 @@ printr :: MonadIO io => String -> io ()
 printr = liftIO . putStrLn
 
 getfun :: String -> Repl (Maybe (Term, Type))
-getfun name = do
-    env <- gets (Set.toList . funs)
-    return $ lookup name [(n,(e,t)) | Func n t e <- env]
+getfun name = gets $ (\env -> lookup name [(n,(e,t)) | Func n t e <- env]) . (Set.toList . funs)
 
 ops :: [(String, String -> Repl ())]
-ops = [ ("help"   , helpCmd  )
-      , ("?"      , helpCmd  )
-      , ("quit"   , quitCmd  )
-      , ("run"    , runCmd   )
-      , ("version", verCmd   )
-      , ("type"   , typeCmd  )
-      , ("env"    , envCmd   )
-      , ("load"   , loadCmd  )
-      , ("clear"  , clearCmd )
-      , ("delete" , delCmd   )
+ops = [ ("help"   , helpCmd )
+      , ("?"      , helpCmd )
+      , ("quit"   , quitCmd )
+      , ("run"    , runCmd  )
+      , ("version", verCmd  )
+      , ("type"   , typeCmd )
+      , ("env"    , envCmd  )
+      , ("load"   , loadCmd )
+      , ("clear"  , clearCmd)
+      , ("delete" , delCmd  )
       ]
 
 helpTexts :: Map.Map String String
@@ -85,6 +82,11 @@ helpTexts = Map.fromList
     , ("help", "[COMMAND]\nShow help")
     , ("ml", "\nEnter multiline mode")
     , ("version", "\nShow version")
+    , ("type", "[EXPRESSION]\nShow the type of an expression. No arguments shows the types in the environment.")
+    , ("env", "\nShow environment")
+    , ("load", "\nLoad a file into the environment")
+    , ("clear", "\nClear the environment")
+    , ("delete", "\nDelete a function from the environment")
     ]
 
 helpCmd :: String ->  Repl ()
@@ -92,35 +94,30 @@ helpCmd [] = printr $ "Available commands:\n"
            ++ intercalate "\n" [fst x | x <- ops]
            ++ "\n\nFor info on a specific command type :help COMMAND (or :? COMMAND)"
 helpCmd arg = case Map.lookup arg helpTexts of
-    Nothing   -> printr $ "no such command: " ++ show arg
+    Nothing   -> printr $ "no such command: " ++ arg
     Just help -> printr $ "Usage: " ++ arg ++ " " ++ help
 
 quitCmd, runCmd, verCmd, typeCmd, envCmd, loadCmd, clearCmd, delCmd :: String -> Repl ()
 quitCmd _ = abort
-runCmd    = liftIO . Run.runIO . init
+runCmd paths = case words paths of
+    [path] -> liftIO . Run.runIO $ path
+    _      -> printr "invalid arguments"
 verCmd  _ = printr $ showVersion version
 typeCmd "" = mapM_ (printr . showType) =<< gets funs
     where showType (Func n t _) = n ++ " : " ++ show t
-typeCmd n = do
-    env <- gets (Set.toList . funs)
-    lin <- gets linenv
-    case runCheckWith (infer (parseExp n)) (buildTopEnv env) (buildLin lin) of
-        Left  e -> printr $ show e
-        Right t -> printr $ show t
-envCmd _ = mapM_ (printr . show) . Set.toList =<< gets funs
-loadCmd path = do
-    let paths = words path
-    let load s = do prog <- Set.delete (emptyFun "main") . Set.fromList <$> liftIO (runFile s)
-                    env <- gets funs
-                    lin <- gets linenv
-                    modify $ \s -> s{linenv = Set.difference lin (Set.map (\(Func n _ _) -> n) prog)}
-                    modify $ \s -> s{funs= Set.union prog env} -- snygga upp dessa när vi har tid 
-    mapM_ (dontCrash . load) paths
-clearCmd _  = put emptyRS
-delCmd name = do
-    lin <- gets linenv
-    env <- gets funs
-    put $ RS (Set.delete (emptyFun name) env) (Set.delete name lin)
+typeCmd n = gets (Set.toList . funs)
+        >>= \env -> either (printr . show) (printr . show)
+          $ runCheckWith (infer (parseExp n)) (buildTopEnv env) (buildLin Set.empty)
+envCmd _ = mapM_ (printr . show) =<< gets funs
+loadCmd path = mapM_ (dontCrash . load) (words path)
+    where fnames = Set.map (\(Func n _ _) -> n)
+          load s = liftIO (runFile s)
+               >>= modify
+               . (\prog (RS env lin) ->
+                   RS (Set.union prog env) (Set.difference lin (fnames prog)))
+               . Set.delete (emptyFun "main") . Set.fromList
+clearCmd  _ = put emptyRS
+delCmd name = modify \(RS env lin) -> RS (Set.delete (emptyFun name) env) (Set.delete name lin)
 
 parseAssign :: Stream s m Char => ParsecT s u m [Char]
 parseAssign = manyTill alphaNum (skipMany space >> string "=")
@@ -144,7 +141,7 @@ evalCmd line = case parse parseAssign "" line of
             Left  err -> errorWithoutStackTrace $ show err
             Right typ -> modify (\s -> s{funs=Set.insert (Func name typ term) env})
                       >> when (Set.member (Func name typ term) env)
-                              (modify $ \s -> s{linenv=Set.delete name lin})
+                              (modify \s -> s{linenv=Set.delete name lin})
 
 addLinears :: Term -> Repl ()
 addLinears term = do
@@ -160,6 +157,7 @@ compl n = do
     return $ filter (isPrefixOf n)
            $ map ((':':) . fst) ops
           ++ [n | Func n _ _ <- env]
+          ++ ["new", "meas", "measure"]
 
 mainWith :: ReplState -> IO ()
 mainWith rs = flip evalStateT rs $ evalReplOpts $ ReplOpts
@@ -174,7 +172,10 @@ mainWith rs = flip evalStateT rs $ evalReplOpts $ ReplOpts
     }
 
 mainFile :: String -> IO ()
-mainFile path = liftIO (runFile path) >>= (mainWith . flip RS Set.empty) . Set.fromList
+mainFile path = liftIO (runFile path)
+            >>= (mainWith . flip RS Set.empty)
+              . Set.delete (emptyFun "main")
+              . Set.fromList
 
 main :: IO ()
 main = mainWith emptyRS
