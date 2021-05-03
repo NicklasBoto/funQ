@@ -183,9 +183,7 @@ toBin n | n `mod` 2 == 0 = toBin (n `div` 2) ++ [0]
 fillzeros :: Int -> [Int] -> [Int]
 fillzeros len as = if length as == len then as else replicate (len - length as) 0 ++ as
 
--- kör program med index 1 -> sätt tillbaka in1,in2,... -> kör om med index 2
-
--- | Run program with generated inputs
+-- | Run program with auto-generated inputs
 runNewInputs :: FilePath -> IO ()
 runNewInputs path = do
   file <- readFile path
@@ -193,7 +191,7 @@ runNewInputs path = do
   res <- runExceptT $ mapM (evalNewInputs ixs file) [0..7]
   case res of
     Left err -> putStrLn $ "*** Exception:, " ++ show err
-    Right r  -> gatherResults r
+    Right r  -> gatherGenResults [0..7] r
 
 evalNewInputs :: [Int] -> String -> Int ->  Run I.Value
 evalNewInputs ixs prg inputNr = do
@@ -219,17 +217,23 @@ inds l = findIndices predN (words l)
   where predN :: String -> Bool
         predN s = let clean = filter (\x -> x `elem` ['a'..'z'] || x `elem` ['1'..'9']) s in
                   clean `elem` ins
-
-file :: [String]
-file =  ["main",":","(Bit","><","Bit","><","Bit)","main","=","let","(a,b,c)","=","TOFFOLI","(in1,","in2,","in3)","in","(meas","a,","meas","b,","meas","c)"]
+        ins = ["in" ++ show a | a <- [1..9]]
 
 inputsNew :: Int -> [[String]]
-inputsNew len = let bins = map (fillzeros len . toBin) (concat (replicate 4 [6,7])) in [map ((++) "new " . show) a | a <- bins]
+inputsNew len = let bins = map (fillzeros len . toBin) [0..2^len-1] in [map ((++) "new " . show) a | a <- bins]
 
-ins :: [String]
-ins = ["in" ++ show a | a <- [1..9]]
+prettyPrintGens :: Int -> (Int,Int) -> String
+prettyPrintGens len (ein, aus) = show einB ++ "\t" ++ show ausB
+  where einB = fillzeros len . toBin $ ein
+        ausB = fillzeros len . toBin $ aus
 
--- testinds :: IO ()
--- testinds = do
---   res <- readFile "test/interpreter-test-suite/toffoli.fq"
---   print $ updateIns 0 (inds res) inputsNew res
+gatherGenResults :: [Int] -> [I.Value] -> IO ()
+gatherGenResults ins outs = do
+  let nbits = lengthV $ head outs
+  let res = map readtup outs
+  let terms = zip ins res
+  putStrLn $ "  in  " ++ "\t" ++ "result"
+  mapM_ (putStrLn . prettyPrintGens nbits) terms
+    where lengthV :: I.Value -> Int
+          lengthV (I.VBit b)   = 1
+          lengthV (I.VTup _ v) = 1 + lengthV v
