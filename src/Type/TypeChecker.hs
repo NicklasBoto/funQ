@@ -1,4 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module Type.TypeChecker where
 import AST.AST as A
@@ -18,16 +19,14 @@ runCheck c = evalState (runReaderT (runExceptT c) M.empty) emptyErrorEnv
 --   Returns TypeError on failure an unit on success.
 typecheck :: Program -> Either TypeError ()
 typecheck program = evalState (runReaderT (runExceptT (typecheckP program)) top) emptyErrorEnv
-    where
-        top = buildTopEnv program
+    where top = buildTopEnv program
 
 -- | Parse a typecheck a program encoded as a string.
 tcStr :: String -> Either TypeError ()
 tcStr = typecheck . run
 
 inferExp :: String -> Either TypeError Type
-inferExp s = runCheck $ infer p
-    where [Func _ _ p] = run $ "f : T f = " ++ s
+inferExp = runCheck . infer . parseExp
 
 parseExp :: String -> Term
 parseExp s = p
@@ -119,33 +118,25 @@ buildTopEnv program = M.fromList (map addFunc program)
 -- | Ability to throw type errors when type checking.
 type Check = ExceptT TypeError (ReaderT TopEnv (State ErrorEnv))
 
--- !a !b   a!=b  a <:b   (!Bit >< Bit) <: (Bit >< Bit)
-
--- f : a -o Bit
--- f x = 0
-
--- f : (!Bit -o !(Bit -o Bit))
--- f x y = x
-
--- f : (Bit -o Bit -o Bit)
--- f x y = y
-
--- f : (Bit -o !(Bit -o Bit) -o Bit)
--- f x y = y x
-
--- f : (Bit -o !(Bit -o QBit))
--- f x y = new y
-
--- !Bit !Bit
--- Bit <: !Bit
 -- | Whether a type is a subtype of another type.
 (<:) :: Type -> Type -> Bool
-TypeDup a <: TypeDup b     = TypeDup a <: b       -- (!)
-TypeDup (a1 :>< a2) <: (b1 :>< b2) = TypeDup a1 <: b1 && TypeDup a2 <: b2
-TypeDup a <: b             = a <: b               -- (D)
-(a1 :>< a2) <: (b1 :>< b2) = a1 <: b1 && a2 <: b2 -- (><)
-(a' :=> b) <: (a :=> b')   = a  <: a' && b  <: b' -- (-o)
-a <: b                     = a == b               -- (ax)
+TypeDup a <: TypeDup b     = TypeDup a <: b                               -- (!)
+TypeDup (a1 :>< a2) <: (b1 :>< b2) = TypeDup a1 <: b1 && TypeDup a2 <: b2 -- (!><)
+TypeDup a <: b             = a <: b                                       -- (D)
+(a1 :>< a2) <: (b1 :>< b2) = a1 <: b1 && a2 <: b2                         -- (><)
+(a' :=> b) <: (a :=> b')   = a  <: a' && b  <: b'                         -- (-o)
+a <: b                     = a == b                                       -- (ax)
+
+parallelCheck :: Check a -> Check b -> Check (a,b)
+parallelCheck a b = do
+    env <- get
+    a' <- a
+    lina <- gets linenv
+    put env
+    b' <- b
+    linb <- gets linenv
+    modify $ \s -> s{linenv=S.union lina linb} 
+    return (a',b')
 
 -- | Count how many times the variable bound to the head is used.
 headCount :: Term -> Integer
@@ -221,17 +212,7 @@ inferTerm _ (Fun fun) = do
                | otherwise -> return t
 inferTerm ctx (IfEl c t f) = do
     tc <- inferTerm ctx c
-    linc <- get
-
-    tt <- inferTerm ctx t
-    lint <- gets linenv
-    put linc
-
-    tf <- inferTerm ctx f
-    linf <- gets linenv
-
-    modify $ \s -> s{linenv=S.union lint linf}
-
+    (tt, tf) <- parallelCheck (inferTerm ctx t) (inferTerm ctx f)
     if tc <: TypeBit 
         then supremum tt tf
         else throwError $ Mismatch TypeBit tc
@@ -240,6 +221,8 @@ inferTerm ctx (IfEl c t f) = do
 --   Throws error if no common subtype exists.
 infimum :: Type -> Type -> Check Type
 infimum a b | a == b    = return a
+infimum (TypeDup (a :>< b)) (c :>< d) = (:><) <$> infimum  (TypeDup a) c <*> infimum (TypeDup b) d
+infimum (a :>< b) (TypeDup (c :>< d)) = (:><) <$> infimum  a (TypeDup c) <*> infimum b (TypeDup d)
 infimum (TypeDup a) (TypeDup b) = TypeDup <$> infimum a b
 infimum (TypeDup a) b = TypeDup <$> infimum a b
 infimum a (TypeDup b) = TypeDup <$> infimum a b
@@ -251,6 +234,8 @@ infimum a b = throwError (NoCommonSuper a b)
 --   Throws error if no common supertype exists.
 supremum :: Type -> Type -> Check Type
 supremum a b | a == b = return a
+supremum (TypeDup (a :>< b)) (c :>< d) = (:><) <$> supremum  (TypeDup a) c <*> supremum (TypeDup b) d
+supremum (a :>< b) (TypeDup (c :>< d)) = (:><) <$> supremum  a (TypeDup c) <*> supremum b (TypeDup d)
 supremum (TypeDup a) (TypeDup b) = TypeDup <$> supremum a b
 supremum (TypeDup a) b = supremum a b
 supremum a (TypeDup b) = supremum a b
@@ -314,8 +299,8 @@ inferGate g = TypeDup (arg :=> arg)
                 GTOF    -> 3
                 GSWP    -> 2
                 GCNOT   -> 2
-                GQFT n  -> n
+                GQFT  n -> n
                 GQFTI n -> n
-                GCR n   -> n
-                GCRI n  -> n
+                GCR   n -> n
+                GCRI  n -> n
                 _       -> 1
