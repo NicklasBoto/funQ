@@ -74,6 +74,7 @@ unknownGate fs = checkSemantics fs isValid genErr errorMsg
         unknownGates (TLet _ _ t1 t2) gs              = gs ++ unknownGates t1 [] ++ unknownGates t2 []
         unknownGates (TLamb _ _ _ t1) gs              = gs ++ unknownGates t1 []
         unknownGates _ gs                             = gs
+
         genErr = UnknownGate
         errorMsg (FDecl _ _ (FDef _ _ t)) = concat $ intersperse ", " $ unknownGates t []
 

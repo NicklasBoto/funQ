@@ -1,5 +1,5 @@
 main : Bit >< Bit >< Bit >< Bit >< Bit >< Bit
-main = meas6 (cMult3Mod exIntAccc exIntBB exIntNB exIntX)
+main = meas6 (cMult3Mod exIntAccc exIntB exIntN exIntX)
 
 carry0 : QBit
 carry0 = new 1
@@ -7,55 +7,58 @@ carry1 : QBit
 carry1 = new 1
 carry2 : QBit
 carry2 = new 1
-
 overflow : QBit
 overflow = new 0
 
-exIntA : QBit >< QBit >< QBit >< QBit
-exIntA = (carry0, new 0, new 1, new 1)
-
 exIntAccc : QBit >< QBit >< QBit >< QBit >< QBit >< QBit
-exIntAccc = (overflow, carry2, carry1, new 0, new 1, new 1)
-         
-exIntB : QBit >< QBit >< QBit
-exIntB = (new 0, new 0, new 1)
+exIntAccc = (overflow, carry2, carry1, new 0, new 0, new 1)
 
-exIntBB : !(Bit >< Bit >< Bit)
-exIntBB = (0,0,1)
+exIntB : !(Bit >< Bit >< Bit)
+exIntB = (0,1,0)
 
-exIntN : QBit >< QBit >< QBit
-exIntN = (new 1, new 1, new 0)
+exIntN : !(Bit >< Bit >< Bit)
+exIntN = (1,1,1)
 
 exIntX : QBit >< QBit >< QBit
-exIntX = (new 0, new 1, new 1)
+exIntX = (new 0, new 0, new 1)
 
-exIntNB : !(Bit >< Bit >< Bit)
-exIntNB = (1,1,0)
+
 
 cMult3Mod : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
 cMult3Mod inA inB inN inX = let (v,c2,c1,a2,a1,a0) = inA in
                             let (x2,x1,x0)       = inX in
-                            let (v1,x01,c11,a21,a11,a01) = cAdd3Mod1 (v, x0,c1, a2, a1, a0)  inB inN in
-                            let (v2,x11,c12,a22,a12,a02) = cAdd3Mod2 (v1,x1,c11,a21,a11,a01) inB inN in
+                            -- let (v1,x01,c11,a21,a11,a01) = cAdd3Mod1 (v, x0,c1, a2, a1, a0)  inB inN in
+                            let (x01,v1,c11,a21,a11,a01) = cAdd3Mod2 (x0,v,c1,a2,a1,a0) inB inN in
+                            -- let (v2,x11,c12,a22,a12,a02) = cAdd3Mod2 (v1,x1,c11,a21,a11,a01) inB inN in
                             -- let (v3,x21,a23,a13,a03) = cAdd3Mod3 v2 (c12,x2,a22,a12,a02) inB inN in
-                            (v2,x11,c12,a22,a12,a02)
+                            -- (v2,x11,c12,a22,a12,a02)
+                            (x01,v1,c11,a21,a11,a01)
 
 
+-- cAdd3Mod1 : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
+-- cAdd3Mod1 inA inB inN = let (x,v1,c1,a2,a1,a0) = ccAdd3 (CCR4,CCR2,CCR1) inA inB in
+--                          let (v2,x1,c11,a21,a11,a01) = ccAdd3 (CCRI4, CCRI2, CCRI1) (v1,x,c1,a2,a1,a0) inN in
+--                          let (a22,v3) = CNOT (a21,v2) in
+--                          let (v4,x2,c12,a23,a12,a02) = ccAdd3 (CCR4,CCR2,CCR1) (v3,x1,c11,a22,a11,a01) inN in
+--                          (v4,x2,c12,a23,a12,a02)
 cAdd3Mod1 : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
-cAdd3Mod1 inA inB inN = let (v1,c2,c1,a2,a1,a0) = ccAdd3 (CCR4,CCR2,CCR1) inA inB in
-                         let (v2,c21,c11,a21,a11,a01) = ccAdd3 (CCRI4, CCRI2, CCRI1) (v1,c2,c1,a2,a1,a0) inN in
-                         let (a22,v3) = SWAP (CNOT (a21,v2)) in
-                         let (v4,c22,c12,a23,a12,a02) = ccAdd3 (CCR4,CCR2,CCR1) (v3,c21,c11,a22,a11,a01) inN in
-                         let (a24,v5) = CNOT (SWAP (a23,v4)) in 
-                         (v5,c22,c12,a24,a12,a02)
+cAdd3Mod1 inA inB inN = let (x,v,c1,a2,a1,a0) = ccAdd3 (CCR4,CCR2,CCR1) inA inB in
+                         let (x1,v1,c11,a21,a11,a01) = ccAdd3 (CCRI4, CCRI2, CCRI1) (x,v,c1,a2,a1,a0) inN in
+                         let (a22,v2) = CNOT (a21,v1) in
+                         let (v3,c12) = SWAP (v2,c11) in
+                         let (x2,v4,c13,a23,a12,a02) = ccAdd3 (CCR4,CCR2,CCR1) (x1,v3,c12,a22,a11,a01) inN in
+                         let (v5,c14) = SWAP (v4,c13) in
+                         (x2,v5,c14,a23,a12,a02)
+
 
 cAdd3Mod2 : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
-cAdd3Mod2 inA inB inN = let (v1,c2,c1,a2,a1,a0) = ccAdd3 (CCR4,CCR2,CCR1) inA inB in
-                         let (v2,c21,c11,a21,a11,a01) = ccAdd3 (CCRI4, CCRI2, CCRI1) (v1,c2,c1,a2,a1,a0) inN in
-                         let (a22,v3) = SWAP (CNOT (a21,v2)) in
-                         let (v4,c22,c12,a23,a12,a02) = ccAdd3 (CCR4,CCR2,CCR1) (v3,c21,c11,a22,a11,a01) inN in
-                         let (a24,v5) = CNOT (SWAP (a23,v4)) in 
-                         (v5,c22,c12,a24,a12,a02)
+cAdd3Mod2 inA inB inN = let (x,v,c1,a2,a1,a0) = ccAdd3 (CCR2,CCR1,CCR12) inA inB in
+                         let (x1,v1,c11,a21,a11,a01) = ccAdd3 (CCRI2, CCRI1, CCRI12) (x,v,c1,a2,a1,a0) inN in
+                         let (a22,v2) = CNOT (a21,v1) in
+                         let (v3,c12) = SWAP (v2,c11) in
+                         let (x2,v4,c13,a23,a12,a02) = ccAdd3 (CCR2,CCR1,CCR12) (x1,v3,c12,a22,a11,a01) inN in
+                         let (v5,c14) = SWAP (v4,c13) in
+                         (x2,v5,c14,a23,a12,a02)
 
 -- cAdd3Mod3 : !(QBit -o (QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
 -- cAdd3Mod3 v inA inB inN = let (c2,c1,a2,a1,a0) = ccAdd3 (CCR4,CCR2,CCR1) inA inB in
@@ -64,18 +67,18 @@ cAdd3Mod2 inA inB inN = let (v1,c2,c1,a2,a1,a0) = ccAdd3 (CCR4,CCR2,CCR1) inA in
 --                          ccAdd3 (CCR4,CCR2,CCR1) (v1,c11,a22,a11,a01) inN
 
 ccAdd3 : !((!((QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)) >< !((QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)) ><  !((QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit))) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
-ccAdd3 g inA inB = let (v,c2,c1,apre2,apre1,apre0) = inA in  
+ccAdd3 g inA inB = let (x,v,c1,apre2,apre1,apre0) = inA in  
                 let (g2,g1,g0) = g in
                 let (a2,a1,a0) = swap3 (QFT3 (apre2,apre1,apre0)) in 
                 let (b2,b1,b0) = inB in    
-                let (c21,c11,a21) = if b2 then g0 (c2,c1,a2) else (c2,c1,a2)   in
-                let (c22,c12,a22) = if b1 then g1 (c21,c11,a21) else (c21,c11,a21) in
-                let (c23,c13,a23) = if b0 then g2 (c22,c12,a22) else (c22,c12,a22) in
-                let (c24,c14,a11) = if b1 then g0 (c23,c13,a1)  else (c23,c13,a1)  in
-                let (c25,c15,a12) = if b0 then g1 (c24,c14,a11) else (c24,c14,a11) in
-                let (c26,c16,a01) = if b0 then g0 (c25,c15,a0)  else (c25,c15,a0)  in
+                let (x1,c11,a21) = if b2 then g0 (x,c1,a2) else (x,c1,a2)   in
+                let (x2,c12,a22) = if b1 then g1 (x1,c11,a21) else (x1,c11,a21) in
+                let (x3,c13,a23) = if b0 then g2 (x2,c12,a22) else (x2,c12,a22) in
+                let (x4,c14,a11) = if b1 then g0 (x3,c13,a1)  else (x3,c13,a1)  in
+                let (x5,c15,a12) = if b0 then g1 (x4,c14,a11) else (x4,c14,a11) in
+                let (x6,c16,a01) = if b0 then g0 (x5,c15,a0)  else (x5,c15,a0)  in
                 let (apost2,apost1,apost0) = QFTI3 (swap3 (a23,a12,a01)) in
-                (v,c26,c16,apost2,apost1,apost0)
+                (x6,v,c16,apost2,apost1,apost0)
 
 -- ccSub3 : !((QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit))
 -- ccSub3 inA inB = let (c2,c1,apre2,apre1,apre0) = inA in  
