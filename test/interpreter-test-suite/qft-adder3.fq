@@ -1,5 +1,8 @@
 main : Bit >< Bit >< Bit
-main = meas3 (cAdd3 exIntA exIntB)
+main = meas3 (cAdd3 carry exIntA exIntBB)
+
+carry : QBit
+carry = new 1
 
 exIntA : QBit >< QBit >< QBit
 exIntA = (new 0, new 0, new 1)
@@ -7,22 +10,50 @@ exIntA = (new 0, new 0, new 1)
 exIntB : QBit >< QBit >< QBit
 exIntB = (new 0, new 0, new 1)
 
+exIntBB : !(Bit >< Bit >< Bit)
+exIntBB = (1,0,1)
+
 exIntN : QBit >< QBit >< QBit
 exIntN = (new 1, new 1, new 0)
 
 -- TODO: addera mha klassiska bitar
 --       
 
-cAdd3 : (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)
-cAdd3 inA inB = let (a0, a1, a2) = swap3 (QFT3 inA) in   
+cAdd3 : QBit -o (QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit)
+cAdd3 c  inA inB = let (a0, a1, a2) = swap3 (QFT3 inA) in   
                 let (b2, b1, b0) = inB in    
-                let (b21, a01) = CR1  (b2, a0)   in
-                let (b11, a02) = CR2 (b1, a01)  in
-                let (b01, a03) = CR4 (b0, a02)  in
-                let (b12, a11) = CR1  (b11, a1)  in
-                let (b02, a12) = CR2 (b01, a11) in
-                let (b03, a21) = CR1  (b02, a2)  in
+                let (c1,a01) = if b2  then CR1 (c,a0) else (c,a0) in
+                let (c2,a02) = if b1  then CR2 (c1,a01) else (c1,a01) in
+                let (c3,a03) = if b0  then CR4 (c2,a02) else (c2,a02) in
+                let (c4,a11) = if b1  then CR1 (c3,a1) else (c3,a1) in
+                let (c5,a12) = if b0  then CR2 (c4,a11) else (c4,a11) in
+                let (c6,a21) = if b0  then CR1 (c5,a2)  else (c5,a2) in
                 QFTI3 (swap3 (a03,a12,a21))
+                -- let (b21, a01) = CR1  (b2, a0)   in
+                -- let (b11, a02) = CR2 (b1, a01)  in
+                -- let (b01, a03) = CR4 (b0, a02)  in
+                -- let (b12, a11) = CR1  (b11, a1)  in
+                -- let (b02, a12) = CR2 (b01, a11) in
+                -- let (b03, a21) = CR1  (b02, a2)  in
+                -- QFTI3 (swap3 (a03,a12,a21))
+
+-- cAdd3B : QBit -o (QBit >< QBit >< QBit) -o (Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit)
+-- cAdd3B c inA inB = let (a0, a1, a2) = swap3 (QFT3 inA) in   
+--                 let (b2, b1, b0) = inB in
+--                 let (c1,a01) = if b2 == 1 then CR1 (c,a0) else (c,a0) in
+--                 let (c2,a02) = if b1 == 1 then CR2 (c1,a01) else (c1,a01) in
+--                 let (c3,a03) = if b0 == 1 then CR4 (c2,a02) else (c2,a02) in
+--                 let (c4,a11) = if b1 == 1 then CR1 (c3,a1) else (c3,a1) in
+--                 let (c5,a12) = if b0 == 1 then CR2 (c4,a11) else (c4,a11) in
+--                 let (c6,a21) = if b0 == 1 then CR1 (c5,a2)  else (c5,a2) in
+--                 QFTI3 (swap3 (a03,a12,a21))
+                -- let (b21, a01) = CR1  (b2, a0)   in
+                -- let (b11, a02) = CR2 (b1, a01)  in
+                -- let (b01, a03) = CR4 (b0, a02)  in
+                -- let (b12, a11) = CR1  (b11, a1)  in
+                -- let (b02, a12) = CR2 (b01, a11) in
+                -- let (b03, a21) = CR1  (b02, a2)  in
+                -- QFTI3 (swap3 (a03,a12,a21))
 -- cSub3 : (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)
 -- cSub3 inA inB = let (a0, a1, a2) = swap3 (QFT3 inA) in   
 --                 let (b2, b1, b0) = inB in    
