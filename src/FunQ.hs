@@ -39,6 +39,7 @@ module FunQ
     , qft
     , qftDagger
     , cphase
+    , ccphase
 
     -- * Simulators
     , run
@@ -75,7 +76,8 @@ import Lib.Gates
       urot,
       crot,
       qft, qftDagger,
-      cphase )
+      cphase,
+      ccphase )
 
 -- | Prepares bell state
 bell :: (Bit, Bit) -> QM (QBit, QBit)

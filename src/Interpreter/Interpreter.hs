@@ -46,7 +46,7 @@ data Value
     | VUnit
     | VTup Value Value
     | VAbs [Value] A.Type A.Term
-    | VNew 
+    | VNew
     | VMeas
     | VGate A.Gate
 
@@ -65,22 +65,22 @@ createEnv fs = Env { functions = M.fromList [(s, t) | (A.Func s _ t) <- fs],
 getMainTerm :: Env -> Eval A.Term
 getMainTerm env = case M.lookup "main" (functions env) of
     Just term -> return term
-    Nothing   -> throwError $ Fail "Main function not defined" 
+    Nothing   -> throwError $ Fail "Main function not defined"
 
 -- | Term evaluator
-eval :: Env -> A.Term -> Eval Value 
+eval :: Env -> A.Term -> Eval Value
 eval env = \case
     A.Idx j -> if j >= fromIntegral (length (values env)) then throwError (Fail ("Index" ++ show j ++ "is too large"))
              else return $ values env !! fromIntegral j
 
     A.Fun s -> case M.lookup s (functions env) of
-        Just t  -> do 
+        Just t  -> do
             fs <- get
-            case M.lookup s fs of 
-                (Just v) -> return v 
-                Nothing  -> do 
+            case M.lookup s fs of
+                (Just v) -> return v
+                Nothing  -> do
                     v <- eval env t
-                    modify (\state -> M.insert s v state)
+                    modify (M.insert s v)
                     return v
         Nothing -> throwError $ NotFunction s
 
@@ -107,8 +107,10 @@ eval env = \case
             A.GFRDK   -> run3Gate Q.fredkin e2 env
             A.GQFT n  -> runQFT   (Q.qft n) e2 env
             A.GQFTI n -> runQFT   (Q.qftDagger n) e2 env
-            A.GCR n   -> run2Gate (`Q.cphase` (1/(fromIntegral n)*2)) e2 env
-            A.GCRI n  -> run2Gate (`Q.cphase` (-1/(fromIntegral n)*2)) e2 env
+            A.GCR n   -> run2Gate (`Q.cphase` (1/(n*2))) e2 env
+            A.GCRI n  -> run2Gate (`Q.cphase` (-1/(n*2))) e2 env
+            A.GCCR n  -> run3Gate (`Q.ccphase` (1/(n*2))) e2 env
+            A.GCCRI n  -> run3Gate (`Q.ccphase` (-1/(n*2))) e2 env
 
         A.New -> do
             VBit b' <- eval env e2
@@ -136,7 +138,7 @@ eval env = \case
 
     A.Abs t e  -> return $ VAbs (values env) t e
     A.Unit     -> return VUnit
-    A.Gate g   -> return $ VGate g 
+    A.Gate g   -> return $ VGate g
     A.New      -> return VNew
     A.Meas     -> return VMeas
 

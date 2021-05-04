@@ -1,0 +1,2 @@
+main : (Bit >< Bit >< Bit)
+main = let (a,b,c) = TOFFOLI (in1, in2, in3) in (meas a, meas b, meas c)

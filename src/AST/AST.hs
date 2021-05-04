@@ -77,8 +77,10 @@ data Gate
     | GFRDK
     | GQFT Int
     | GQFTI Int
-    | GCR Int
-    | GCRI Int
+    | GCR Double
+    | GCRI Double
+    | GCCR Double
+    | GCCRI Double
     | GGate P.GateIdent
   deriving (Eq, Ord, Show, Read)
 
@@ -150,8 +152,10 @@ makeImTerm _env (P.TGate (P.GGate (P.GateIdent g)))
     | init g == "QFT"  = Gate $ GQFT (nums g)
     | init g == "QFTI" = Gate $ GQFTI (nums g)
     | takeWhile isLetter g == "CR" = Gate $ GCR (nums g) 
-    | takeWhile isLetter g == "CRI" = Gate $ GCRI (nums g) 
-    where nums = read . dropWhile isLetter
+    | takeWhile isLetter g == "CRI" = Gate $ GCRI (nums g)
+    where nums :: Read a => String -> a 
+          nums = read . dropWhile isLetter
+          
 makeImTerm _env (P.TGate g) = Gate $ gateToASTGate g 
 makeImTerm _env P.TStar = Unit
 
