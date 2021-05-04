@@ -65,4 +65,4 @@ GCNOT  . Gate ::= "CNOT"         ;
 GTOF   . Gate ::= "TOFFOLI"      ;
 GSWP   . Gate ::= "SWAP"         ;
 GFRDK  . Gate ::= "FREDKIN"      ;
-GGate  . Gate ::= GateIdent      ;  
+GGate  . Gate ::= GateIdent      ;
