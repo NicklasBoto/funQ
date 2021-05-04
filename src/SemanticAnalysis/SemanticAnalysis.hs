@@ -66,6 +66,8 @@ unknownGate fs = checkSemantics fs isValid genErr errorMsg
           | init g == "QFTI" && length g == 5 && (digitToInt $ last g) <= 5 = gs
           | takeWhile isLetter g == "CR" && all isDigit (dropWhile isLetter g) = gs 
           | takeWhile isLetter g == "CRI" && all isDigit (dropWhile isLetter g) = gs
+          | takeWhile isLetter g == "CCR" && all isDigit (dropWhile isLetter g) = gs 
+          | takeWhile isLetter g == "CCRI" && all isDigit (dropWhile isLetter g) = gs
           | otherwise = gs ++ [g]
         unknownGates (TApp t1 t2) gs                  = gs ++ unknownGates t1 [] ++ unknownGates t2 []
         unknownGates (TIfEl t1 t2 t3) gs              = gs ++ unknownGates t1 [] ++ unknownGates t2 [] ++ unknownGates t3 [] 
