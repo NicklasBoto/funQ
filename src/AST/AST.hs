@@ -225,6 +225,9 @@ reverseImTerm env Meas         = P.TVar (P.Var "meas")
 reverseImTerm env Unit         = P.TStar
 
 reverseImGate env (Gate GH) = P.TGate P.GH
+reverseImGate env (Gate GCNOT) = P.TGate P.GCNOT
+reverseImGate env (Gate GX) = P.TGate P.GX
+reverseImGate env (Gate GSWP) = P.TGate P.GSWP
 reverseImGate env (Gate (GCR n)) = P.TGate (P.GGate (P.GateIdent ("GCR" ++ show n)))
 reverseImGate env (Gate (GCRI n)) = P.TGate (P.GGate (P.GateIdent ("GCRI" ++ show n)))
 reverseImGate env (Gate (GCCR n)) = P.TGate (P.GGate (P.GateIdent ("GCCR" ++ show n)))
