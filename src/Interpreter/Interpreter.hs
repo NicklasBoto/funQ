@@ -107,10 +107,10 @@ eval env = \case
             A.GFRDK   -> run3Gate Q.fredkin e2 env
             A.GQFT n  -> runQFT   (Q.qft n) e2 env
             A.GQFTI n -> runQFT   (Q.qftDagger n) e2 env
-            A.GCR _ n   -> run2Gate (`Q.cphase` (1/(n*2))) e2 env
-            A.GCRI _ n  -> run2Gate (`Q.cphase` (-1/(n*2))) e2 env
-            A.GCCR _ n  -> run3Gate (`Q.ccphase` (1/(n*2))) e2 env
-            A.GCCRI _ n  -> run3Gate (`Q.ccphase` (-1/(n*2))) e2 env
+            A.GCR n   -> run2Gate (`Q.cphase` (1/(n*2))) e2 env
+            A.GCRI n  -> run2Gate (`Q.cphase` (-1/(n*2))) e2 env
+            A.GCCR n  -> run3Gate (`Q.ccphase` (1/(n*2))) e2 env
+            A.GCCRI n  -> run3Gate (`Q.ccphase` (-1/(n*2))) e2 env
 
         A.New -> do
             VBit b' <- eval env e2

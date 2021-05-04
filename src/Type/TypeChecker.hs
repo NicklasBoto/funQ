@@ -301,8 +301,8 @@ inferGate g = TypeDup (arg :=> arg)
                 GCNOT   -> 2
                 GQFT  n -> n
                 GQFTI n -> n
-                GCR   n _ -> n
-                GCRI  n _ -> n
-                GCCR  n _ -> n
-                GCCRI n _ -> n
+                GCR   _ -> 2
+                GCRI  _ -> 2
+                GCCR  _ -> 3
+                GCCRI _ -> 3
                 _       -> 1

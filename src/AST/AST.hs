@@ -77,10 +77,10 @@ data Gate
     | GFRDK
     | GQFT Int
     | GQFTI Int
-    | GCR Int Double
-    | GCRI Int Double
-    | GCCR Int Double
-    | GCCRI Int Double
+    | GCR Double
+    | GCRI Double
+    | GCCR Double
+    | GCCRI Double
     | GGate P.GateIdent
   deriving (Eq, Ord, Show, Read)
 
@@ -151,8 +151,8 @@ makeImTerm _env (P.TBit (P.BBit 1)) = Bit BOne
 makeImTerm _env (P.TGate (P.GGate (P.GateIdent g))) 
     | init g == "QFT"  = Gate $ GQFT (nums g)
     | init g == "QFTI" = Gate $ GQFTI (nums g)
-    | takeWhile isLetter g == "CR" = Gate $ GCR 2 (nums g) 
-    | takeWhile isLetter g == "CRI" = Gate $ GCRI 2 (nums g)
+    | takeWhile isLetter g == "CR" = Gate $ GCR (nums g) 
+    | takeWhile isLetter g == "CRI" = Gate $ GCRI (nums g)
     where nums :: Read a => String -> a 
           nums = read . dropWhile isLetter
           
