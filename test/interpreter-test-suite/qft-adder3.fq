@@ -1,87 +1,62 @@
-main : Bit >< Bit >< Bit
-main = meas3 (cAdd3 carry exIntA exIntBB)
+main : Bit >< Bit >< Bit >< Bit
+main = meas4 (cAdd3 exIntA exIntBB)
 
 carry : QBit
-carry = new 1
+carry = new 0
 
-exIntA : QBit >< QBit >< QBit
-exIntA = (new 0, new 0, new 1)
+exIntA : QBit >< QBit >< QBit >< QBit
+exIntA = (carry, new 0, new 1, new 1)
          
 exIntB : QBit >< QBit >< QBit
 exIntB = (new 0, new 0, new 1)
 
 exIntBB : !(Bit >< Bit >< Bit)
-exIntBB = (1,0,1)
+exIntBB = (0,0,1)
 
 exIntN : QBit >< QBit >< QBit
 exIntN = (new 1, new 1, new 0)
 
--- TODO: addera mha klassiska bitar
---       
+cAdd3 : !((QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit))
+cAdd3 inA inB = let (c,apre2,apre1,apre0) = inA in  
+                let (a2,a1,a0) = swap3 (QFT3 (apre2,apre1,apre0)) in 
+                let (b2,b1,b0) = inB in    
+                let (c1,a21) = if b2 then CR1 (c,a2)   else (c,a2)   in
+                let (c2,a22) = if b1 then CR2 (c1,a21) else (c1,a21) in
+                let (c3,a23) = if b0 then CR4 (c2,a22) else (c2,a22) in
+                let (c4,a11) = if b1 then CR1 (c3,a1)  else (c3,a1)  in
+                let (c5,a12) = if b0 then CR2 (c4,a11) else (c4,a11) in
+                let (c6,a01) = if b0 then CR1 (c5,a0)  else (c5,a0)  in
+                let (apost2,apost1,apost0) = QFTI3 (swap3 (a23,a12,a01)) in
+                (c6,apost2,apost1,apost0)
 
-cAdd3 : QBit -o (QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit)
-cAdd3 c  inA inB = let (a0, a1, a2) = swap3 (QFT3 inA) in   
-                let (b2, b1, b0) = inB in    
-                let (c1,a01) = if b2  then CR1 (c,a0) else (c,a0) in
-                let (c2,a02) = if b1  then CR2 (c1,a01) else (c1,a01) in
-                let (c3,a03) = if b0  then CR4 (c2,a02) else (c2,a02) in
-                let (c4,a11) = if b1  then CR1 (c3,a1) else (c3,a1) in
-                let (c5,a12) = if b0  then CR2 (c4,a11) else (c4,a11) in
-                let (c6,a21) = if b0  then CR1 (c5,a2)  else (c5,a2) in
-                QFTI3 (swap3 (a03,a12,a21))
-                -- let (b21, a01) = CR1  (b2, a0)   in
-                -- let (b11, a02) = CR2 (b1, a01)  in
-                -- let (b01, a03) = CR4 (b0, a02)  in
-                -- let (b12, a11) = CR1  (b11, a1)  in
-                -- let (b02, a12) = CR2 (b01, a11) in
-                -- let (b03, a21) = CR1  (b02, a2)  in
-                -- QFTI3 (swap3 (a03,a12,a21))
-
--- cAdd3B : QBit -o (QBit >< QBit >< QBit) -o (Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit)
--- cAdd3B c inA inB = let (a0, a1, a2) = swap3 (QFT3 inA) in   
---                 let (b2, b1, b0) = inB in
---                 let (c1,a01) = if b2 == 1 then CR1 (c,a0) else (c,a0) in
---                 let (c2,a02) = if b1 == 1 then CR2 (c1,a01) else (c1,a01) in
---                 let (c3,a03) = if b0 == 1 then CR4 (c2,a02) else (c2,a02) in
---                 let (c4,a11) = if b1 == 1 then CR1 (c3,a1) else (c3,a1) in
---                 let (c5,a12) = if b0 == 1 then CR2 (c4,a11) else (c4,a11) in
---                 let (c6,a21) = if b0 == 1 then CR1 (c5,a2)  else (c5,a2) in
---                 QFTI3 (swap3 (a03,a12,a21))
-                -- let (b21, a01) = CR1  (b2, a0)   in
-                -- let (b11, a02) = CR2 (b1, a01)  in
-                -- let (b01, a03) = CR4 (b0, a02)  in
-                -- let (b12, a11) = CR1  (b11, a1)  in
-                -- let (b02, a12) = CR2 (b01, a11) in
-                -- let (b03, a21) = CR1  (b02, a2)  in
-                -- QFTI3 (swap3 (a03,a12,a21))
--- cSub3 : (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)
--- cSub3 inA inB = let (a0, a1, a2) = swap3 (QFT3 inA) in   
+-- cSub3 : !(QBit -o (QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit))
+-- cSub3 c inA inB = let (a0, a1, a2) = swap3 (QFT3 inA) in   
 --                 let (b2, b1, b0) = inB in    
---                 let (b21, a01) = CRD  (b2, a0)   in
---                 let (b11, a02) = CR2D (b1, a01)  in
---                 let (b01, a03) = CR4D (b0, a02)  in
---                 let (b12, a11) = CRD  (b11, a1)  in
---                 let (b02, a12) = CR2D (b01, a11) in
---                 let (b03, a21) = CRD  (b02, a2)  in
+--                 let (c1,a01) = if b2  then CRI1 (c,a0) else (c,a0) in
+--                 let (c2,a02) = if b1  then CRI2 (c1,a01) else (c1,a01) in
+--                 let (c3,a03) = if b0  then CRI4 (c2,a02) else (c2,a02) in
+--                 let (c4,a11) = if b1  then CRI1 (c3,a1) else (c3,a1) in
+--                 let (c5,a12) = if b0  then CRI2 (c4,a11) else (c4,a11) in
+--                 let (c6,a21) = if b0  then CRI1 (c5,a2)  else (c5,a2) in
 --                 QFTI3 (swap3 (a03,a12,a21))
 
--- cAdd3Mod : (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)
--- cAdd3Mod inA inB inN =  let (a0,a1,a2) = cAdd3 inA inB in
---                         cSub3 (a0,a1,a2) inN
+-- cAdd3Mod : QBit -o (QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)
+-- cAdd3Mod c inA inB inN = let (a0,a1,a2) = cAdd3 c inA inB in
+--                         cSub3 c (a0,a1,a2) inN
 
 
 swap3 : !((QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit))
-swap3 q = let (a,b,c) = q in
-           let (a1,c1) = SWAP (a,c) in
-           (a1,b,c1)
+swap3 q = let (a2,a1,a0) = q in
+           let (a21,a01) = SWAP (a2,a0) in
+           (a21,a1,a01)
 
 meas3 : (QBit >< QBit >< QBit) -o (Bit >< Bit >< Bit)
 meas3 q = let (a,b,c) = q in (meas a,meas b,meas c)
 
 swap4 : !((QBit >< QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit))
-swap4 q = let (d,a,b,c) = q in
-           let (a1,c1) = SWAP (a,c) in
-           (d,a1,b,c1)
+swap4 q = let (c,a2,a1,a0) = q in
+           let (a21,a01) = SWAP (a2,a0) in
+           (c,a21,a1,a01)
 
 meas4 : (QBit >< QBit >< QBit >< QBit) -o (Bit >< Bit >< Bit >< Bit)
 meas4 q = let (a,b,c,d) = q in (meas a,meas b,meas c,meas d)
@@ -96,3 +71,4 @@ meas4 q = let (a,b,c,d) = q in (meas a,meas b,meas c,meas d)
 --                    let (c5, b02, a12) = CCR2 (c4, b01, a11) in
 --                    let (c6, b03, a21) = CCR  (c5, b02, a2)  in
 --                    QFTI3 (swap3 (a03,a12,a21))
+
