@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ac534a038cadbcfec95e2aa1e0a1f36b2ca513f29f95954ba3fe3ecc34b4cf1b
+-- hash: 66c83e85bcf45be4bbfa764e8387fbb75e16e7ba1d9dc8ea2fea345bafdfc5f1
 
 name:           qfunc
 version:        0.1.0.0
@@ -47,6 +47,8 @@ library
       Parser.Par
       Parser.Print
       Parser.Skel
+      Parser.Test
+      SemanticAnalysis.SemanticAnalysis
       Type.TypeChecker
       CoinFlip
       Deutsch
@@ -66,6 +68,7 @@ library
     , exceptions
     , haskeline >=0.8.0.0
     , hmatrix
+    , monad-parallel
     , mtl
     , numbers
     , parsec
@@ -93,6 +96,7 @@ executable funq
     , exceptions
     , haskeline >=0.8.0.0
     , hmatrix
+    , monad-parallel
     , mtl
     , numbers
     , parsec
@@ -124,6 +128,7 @@ test-suite qfunc-test
     , exceptions
     , haskeline >=0.8.0.0
     , hmatrix
+    , monad-parallel
     , mtl
     , numbers
     , parsec

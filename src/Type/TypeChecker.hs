@@ -1,7 +1,8 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module Type.TypeChecker where
-import AST.AST
+import AST.AST as A
 import Control.Monad.Except hiding (throwError)
 import qualified Control.Monad.Except as EX
 import Control.Monad.Reader
@@ -21,16 +22,14 @@ runCheckWith c t = evalState (runReaderT (runExceptT c) t)
 --   Returns TypeError on failure an unit on success.
 typecheck :: Program -> Either TypeError ()
 typecheck program = evalState (runReaderT (runExceptT (typecheckP program)) top) emptyErrorEnv
-    where
-        top = buildTopEnv program
+    where top = buildTopEnv program
 
 -- | Parse a typecheck a program encoded as a string.
 tcStr :: String -> Either TypeError ()
 tcStr = typecheck . run
 
 inferExp :: String -> Either TypeError Type
-inferExp s = runCheck $ infer p
-    where [Func _ _ p] = run $ "f : T f = " ++ s
+inferExp = runCheck . infer . parseExp
 
 parseExp :: String -> Term
 parseExp s = p
@@ -45,7 +44,6 @@ data ErrorTypes
     | NotLinearTerm Term Type  -- ^ A term that breaks a linearity constraint
     | NoCommonSuper Type Type  -- ^ No common supertype was found
     | NotInScope String        -- ^ A function was not in scope.
-    | DuplicateFunction String -- ^ A function was defined multiple times.
     deriving Eq
 
 data TypeError = TError String ErrorTypes
@@ -82,9 +80,6 @@ instance Show ErrorTypes where
 
     show (NotInScope v) =
         "Variable not in scope: " ++ v
-
-    show (DuplicateFunction f) =
-        "Function '" ++ f ++ "' declared multiple times"
 
 instance IsString Type where
     fromString t = t'
@@ -126,33 +121,25 @@ buildTopEnv program = M.fromList (map addFunc program)
 -- | Ability to throw type errors when type checking.
 type Check = ExceptT TypeError (ReaderT TopEnv (State ErrorEnv))
 
--- !a !b   a!=b  a <:b   (!Bit >< Bit) <: (Bit >< Bit)
-
--- f : a -o Bit
--- f x = 0
-
--- f : (!Bit -o !(Bit -o Bit))
--- f x y = x
-
--- f : (Bit -o Bit -o Bit)
--- f x y = y
-
--- f : (Bit -o !(Bit -o Bit) -o Bit)
--- f x y = y x
-
--- f : (Bit -o !(Bit -o QBit))
--- f x y = new y
-
--- !Bit !Bit
--- Bit <: !Bit
 -- | Whether a type is a subtype of another type.
 (<:) :: Type -> Type -> Bool
-TypeDup a <: TypeDup b     = TypeDup a <: b       -- (!)
-TypeDup (a1 :>< a2) <: (b1 :>< b2) = TypeDup a1 <: b1 && TypeDup a2 <: b2
-TypeDup a <: b             = a <: b               -- (D)
-(a1 :>< a2) <: (b1 :>< b2) = a1 <: b1 && a2 <: b2 -- (><)
-(a' :=> b) <: (a :=> b')   = a  <: a' && b  <: b' -- (-o)
-a <: b                     = a == b               -- (ax)
+TypeDup a <: TypeDup b     = TypeDup a <: b                               -- (!)
+TypeDup (a1 :>< a2) <: (b1 :>< b2) = TypeDup a1 <: b1 && TypeDup a2 <: b2 -- (!><)
+TypeDup a <: b             = a <: b                                       -- (D)
+(a1 :>< a2) <: (b1 :>< b2) = a1 <: b1 && a2 <: b2                         -- (><)
+(a' :=> b) <: (a :=> b')   = a  <: a' && b  <: b'                         -- (-o)
+a <: b                     = a == b                                       -- (ax)
+
+parallelCheck :: Check a -> Check b -> Check (a,b)
+parallelCheck a b = do
+    env <- get
+    a' <- a
+    lina <- gets linenv
+    put env
+    b' <- b
+    linb <- gets linenv
+    modify $ \s -> s{linenv=S.union lina linb} 
+    return (a',b')
 
 -- | Count how many times the variable bound to the head is used.
 headCount :: Term -> Integer
@@ -228,17 +215,7 @@ inferTerm _ (Fun fun) = do
                | otherwise -> return t
 inferTerm ctx (IfEl c t f) = do
     tc <- inferTerm ctx c
-    linc <- get
-
-    tt <- inferTerm ctx t
-    lint <- gets linenv
-    put linc
-
-    tf <- inferTerm ctx f
-    linf <- gets linenv
-
-    modify $ \s -> s{linenv=S.union lint linf}
-
+    (tt, tf) <- parallelCheck (inferTerm ctx t) (inferTerm ctx f)
     if tc <: TypeBit 
         then supremum tt tf
         else throwError $ Mismatch TypeBit tc
@@ -247,6 +224,8 @@ inferTerm ctx (IfEl c t f) = do
 --   Throws error if no common subtype exists.
 infimum :: Type -> Type -> Check Type
 infimum a b | a == b    = return a
+infimum (TypeDup (a :>< b)) (c :>< d) = (:><) <$> infimum  (TypeDup a) c <*> infimum (TypeDup b) d
+infimum (a :>< b) (TypeDup (c :>< d)) = (:><) <$> infimum  a (TypeDup c) <*> infimum b (TypeDup d)
 infimum (TypeDup a) (TypeDup b) = TypeDup <$> infimum a b
 infimum (TypeDup a) b = TypeDup <$> infimum a b
 infimum a (TypeDup b) = TypeDup <$> infimum a b
@@ -258,6 +237,8 @@ infimum a b = throwError (NoCommonSuper a b)
 --   Throws error if no common supertype exists.
 supremum :: Type -> Type -> Check Type
 supremum a b | a == b = return a
+supremum (TypeDup (a :>< b)) (c :>< d) = (:><) <$> supremum  (TypeDup a) c <*> supremum (TypeDup b) d
+supremum (a :>< b) (TypeDup (c :>< d)) = (:><) <$> supremum  a (TypeDup c) <*> supremum b (TypeDup d)
 supremum (TypeDup a) (TypeDup b) = TypeDup <$> supremum a b
 supremum (TypeDup a) b = supremum a b
 supremum a (TypeDup b) = supremum a b
@@ -299,7 +280,7 @@ freeVars = freeVars' 0
         freeVars' n (App f a)    = freeVars' n f ++ freeVars' n a
         freeVars' n (Let eq inn) = freeVars' n eq ++ freeVars' (n+2) inn
         freeVars' n (Abs _ e)    = freeVars' (n+1) e
-        freeVars' n (Idx i)      = [n - i | i >= n]
+        freeVars' n (Idx i)      = [i - n | i >= n]
         freeVars' _ _            = []
 
 -- | Finds all functions used in a term.
@@ -312,33 +293,19 @@ names (Fun f)      = [f]
 names _            = []
 
 -- | Infer type of a gate.
-inferGate :: Gate -> Type
+inferGate :: A.Gate -> Type
 inferGate g = TypeDup (arg :=> arg)
     where
         arg = foldr (:><) TypeQBit (replicate (n-1) TypeQBit)
         n = case g of
-                GQFT   -> 1 -- temp
-                GQFTI  -> 1 -- temp
-                GQFT2  -> 2 -- temp
-                GQFTI2 -> 2 -- temp
-                GQFT3  -> 3 -- temp
-                GQFTI3 -> 3 -- temp
-                GQFT4  -> 4 -- temp
-                GQFTI4 -> 4 -- temp
-                GQFT5  -> 5 -- temp
-                GQFTI5 -> 5 -- temp
-                GFRDK  -> 3
-                GTOF   -> 3
-                GSWP   -> 2
-                GCNOT  -> 2
-                GCR    -> 2
-                GCRD   -> 2
-                GCR2   -> 2
-                GCR2D  -> 2
-                GCR3   -> 2
-                GCR3D  -> 2
-                GCR4   -> 2
-                GCR4D  -> 2
-                GCR8   -> 2
-                GCR8D  -> 2
-                _      -> 1
+                GFRDK   -> 3
+                GTOF    -> 3
+                GSWP    -> 2
+                GCNOT   -> 2
+                GQFT  n -> n
+                GQFTI n -> n
+                GCR   _ -> 2
+                GCRI  _ -> 2
+                GCCR  _ -> 3
+                GCCRI _ -> 3
+                _       -> 1
