@@ -10,11 +10,18 @@ carry2 = new 1
 overflow : QBit
 overflow = new 0
 
+
+-- 4/5: har lagt till ancilla-återbildningen, adderaren fungerar för vissa värden, men andra
+-- t.ex. (0,0,1) + (0,0,1) = (1,1,1,0,1,1) och (1,1,1) + (0,0,1) = (1,1,1,0,0,1)
+-- får jag detta att fungerar är det bara att fortsätta med multipliceraren. löste 2^j problemet
+-- genom att helt enkelt shifta b left en gång mellan varje cAdd3Mod-block
+-- TODO: gör utan att köra QFT mellan de olika stegen, snabbar upp och kan möjligtvis lösa
+-- några fel som jag har
 exIntAccc : QBit >< QBit >< QBit >< QBit >< QBit >< QBit
-exIntAccc = (overflow, carry2, carry1, new 1, new 0, new 0)
+exIntAccc = (overflow, carry2, carry1, new 1, new 1, new 1)
 
 exIntB : !(Bit >< Bit >< Bit)
-exIntB = (0,1,1)
+exIntB = (0,0,1)
 
 exIntN : !(Bit >< Bit >< Bit)
 exIntN = (1,1,1)
@@ -29,10 +36,10 @@ cMult3Mod : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bi
 cMult3Mod inA inB inN inX = let (v,c2,c1,a2,a1,a0) = inA in
                             let (x2,x1,x0)         = inX in
                             -- let (v1,x01,c11,a21,a11,a01) = cAdd3Mod1 (v, x0,c1, a2, a1, a0)  inB inN in
-                            let (x01,v1,c11,a21,a11,a01) = cAdd3Mod1 (x0,v,c1,a2,a1,a0) inB inN in
+                            let (x01,v1,c11,a21,a11,a01) = cAdd3Mod1 (x0,v,c1,a2,a1,a0) (0,0,1) inN in
                             -- let (x01,v1,c11,a21,a11,a01) = cAdd3Mod2 (x0,v,c1,a2,a1,a0) inB inN in
                             -- let (b2,b1,b0) = sll inB in
-                            -- let (x11,v2,c12,a22,a12,a02) = cAdd3Mod1 (x1,v1,c11,a21,a11,a01) (b2,b1,b0) inN in
+                            -- let (x11,v2,c12,a22,a12,a02) = cAdd3Mod1 (x1,v1,c11,a21,a11,a01) (0,0,1) inN in
                             -- let (v3,x21,a23,a13,a03) = cAdd3Mod3 v2 (c12,x2,a22,a12,a02) inB inN in
                             -- (x11,v2,c12,a22,a12,a02)
                             (x01,v1,c11,a21,a11,a01)
@@ -45,43 +52,22 @@ cMult3Mod inA inB inN inX = let (v,c2,c1,a2,a1,a0) = inA in
 --                          let (v4,x2,c12,a23,a12,a02) = ccAdd3 (CCR4,CCR2,CCR1) (v3,x1,c11,a22,a11,a01) inN in
 --                          (v4,x2,c12,a23,a12,a02)
 cAdd3Mod1 : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
-cAdd3Mod1 inA inB inN = let (x,v,c1,a2,a1,a0) = ccAdd3 (CCR4,CCR2,CCR1) inA inB in
-                        let (x1,v1,c11,a21,a11,a01) = cSub3 (x,v,c1,a2,a1,a0) inN in
+cAdd3Mod1 inA inB inN = 
+                        let (x,v,c1,a2,a1,a0) = ccAdd3 (CCR4,CCR2,CCR1) inA inB in          -- adderar B på A, summa hamnar i A
+                        let (x1,v1,c11,a21,a11,a01) = cSub3 (x,v,c1,a2,a1,a0) inN in        -- subtraherar N från A
 
-                        let (a22,v2) = CNOT (a21,v1) in
-                        let (v3,c12) = SWAP (v2,c11) in
-                        -- let (x2,v4,c13,a23,a12,a02) = ccAdd3 (CCR4,CCR2,CCR1) (x1,v3,c12,a22,a11,a01) inN in
-                        let (x3,v5,c14,a24,a13,a03) = cAdd3 (x1,v3,c12,a22,a11,a01) inN in
-                        let (v6,c15) = SWAP (v5,c14) in
+                        let (a22,v2) = CNOT (a21,v1) in                                     -- om högsta biten i A är 1, aktivera overflow
+                        let (v3,c12) = SWAP (v2,c11) in                                     -- byter plats på overflow- och kontrollbitarna
+                        let (x2,v4,c13,a23,a12,a02) = cAdd3 (x1,v3,c12,a22,a11,a01) inN in  -- addera N på A, med overflow som kontrollbit
+                        let (v6,c15) = SWAP (v4,c13) in                                     -- byter tillbaka overflow- och kontrollbitar
+
                         -- restore ancilla
-                        let (x4,v7,c16,a25,a14,a04) = ccAdd3 (CCRI4,CCRI2,CCRI1) (x3,v6,c15,a24,a13,a03) inB in
-                        let (a26,v8) = CNOT (X a25,v7) in
-                        let (a27,v9) = (X a26,v8) in
-                        let (x5,v10,c17,a28,a15,a05) = ccAdd3 (CCR4,CCR2,CCR1) (x4,v9,c16,a27,a14,a04) inB in
-                        (x5,v10,c17,a28,a15,a05)
+                        let (x3,v7,c16,a24,a13,a03) = ccAdd3 (CCRI4,CCRI2,CCRI1) (x2,v6,c15,a23,a12,a02) inB in -- subtrahera B från A
+                        let (a25,v8) = CNOT (X a24,v7) in                                                       -- sätt overflow till 1 om högsta biten i A är 1
+                        let (a26,v9) = (X a25,v8) in
+                        let (x4,v10,c17,a27,a14,a04) = ccAdd3 (CCR4,CCR2,CCR1) (x3,v9,c16,a26,a13,a03) inB in
+                        (x4,v10,c17,a27,a14,a04)
 
-cAdd3Mod2 : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
-cAdd3Mod2 inA inB inN = let (x,v,c1,a2,a1,a0) = ccAdd3 (CCR2,CCR1,CCR12) inA inB in
-                        let (x1,v1,c11,a21,a11,a01) = ccAdd3 (CCRI2, CCRI1, CCRI12) (x,v,c1,a2,a1,a0) inN in
-                        
-                        let (a22,v2) = CNOT (a21,v1) in
-                        let (v3,c12) = SWAP (v2,c11) in
-                        let (x2,v4,c13,a23,a12,a02) = ccAdd3 (CCR2,CCR1,CCR12) (x1,v3,c12,a22,a11,a01) inN in
-                        let (v5,c14) = SWAP (v4,c13) in
-                        -- restore ancilla
-                        let (x3,v6,c15,a24,a13,a03) = ccAdd3 (CCRI2,CCRI1,CCRI12) (x2,v5,c14,a23,a12,a02) inB in
-                        let (a25,v7) = CNOT (X a24,v6) in
-                        let (a26,v8) = (X a25,v7) in
-                        let (x4,v9,c16,a27,a14,a04) = ccAdd3 (CCR2,CCR1,CCR2) (x3,v8,c15,a26,a13,a03) inB in
-                        (x4,v9,c16,a27,a14,a04)
-
-
-
--- cAdd3Mod3 : !(QBit -o (QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
--- cAdd3Mod3 v inA inB inN = let (c2,c1,a2,a1,a0) = ccAdd3 (CCR4,CCR2,CCR1) inA inB in
---                          let (c21,c11,a21,a11,a01) = ccAdd3 (CCRI4, CCRI2, CCRI1) (c2,c1,a2,a1,a0) inN in
---                          let (a22,v1) = CNOT (a21,v) in
---                          ccAdd3 (CCR4,CCR2,CCR1) (v1,c11,a22,a11,a01) inN
 
 ccAdd3 : !((!((QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)) >< !((QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)) ><  !((QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit))) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
 ccAdd3 g inA inB = let (x,v,c1,apre2,apre1,apre0) = inA in  
@@ -182,3 +168,26 @@ meas5 : (QBit >< QBit >< QBit >< QBit >< QBit) -o (Bit >< Bit >< Bit >< Bit >< B
 meas5 q = let (a,b,c,d,e) = q in (meas a,meas b,meas c,meas d,meas e)
 meas6 : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o (Bit >< Bit >< Bit >< Bit >< Bit >< Bit)
 meas6 q = let (a,b,c,d,e,f) = q in (meas a,meas b,meas c,meas d,meas e,meas f)
+
+-- cAdd3Mod2 : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
+-- cAdd3Mod2 inA inB inN = let (x,v,c1,a2,a1,a0) = ccAdd3 (CCR2,CCR1,CCR12) inA inB in
+--                         let (x1,v1,c11,a21,a11,a01) = ccAdd3 (CCRI2, CCRI1, CCRI12) (x,v,c1,a2,a1,a0) inN in
+                        
+--                         let (a22,v2) = CNOT (a21,v1) in
+--                         let (v3,c12) = SWAP (v2,c11) in
+--                         let (x2,v4,c13,a23,a12,a02) = ccAdd3 (CCR2,CCR1,CCR12) (x1,v3,c12,a22,a11,a01) inN in
+--                         let (v5,c14) = SWAP (v4,c13) in
+--                         -- restore ancilla
+--                         let (x3,v6,c15,a24,a13,a03) = ccAdd3 (CCRI2,CCRI1,CCRI12) (x2,v5,c14,a23,a12,a02) inB in
+--                         let (a25,v7) = CNOT (X a24,v6) in
+--                         let (a26,v8) = (X a25,v7) in
+--                         let (x4,v9,c16,a27,a14,a04) = ccAdd3 (CCR2,CCR1,CCR2) (x3,v8,c15,a26,a13,a03) inB in
+--                         (x4,v9,c16,a27,a14,a04)
+
+
+
+-- cAdd3Mod3 : !(QBit -o (QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
+-- cAdd3Mod3 v inA inB inN = let (c2,c1,a2,a1,a0) = ccAdd3 (CCR4,CCR2,CCR1) inA inB in
+--                          let (c21,c11,a21,a11,a01) = ccAdd3 (CCRI4, CCRI2, CCRI1) (c2,c1,a2,a1,a0) inN in
+--                          let (a22,v1) = CNOT (a21,v) in
+--                          ccAdd3 (CCR4,CCR2,CCR1) (v1,c11,a22,a11,a01) inN
