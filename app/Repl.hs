@@ -127,14 +127,14 @@ evalCmd line = case parse parseAssign "" line of
     Left _     -> do
         env <- gets (Set.toList . funs)
         lin <- gets linenv
-        let term = parseExp line
+        let term = Run.parseExp line
         typ <- err $ runCheckWith (infer term) (buildTopEnv env) (buildLin lin)
         (mval, mtyp) <- err =<< liftIO (runExceptT (Run.runProgram $ Func "main" typ term : env))
         addLinears term
         printr $ show mval ++ " : " ++ show mtyp
     Right name -> do
         let termString = tail $ dropWhile (/='=') line
-            term = parseExp termString
+            term = Run.parseExp termString
         env <- gets funs
         lin <- gets linenv
         case runCheckWith (infer term) (buildTopEnv (Set.toList env)) (buildLin lin) of
