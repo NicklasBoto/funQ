@@ -149,10 +149,6 @@ fromVTup         x  = [x]
 toVTup :: [Value] -> Value
 toVTup = foldr1 VTup
 
--- | Eval monad print
-printE :: Show a => a -> Eval ()
-printE = lift . lift . Q.io . print
-
 -- | Run QFT gate
 runQFT :: ([Q.QBit] -> Q.QM [Q.QBit]) -> A.Term -> Env -> Eval Value
 runQFT g q env = do

@@ -43,8 +43,8 @@ instance Show Error where
   show (ParseError e) =
     "syntax error:\n" ++ e
 
-  show (TypeError (TC.TError f e)) =
-    "type error in function " ++ f ++ ":\n" ++ show e
+  show (TypeError (TC.TError where' why)) =
+    "type error in function " ++ where' ++ ":\n" ++ show why
 
   show (ValueError e) =
     "value error:\n" ++ show e
@@ -106,9 +106,16 @@ runProgram p = do
   return (val, typ)
 
 parseExp :: [Char] -> A.Term
-parseExp e = either (errorWithoutStackTrace . show) (const (fetchTerm (A.toIm prog))) (S.runAnalysis prog)
-  where prog = either errorWithoutStackTrace id $ pProgram (myLexer ("main : T main = " ++ e)) 
+parseExp e = either semanticerror (const (fetchTerm (A.toIm prog))) (S.runAnalysis prog)
+  where prog = either syntaxerror id $ pProgram (myLexer ("main : T main = " ++ e)) 
         fetchTerm [A.Func _ _ t] = t
+        syntaxerror   e = errorWithoutStackTrace $ "*** Exception:\n" ++ e
+        semanticerror e = errorWithoutStackTrace $ "*** Exception, semantic error:\n" ++ show e
+
+checkProgram :: FilePath -> IO A.Program
+checkProgram path = runExceptT (readfile path >>= parse >>= semanticAnalysis >>= convertAST >>= typecheck) >>= \case
+  Left  e -> errorWithoutStackTrace $ "*** Exception, " ++ show e
+  Right p -> return p
 
 -- Utils 
 toErr :: (i -> Either e v) -> (e -> Error) -> (v -> o) -> i -> Run o

@@ -49,7 +49,7 @@ emptyFun :: String -> Function
 emptyFun n = Func n TypeUnit Unit
 
 err :: Show e => Either e v -> Repl v
-err (Left  e) = errorWithoutStackTrace $ show e
+err (Left  e) = errorWithoutStackTrace $ "*** Exception, " ++ show e
 err (Right v) = return v
 
 buildLin :: LinEnv -> ErrorEnv
@@ -72,6 +72,7 @@ ops = [ ("help"   , helpCmd )
       , ("load"   , loadCmd )
       , ("clear"  , clearCmd)
       , ("delete" , delCmd  )
+      , ("ml"     , return . return ())
       ]
 
 helpTexts :: Map.Map String String
@@ -111,7 +112,7 @@ typeCmd n = gets (Set.toList . funs)
 envCmd _ = mapM_ (printr . show) =<< gets funs
 loadCmd path = mapM_ (dontCrash . load) (words path)
     where fnames = Set.map (\(Func n _ _) -> n)
-          load s = liftIO (runFile s)
+          load s = liftIO (Run.checkProgram s)
                >>= modify
                . (\prog (RS env lin) ->
                    RS (Set.union prog env) (Set.difference lin (fnames prog)))
@@ -138,7 +139,7 @@ evalCmd line = case parse parseAssign "" line of
         env <- gets funs
         lin <- gets linenv
         case runCheckWith (infer term) (buildTopEnv (Set.toList env)) (buildLin lin) of
-            Left  err -> errorWithoutStackTrace $ show err
+            Left  err -> errorWithoutStackTrace $ "*** Exception, " ++ show err
             Right typ -> modify (\s -> s{funs=Set.insert (Func name typ term) env})
                       >> when (Set.member (Func name typ term) env)
                               (modify \s -> s{linenv=Set.delete name lin})
@@ -172,7 +173,7 @@ mainWith rs = flip evalStateT rs $ evalReplOpts $ ReplOpts
     }
 
 mainFile :: String -> IO ()
-mainFile path = liftIO (runFile path)
+mainFile path = liftIO (Run.checkProgram path)
             >>= (mainWith . flip RS Set.empty)
               . Set.delete (emptyFun "main")
               . Set.fromList
