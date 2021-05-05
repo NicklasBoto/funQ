@@ -41,7 +41,9 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
 # extra-deps: []
-
+extra-deps:
+  - repline-0.4.0.0@sha256:3324479e497d27c40c3d4762bffc52058f9921621d20d2947dcf9a554b94cd0d,2253
+  - haskeline-0.8.1.1@sha256:21c0d6bd9f36a8b0cfbceab30820f4fe4ac72535c4d2cdf217123d816a4e494e,5818
 # Override default flag values for local packages and extra-deps
 # flags: {}
 

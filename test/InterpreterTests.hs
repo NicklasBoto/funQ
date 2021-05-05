@@ -2,7 +2,7 @@ module InterpreterTests(
     runTests,
 ) where
 import Control.Monad.Except (runExceptT, liftIO)
-import Interpreter.Main
+import Interpreter.Run
 
 runTests :: IO ()
 runTests = do

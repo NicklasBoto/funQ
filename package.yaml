@@ -35,9 +35,11 @@ dependencies:
 - array
 - containers
 - haskeline
+- haskeline >= 0.8.0.0
+- repline >= 0.3.0.0
 - turtle
 - parsec
-- monad-parallel
+- exceptions
 
 library:
   when:
