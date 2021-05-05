@@ -58,7 +58,7 @@ transType :: Parser.Abs.Type -> Result
 transType x = case x of
   Parser.Abs.TypeBit -> failure x
   Parser.Abs.TypeQbit -> failure x
-  Parser.Abs.TypeVoid -> failure x
+  Parser.Abs.TypeUnit -> failure x
   Parser.Abs.TypeDup type_ -> failure x
   Parser.Abs.TypeTens type_1 type_2 -> failure x
   Parser.Abs.TypeFunc type_1 type_2 -> failure x
@@ -75,5 +75,5 @@ transGate x = case x of
   Parser.Abs.GTOF -> failure x
   Parser.Abs.GSWP -> failure x
   Parser.Abs.GFRDK -> failure x
-  Parser.Abs.GGate gateident -> failure x
+  Parser.Abs.GIdent gateident -> failure x
 

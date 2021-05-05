@@ -57,7 +57,7 @@ data Arg = FArg Var
 data Type
     = TypeBit
     | TypeQbit
-    | TypeVoid
+    | TypeUnit
     | TypeDup Type
     | TypeTens Type Type
     | TypeFunc Type Type
@@ -75,6 +75,6 @@ data Gate
     | GTOF
     | GSWP
     | GFRDK
-    | GGate GateIdent
+    | GIdent GateIdent
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 

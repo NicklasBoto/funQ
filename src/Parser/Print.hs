@@ -38,7 +38,7 @@ render d = rend 0 (map ($ "") $ d []) "" where
     _            -> id
   new i     = showChar '\n' . replicateS (2*i) (showChar ' ') . dropWhile isSpace
   space t s =
-    case (all isSpace t', null spc, null rest) of
+    case (all isSpace t' || t' == "!", null spc, null rest) of
       (True , _   , True ) -> []              -- remove trailing space
       (False, _   , True ) -> t'              -- remove trailing space
       (False, True, False) -> t' ++ ' ' : s   -- add space if none
@@ -138,7 +138,7 @@ instance Print [Parser.Abs.LetVar] where
 
 instance Print Parser.Abs.Tup where
   prt i e = case e of
-    Parser.Abs.Tuple term terms -> prPrec i 0 (concatD [doc (showString "("), prt 0 term, doc (showString ","), prt 0 terms, doc (showString ")")])
+    Parser.Abs.Tuple term terms -> prPrec i 0 (concatD [doc (showString "⟨"), prt 0 term, doc (showString ","), prt 0 terms, doc (showString "⟩")])
 
 instance Print [Parser.Abs.Term] where
   prt = prtList
@@ -173,10 +173,10 @@ instance Print Parser.Abs.Type where
   prt i e = case e of
     Parser.Abs.TypeBit -> prPrec i 2 (concatD [doc (showString "Bit")])
     Parser.Abs.TypeQbit -> prPrec i 2 (concatD [doc (showString "QBit")])
-    Parser.Abs.TypeVoid -> prPrec i 2 (concatD [doc (showString "T")])
+    Parser.Abs.TypeUnit -> prPrec i 2 (concatD [doc (showString "⊤")])
     Parser.Abs.TypeDup type_ -> prPrec i 2 (concatD [doc (showString "!"), prt 2 type_])
-    Parser.Abs.TypeTens type_1 type_2 -> prPrec i 1 (concatD [prt 2 type_1, doc (showString "><"), prt 1 type_2])
-    Parser.Abs.TypeFunc type_1 type_2 -> prPrec i 1 (concatD [prt 2 type_1, doc (showString "-o"), prt 1 type_2])
+    Parser.Abs.TypeTens type_1 type_2 -> prPrec i 1 (concatD [prt 2 type_1, doc (showString "⊗"), prt 1 type_2])
+    Parser.Abs.TypeFunc type_1 type_2 -> prPrec i 1 (concatD [prt 2 type_1, doc (showString "⊸"), prt 1 type_2])
 
 instance Print Parser.Abs.Gate where
   prt i e = case e of
@@ -191,5 +191,5 @@ instance Print Parser.Abs.Gate where
     Parser.Abs.GTOF -> prPrec i 0 (concatD [doc (showString "TOFFOLI")])
     Parser.Abs.GSWP -> prPrec i 0 (concatD [doc (showString "SWAP")])
     Parser.Abs.GFRDK -> prPrec i 0 (concatD [doc (showString "FREDKIN")])
-    Parser.Abs.GGate gateident -> prPrec i 0 (concatD [prt 0 gateident])
+    Parser.Abs.GIdent gateident -> prPrec i 0 (concatD [prt 0 gateident])
 

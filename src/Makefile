@@ -20,7 +20,7 @@ Parser/ErrM.hs Parser/Lex.x Parser/Print.hs Parser/Par.y Parser/Test.hs : Parser
 	alex --ghc $<
 
 Parser/Test : Parser/Test.hs Parser/ErrM.hs Parser/Lex.hs Parser/Par.hs Parser/Print.hs
-	ghc --make $< -o $@
+	stack ghc -- --make $< -o $@
 
 # Rules for cleaning generated files.
 

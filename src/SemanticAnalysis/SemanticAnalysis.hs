@@ -16,21 +16,15 @@ data SemanticError
   | TooManyArguments String
 
 instance Show SemanticError where
-  show (FunNameMismatch e) = "FunNameMismatch: Mismatchig names in function declaration and definition for " ++ e
-  show NoMainFunction = "NoMainFunction: No main function has been declared"
-  show (DuplicateFunction e) = "DuplicateFunction: Duplicate function declarations for " ++ e
-  show (UnknownGate e) = "UnknownGate: Gates not recognized: " ++ e
-  show (TooManyArguments e) = "TooManyArguments: " ++ e
-  show (InvalidBit e) = "InvalidBit: Expected value of bits to be 0 or 1 but got " ++ e
+  show (FunNameMismatch e) = "Name mismatch in function " ++ e
+  show NoMainFunction = "No main function has been declared"
+  show (DuplicateFunction e) = "Duplicate definitions of function " ++ e
+  show (UnknownGate e) = "Gate not recognized '" ++ e ++ "'"
+  show (TooManyArguments e) = "Incorrect number of arguments in function " ++ e
+  show (InvalidBit e) = "Expected 0 or 1, got " ++ e
 
 runAnalysis :: Program -> Either SemanticError ()
-runAnalysis (PDef fs) = do 
-  mainDefined fs
-  funNameMatch fs
-  dupFun fs
-  unknownGate fs
-  onlyBits fs
-  correctNumberOfArgs fs
+runAnalysis (PDef fs) = mapM_ ($ fs) [mainDefined, funNameMatch, dupFun, unknownGate, onlyBits, correctNumberOfArgs] 
 
 -- | Checks if main function is defined
 mainDefined :: [FunDec] -> Either SemanticError ()
@@ -61,7 +55,7 @@ unknownGate :: [FunDec] -> Either SemanticError ()
 unknownGate fs = checkSemantics fs isValid genErr errorMsg
   where isValid (FDecl _ _ (FDef _ _ t)) = length (unknownGates t []) == 0
         unknownGates :: Term -> [String] -> [String]
-        unknownGates (TGate (GGate (GateIdent g))) gs
+        unknownGates (TGate (GIdent (GateIdent g))) gs
           | init g == "QFT" && length g == 4 && (digitToInt $ last g) <= 5 = gs
           | init g == "QFTI" && length g == 5 && (digitToInt $ last g) <= 5 = gs
           | takeWhile isLetter g == "CR" && all isDigit (dropWhile isLetter g) = gs 
