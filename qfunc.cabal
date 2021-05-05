@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 84c92a824cfa7585b2a8058be893851468fd7ef588d9dd554d22ed543135fb54
+-- hash: 68edb4fd9c07aec9f07005a95483488bb90c914c840d36615f1b9eb99519d7bb
 
 name:           qfunc
-version:        0.1.0.0
+version:        0.9.1
 description:    Please see the README on GitHub at <https://github.com/NicklasBoto/qfunc#readme>
 homepage:       https://github.com/NicklasBoto/funQ#readme
 bug-reports:    https://github.com/NicklasBoto/funQ/issues

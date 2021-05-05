@@ -11,7 +11,7 @@ import qualified Interpreter.Run as Run
 import qualified Repl
 
 desc :: Description
-desc = "Wilkommen aus die quanteninterpretator"
+desc = "funQ - Functional Quantum Programming"
 
 -- | Parses an optional input file.
 parseInput :: Parser (Maybe (String, Maybe Int, Bool))
