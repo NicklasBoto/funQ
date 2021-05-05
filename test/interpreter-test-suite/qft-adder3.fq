@@ -20,16 +20,19 @@ intA : QBit >< QBit >< QBit >< QBit >< QBit
 intA = (overflow, carry1, new 0, new 0, new 1)
 
 intB : !(Bit >< Bit >< Bit)
-intB = (0,0,1)
+intB = (0,1,1)
 
 intN : !(Bit >< Bit >< Bit)
 intN = (1,1,0)
 
 intX : QBit >< QBit >< QBit
-intX = (new 1, new 1, new 1)
+intX = (new 0, new 1, new 1)
 
 sll : !(!(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit))
 sll b = let (b2,b1,b0) = b in (b1,b0,0)
+
+main : Bit >< Bit >< Bit >< Bit >< Bit >< Bit
+main = meas6 (cMult3Mod intA intB intN intX)
 
 cMult3Mod : (QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
 cMult3Mod inA inB inN inX = let (v,c,a2,a1,a0) = inA in
@@ -52,29 +55,35 @@ cMult3Mod inA inB inN inX = let (v,c,a2,a1,a0) = inA in
 --                          let (a22,v3) = CNOT (a21,v2) in
 --                          let (v4,x2,c12,a23,a12,a02) = ccAdd3 (CCR4,CCR2,CCR1) (v3,x1,c11,a22,a11,a01) inN in
 --                          (v4,x2,c12,a23,a12,a02)
-main : Bit >< Bit >< Bit >< Bit >< Bit >< Bit
-main = meas6 (cMult3Mod intA intB intN intX)
+ --let (x,v,c,a2,a1,a0) = intA in
+--         let (a20,a10,a00) = swap3 (QFT3 (c,a2,a1,a0)) in
+--         let (x1,v1,c1,a21,a11,a01) = ccAdd3 (CCR4, CCR2, CCR1) (x,v,c,a20,a10,a00) intB in
+--         let (x2,v2,c2,a22,a12,a02) = cSub3 (x1,v1,c1,a21,a11,a01) intN in
+--         let (a220,a120,a020) = QFTI3 (swap3 (a22,a12,a02)) in
+--         let (a23,v3) = CNOT (a220,v2) in
+--         -- let (v4,c3) = SWAP (v3,c2) in
+--         meas6 (x2,v3,c2,a23,a120,a020)
 
 cAdd3Mod1 : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
 cAdd3Mod1 inA inB inN = let (x0, v,c,a2,a1,a0) = inA in
                         let (a20,a10,a00) = swap3 (QFT3 (a2,a1,a0)) in
-                        let (x,v,c1,a21,a11,a01) = ccAdd3 (CCR4,CCR2,CCR1) (new 1,v,c,a20,a10,a00) inB in
-                        let (x1,v1,c2,a22,a12,a02) = cSub3 (x,v,c1,a21,a11,a01) inN in
+                        let (x,v1,c1,a21,a11,a01) = ccAdd3 (CCR4,CCR2,CCR1) (x0,v,c,a20,a10,a00) inB in
+                        let (x1,v2,c2,a22,a12,a02) = cSub3 (x,v1,c1,a21,a11,a01) inN in
                         let (a220,a120,a020) = QFTI3 (swap3 (a22,a12,a02)) in
-                        let (a23,v2) = CNOT (a220,v1) in
-                        let (v3,c3) = SWAP (v2,c2) in
+                        let (a23,v3) = CNOT (a220,v2) in
+                        let (v4,c3) = SWAP (v3,c2) in
                         let (a230,a130,a030) = swap3 (QFT3 (a23,a120,a020)) in
-                        let (x2,v4,c4,a24,a14,a04) = cAdd3 (x1,v3,c3,a230,a130,a030) inN in
-                        let (v5,c5) = SWAP (v4,c4) in
+                        let (x2,v5,c4,a24,a14,a04) = cAdd3 (x1,v4,c3,a230,a130,a030) inN in
+                        let (v6,c5) = SWAP (v5,c4) in
 
-                        let (x3,v6,c6,a25,a15,a05) = ccAdd3 (CCRI4,CCRI2,CCRI1) (x2,v5,c5,a24,a14,a04) inB in
+                        let (x3,v7,c6,a25,a15,a05) = ccAdd3 (CCRI4,CCRI2,CCRI1) (x2,v6,c5,a24,a14,a04) inB in
                         let (a250,a150,a050) = QFTI3 (swap3 (a25,a15,a05)) in
-                        let (a251,v7) = CNOT (X a250, v6) in
-                        let (a252,v8) = (X a251,v7) in
+                        let (a251,v8) = CNOT (X a250, v7) in
+                        let (a252,v9) = (X a251,v8) in
                         let (a253,a153,a053) = swap3 (QFT3 (a252,a150,a050)) in
-                        let (x4,v9,c7,a26,a16,a06) = ccAdd3 (CCR4,CCR2,CCR1) (x3,v8,c6,a253,a153,a053) inB in
+                        let (x4,v10,c7,a26,a16,a06) = ccAdd3 (CCR4,CCR2,CCR1) (x3,v9,c6,a253,a153,a053) inB in
                         let (a260,a160,a060) = QFTI3 (swap3 (a26,a16,a06)) in
-                        (x4,v9,c7,a260,a160,a060) 
+                        (x4,v10,c7,a260,a160,a060) 
 
                         -- let (x0,v0,c10,a20,a10,a00) = inA in
                         -- let (a201,a101,a001) = swap3 (QFT3 (a20,a10,a00)) in
