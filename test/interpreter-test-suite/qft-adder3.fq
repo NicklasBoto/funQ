@@ -18,7 +18,7 @@ intB : !(Bit >< Bit >< Bit)
 intB = (0,0,1)
 
 intBI : !(Bit >< Bit >< Bit)
-intBI = (1,1,1)
+intBI = (1,0,0)
 
 intN : !(Bit >< Bit >< Bit)
 intN = (1,1,0)
@@ -29,6 +29,9 @@ intX = (new 0, new 1, new 1)
 sll : !(!(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit))
 sll b = let (b2,b1,b0) = b in (b1,b0,0)
 
+cUa : (QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
+cUa inA inB inN inX = let (x,v,c,a2,a1,a0) = cMul3Mod inA inB inN inX in
+                      let 
 
 main : Bit >< Bit >< Bit >< Bit >< Bit >< Bit
 main = -- meas6 (cAdd3Mod intAadd intB intN )
