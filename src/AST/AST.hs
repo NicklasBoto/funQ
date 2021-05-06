@@ -216,8 +216,8 @@ reverseImTerm env (Gate g)     = P.TGate $ reverseGate g
 reverseImTerm env (Tup l r)    = P.TTup $ P.Tuple (reverseImTerm env l) [reverseImTerm env r] -- FIXME
 reverseImTerm env (App  t1 t2) = P.TApp (reverseImTerm env t1) (reverseImTerm env t2)
 reverseImTerm env (IfEl c t e) = P.TIfEl (reverseImTerm env c) (reverseImTerm env t) (reverseImTerm env e)
-reverseImTerm env (Let eq inn) = P.TLet ((P.LVar . P.Var) $ 'y' : show (env + 1)) 
-                               [(P.LVar . P.Var) $ 'x' : show env] (reverseImTerm env eq) (reverseImTerm (env + 2) inn)
+reverseImTerm env (Let eq inn) = P.TLet ((P.LVar . P.Var) $ 'x' : show env) 
+                               [(P.LVar . P.Var) $ 'x' : show (env+1)] (reverseImTerm env eq) (reverseImTerm (env + 2) inn)
 reverseImTerm env (Abs type' term)  = P.TLamb (P.Lambda "\\") (P.FunVar ('x' : show env)) (reverseType type') (reverseImTerm (env+1) term)
 reverseImTerm env New          = P.TVar (P.Var "new")
 reverseImTerm env Meas         = P.TVar (P.Var "meas")

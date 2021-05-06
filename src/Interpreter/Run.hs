@@ -126,7 +126,7 @@ rundistest :: FilePath -> Int -> IO ()
 rundistest path runs = do
   res <- runExceptT $ rundist path runs
   case res of
-    Left err -> putStrLn $ "*** Exception:, " ++ show err
+    Left err -> putStrLn $ "*** Exception, " ++ show err
     Right r  -> gatherResults r
 
 rundist :: FilePath -> Int -> Run [I.Value]
@@ -184,7 +184,7 @@ runNewInputs path = do
   let ixs = inds file
   res <- runExceptT $ mapM (evalNewInputs ixs file) [0..7]
   case res of
-    Left err -> putStrLn $ "*** Exception:, " ++ show err
+    Left err -> putStrLn $ "*** Exception, " ++ show err
     Right r  -> gatherGenResults [0..7] r
 
 evalNewInputs :: [Int] -> String -> Int ->  Run I.Value
