@@ -7,14 +7,15 @@ carry2 = new 1
 overflow : QBit
 overflow = new 0
 
-intA : QBit >< QBit >< QBit >< QBit >< QBit >< QBit
-intA = (overflow, carry1, new 0, new 0, new 0, new 0)
-
-
 intAadd :  QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit
 intAadd = (new 1,  new 0,  new 1,  new 1,  new 1,  new 0,  new 0)
 
--- cAdd3Mod funkar inte då n-b < 
+
+
+
+intA : QBit >< QBit >< QBit >< QBit >< QBit >< QBit
+intA = (overflow, carry1, new 0, new 0, new 0, new 0)
+
 intB : !(Bit >< Bit >< Bit)
 intB = (0,0,1)
 
@@ -30,28 +31,39 @@ intX = (new 1, new 1, new 1)
 sll : !(!(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit))
 sll b = let (b2,b1,b0) = b in (b1,b0,0)
 
-main : (Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit)
-main = meas9 (cUa2 )
-bUa1 : !(Bit >< Bit >< Bit)
-bUa1 = (0,1,1)
-orderfind : Bit
-orderfind = let (v,c,x2,x1,x0,a3,a2,a1,a0) = cUa2 (new 0, H (new 1), new 0, new 1, new 1, new 1, new 1, new 1, new 0) in
-            let (v1,c1) = (v, meas (H c)) in
-            let (v2,c2) = if c1 then (v1,H (new 0)) else (v1,H (new 0)) in
-
 -- cUa and cUa2 working
 -- next task: try the order finding step, calculate a^n and provide to cUa and cUa2
 
-cUa2 : !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
-cUa2 (v,c,x2,x1,x0,a3,a2,a1,a0) = cMul3ModI (v,c,a3,a2,a1,a0) intBI intN (x2,x1,x0)
+-- to run: intA is added to intB * intX in cMul3Mod (b+a*x mod N), then the intX register swaps with intA
+-- and cMul3ModI (x-a^-1*x mod N) which clears the intA register in order to be ready for the next step
+-- bits of final output:
+--    0 - 3: (should be) zeros
+--    6 - 4: result of intB + intA*intX mod intN
+--    8 - 7: overflow, control
+-- NOTE: intN should not exceed 4, this is a constraint on how high the modulo can be (2^n/2, where
+-- n is the number of counting bits, in this case 3)
+--  
+
+main : (Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit)
+main = meas9 (cUa intA intB intN intX)
 
 cUa : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
 cUa inA inB inN inX = let (x2,x1,x0,v,c,a3,a2,a1,a0)       = cMul3Mod inA inB inN inX in
                       let (c1,x21,x11,x01,a31,a21,a11,a01) = cSwapAll c (a3,a2,a1,a0) (x2,x1,x0) in
                       -- (x2,x1,x0,v,c,a3,a2,a1,a0)
-                      (v,c1,x21,x11,x01,a31,a21,a11,a01)
-                      -- cMul3ModI (c1,v,a31,a21,a11,a01) intBI inN (x21,x11,x01)
+                      -- (v,c1,x21,x11,x01,a31,a21,a11,a01)
+                      cMul3ModI (c1,v,a31,a21,a11,a01) intBI inN (x21,x11,x01)
 
+
+
+-- bUa1 : !(Bit >< Bit >< Bit)
+-- bUa1 = (0,1,1)
+-- orderfind : Bit
+-- orderfind = let (v,c,x2,x1,x0,a3,a2,a1,a0) = cUa2 (new 0, H (new 1), new 0, new 1, new 1, new 1, new 1, new 1, new 0) in
+--             let (v1,c1) = (v, meas (H c)) in
+--             let (v2,c2) = if c1 then (v1,H (new 0)) else (v1,H (new 0)) in
+-- cUa2 : !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
+-- cUa2 (v,c,x2,x1,x0,a3,a2,a1,a0) = cMul3ModI (v,c,a3,a2,a1,a0) intBI intN (x2,x1,x0)
 
 cSwapAll : QBit -o (QBit >< QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
 cSwapAll c inA inX = let (a3,a2,a1,a0) = inA in
@@ -200,10 +212,6 @@ cAdd3 g inA inB = let (x,v,c,a3,a2,a1,a0) = inA in
                 let (c5,a02) = if b1 then g1 (c4,a01) else (c4,a01) in
                 let (c6,a03) = if b0 then g2 (c5,a02)  else (c5,a02)  in
                 (x,v,c6,a3,a21,a12,a03)
-
-
-
-
 
 swap3 : !((QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit))
 swap3 q = let (a2,a1,a0) = q in
