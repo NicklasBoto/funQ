@@ -116,7 +116,7 @@ Term2 :: { Parser.Abs.Term }
 Term2 : Term2 Term3 { Parser.Abs.TApp $1 $2 } | Term3 { $1 }
 
 Term1 :: { Parser.Abs.Term }
-Term1 : 'if' Term2 'then' Term 'else' Term { Parser.Abs.TIfEl $2 $4 $6 }
+Term1 : 'if' Term 'then' Term 'else' Term { Parser.Abs.TIfEl $2 $4 $6 }
       | 'let' '(' LetVar ',' ListLetVar ')' '=' Term 'in' Term { Parser.Abs.TLet $3 $5 $8 $10 }
       | Lambda FunVar Type '.' Term { Parser.Abs.TLamb $1 $2 $3 $5 }
       | Term2 { $1 }

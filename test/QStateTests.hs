@@ -7,13 +7,15 @@ import Test.QuickCheck
 import Test.QuickCheck.Monadic as TM
 import Numeric.LinearAlgebra as LA
 
-runTests :: IO ()
+runTests :: IO Bool
 runTests = do 
     putStrLn "QuickCheck tests qstate size keeps good norm after applying hadamard gate"
-    quickCheck $ prop_hadamard 8
+    b_h <- quickCheckResult $ prop_hadamard 8
 
     putStrLn "QuickCheck tests the norm of generated QStates, of 1 < lengths < n , is one"
-    quickCheck $ prop_norm 8
+    b_n <- quickCheckResult $ prop_norm 8
+
+    return $ all isSuccess [b_n, b_h]
 
 -- | Checks that the QState of arbitrary size after a hadamard gate is applied keeps a good norm and
 -- that the QState vector only contains two amplitudes at 1/sqrt(2).

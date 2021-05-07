@@ -7,22 +7,24 @@ import Test.QuickCheck
 import Test.QuickCheck.Monadic as TM
 import Numeric.LinearAlgebra as LA
 
-runTests :: IO ()
-runTests = do 
+runTests :: IO Bool
+runTests = do
     putStrLn "QuickCheck tests unmodified QState sums to 1"
-    quickCheck prop_sumOne
+    b_sumOne <- quickCheckResult prop_sumOne
 
     putStrLn "QuickCheck tests sum of QState = 1 after applying gates"
-    mapM_ quickCheck [prop_sum_hadamard, prop_sum_cnot, prop_sum_pauliX, prop_sum_pauliY, prop_sum_pauliZ]
+    b_sumG <- mapM quickCheckResult [prop_sum_hadamard, prop_sum_cnot, prop_sum_pauliX, prop_sum_pauliY, prop_sum_pauliZ]
 
     putStrLn "QuickCheck tests that matrices are unitary"
-    quickCheck $ prop_unitary hmat
+    b_unit <- quickCheckResult $ prop_unitary hmat
 
     a <- test_rev_gates
-    putStrLn $ "Tests reversibility of gates on single qubits: " ++ show a
-    
+    putStrLn $ "Tests reversibility of gates on single qubits: " ++ show a
+
     b <- test_rev_cnot
     putStrLn $ "Tests reversibility of cnot with two qubits: " ++ show b
+
+    return $ all isSuccess $ b_sumOne : b_unit : b_sumG
 
 
 -- | Checks that the given matrix is unitary
@@ -84,18 +86,18 @@ test_rev g = TestCore.run $ do
     return $ all (<0.0000001) cmp -- cannot be checked directly due to rounding errors
 
 -- All other gates than hadamard could be tested with (state a == state b)
-    
+
 -- | Applies the reversibility tests to all gates that matches type signature of QBit -> QM QBit.
 test_rev_gates :: IO Bool
 test_rev_gates = liftM and $ mapM test_rev gates
     where gates = [TestCore.phase, hadamard, pauliX, pauliY, pauliZ, phasePi8, identity]
 
 -- | Test reversibility of cnot 
-test_rev_cnot :: IO Bool 
+test_rev_cnot :: IO Bool
 test_rev_cnot = TestCore.run $ do
     q1 <- new 1
     q2 <- new 0
-    b <- get 
-    cnot (q1,q2) >>= cnot 
-    a <- get 
-    return (state a == state b) 
+    b <- get
+    cnot (q1,q2) >>= cnot
+    a <- get
+    return (state a == state b)

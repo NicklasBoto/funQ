@@ -39,7 +39,7 @@ Grammar
 	Term3 -> '(' Term ')'                              (30)
 	Term2 -> Term2 Term3                               (31)
 	Term2 -> Term3                                     (32)
-	Term1 -> 'if' Term2 'then' Term 'else' Term        (33)
+	Term1 -> 'if' Term 'then' Term 'else' Term         (33)
 	Term1 -> 'let' '(' LetVar ',' ListLetVar ')' '=' Term 'in' Term   (34)
 	Term1 -> Lambda FunVar Type '.' Term               (35)
 	Term1 -> Term2                                     (36)
@@ -1273,6 +1273,7 @@ State 62
 	'Z'            shift, and enter state 33
 	'else'         reduce using rule 36
 	'in'           reduce using rule 36
+	'then'         reduce using rule 36
 	L_integ        shift, and enter state 20
 	L_FunVar       reduce using rule 36
 	L_Var          shift, and enter state 48
@@ -1295,6 +1296,7 @@ State 63
 	','            reduce using rule 37
 	'else'         reduce using rule 37
 	'in'           reduce using rule 37
+	'then'         reduce using rule 37
 	L_FunVar       reduce using rule 37
 	%eof           reduce using rule 37
 
@@ -1471,7 +1473,7 @@ State 70
 
 State 71
 
-	Term1 -> 'if' . Term2 'then' Term 'else' Term       (rule 33)
+	Term1 -> 'if' . Term 'then' Term 'else' Term        (rule 33)
 
 	'('            shift, and enter state 69
 	'*'            shift, and enter state 70
@@ -1486,15 +1488,21 @@ State 71
 	'X'            shift, and enter state 31
 	'Y'            shift, and enter state 32
 	'Z'            shift, and enter state 33
+	'if'           shift, and enter state 71
+	'let'          shift, and enter state 72
 	L_integ        shift, and enter state 20
 	L_Var          shift, and enter state 48
 	L_GateIdent    shift, and enter state 34
+	L_Lambda       shift, and enter state 73
 
 	Integer        goto state 57
 	Var            goto state 59
 	GateIdent      goto state 21
+	Lambda         goto state 60
 	Term3          goto state 61
-	Term2          goto state 90
+	Term2          goto state 62
+	Term1          goto state 63
+	Term           goto state 90
 	Tup            goto state 65
 	Bit            goto state 67
 	Gate           goto state 68
@@ -1712,34 +1720,10 @@ State 89
 
 State 90
 
-	Term2 -> Term2 . Term3                              (rule 31)
-	Term1 -> 'if' Term2 . 'then' Term 'else' Term       (rule 33)
+	Term1 -> 'if' Term . 'then' Term 'else' Term        (rule 33)
 
-	'('            shift, and enter state 69
-	'*'            shift, and enter state 70
-	'CNOT'         shift, and enter state 23
-	'FREDKIN'      shift, and enter state 24
-	'H'            shift, and enter state 25
-	'I'            shift, and enter state 26
-	'S'            shift, and enter state 27
-	'SWAP'         shift, and enter state 28
-	'T'            shift, and enter state 29
-	'TOFFOLI'      shift, and enter state 30
-	'X'            shift, and enter state 31
-	'Y'            shift, and enter state 32
-	'Z'            shift, and enter state 33
 	'then'         shift, and enter state 111
-	L_integ        shift, and enter state 20
-	L_Var          shift, and enter state 48
-	L_GateIdent    shift, and enter state 34
 
-	Integer        goto state 57
-	Var            goto state 59
-	GateIdent      goto state 21
-	Term3          goto state 86
-	Tup            goto state 65
-	Bit            goto state 67
-	Gate           goto state 68
 
 State 91
 
@@ -2036,7 +2020,7 @@ State 110
 
 State 111
 
-	Term1 -> 'if' Term2 'then' . Term 'else' Term       (rule 33)
+	Term1 -> 'if' Term 'then' . Term 'else' Term        (rule 33)
 
 	'('            shift, and enter state 69
 	'*'            shift, and enter state 70
@@ -2097,7 +2081,7 @@ State 114
 
 State 115
 
-	Term1 -> 'if' Term2 'then' Term . 'else' Term       (rule 33)
+	Term1 -> 'if' Term 'then' Term . 'else' Term        (rule 33)
 
 	'else'         shift, and enter state 121
 
@@ -2161,6 +2145,7 @@ State 119
 	','            reduce using rule 35
 	'else'         reduce using rule 35
 	'in'           reduce using rule 35
+	'then'         reduce using rule 35
 	L_FunVar       reduce using rule 35
 	%eof           reduce using rule 35
 
@@ -2196,7 +2181,7 @@ State 120
 
 State 121
 
-	Term1 -> 'if' Term2 'then' Term 'else' . Term       (rule 33)
+	Term1 -> 'if' Term 'then' Term 'else' . Term        (rule 33)
 
 	'('            shift, and enter state 69
 	'*'            shift, and enter state 70
@@ -2246,12 +2231,13 @@ State 123
 
 State 124
 
-	Term1 -> 'if' Term2 'then' Term 'else' Term .       (rule 33)
+	Term1 -> 'if' Term 'then' Term 'else' Term .        (rule 33)
 
 	')'            reduce using rule 33
 	','            reduce using rule 33
 	'else'         reduce using rule 33
 	'in'           reduce using rule 33
+	'then'         reduce using rule 33
 	L_FunVar       reduce using rule 33
 	%eof           reduce using rule 33
 
@@ -2343,6 +2329,7 @@ State 128
 	','            reduce using rule 34
 	'else'         reduce using rule 34
 	'in'           reduce using rule 34
+	'then'         reduce using rule 34
 	L_FunVar       reduce using rule 34
 	%eof           reduce using rule 34
 

@@ -49,7 +49,7 @@ The symbols used in Parser are the following:
   | -o |  |  |
 
 ===Comments===
-Single-line comments begin with --.There are no multiple-line comments in the grammar.
+Single-line comments begin with --.Multiple-line comments are  enclosed with {- and -}.
 
 ==The syntactic structure of Parser==
 Non-terminals are enclosed between < and >.
