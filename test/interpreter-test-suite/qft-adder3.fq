@@ -46,7 +46,7 @@ sll b = let (b2,b1,b0) = b in (b1,b0,0)
 
 -- main : (Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit)
 main : (Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit)
-main = meas9 cUa intA intB intN intX
+main = meas9 (cUa intA intB intN intX)
 -- meas9 (cMul3ModI (new 0, new 1, new 1, new 1, new 1, new 0) (0,0,1) (1,0,0) (new 0, new 1, new 1)) 
 -- meas9 (cUa intA intB intN intX) 
 -- meas9 (cMul3Mod intA intB intN intX)
@@ -58,7 +58,7 @@ cUa : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
    -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
 cUa inA inB inN inX = let (x2,x1,x0,v,c,a3,a2,a1,a0)       = cMul3Mod inA inB inN inX in
                       let (c1,x21,x11,x01,a31,a21,a11,a01) = cSwap c (a3,a2,a1,a0) (x2,x1,x0) in
-                      mul3ModI (x21,x11,x01,v,c1,a31,a21,a11,a01)
+                      cMul3ModI (v,c1,a31,a21,a11,a01) inB inN (x21,x11,x01)
 
 cUa1 : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
    -o !(Bit >< Bit >< Bit) 
@@ -90,10 +90,10 @@ cUa2 : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
 cUa2 = let (x2,x1,x0,v,c,a3,a2,a1,a0) = (new 0, new 1, new 1, new 0, new 1, new 1, new 1, new 1, new 0) in
           cMul3ModI (v,c,a3,a2,a1,a0) intBI intN (x2,x1,x0)
 
-cSwap : QBit 
+cSwap : !(QBit 
     -o (QBit >< QBit >< QBit >< QBit) 
     -o (QBit >< QBit >< QBit) 
-    -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
+    -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
 cSwap c inA inX = let (a3,a2,a1,a0) = inA in
                      let (x2,x1,x0) = inX in
                      let (c1,a31,x21)  = FREDKIN (c,a3,x2) in
