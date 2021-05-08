@@ -26,7 +26,7 @@ intN : !(Bit >< Bit >< Bit)
 intN = (1,0,0)
 
 intX : QBit >< QBit >< QBit
-intX = (new 0, new 0, new 1)
+intX = (new 1, new 1, new 1)
 
 sll : !(!(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit))
 sll b = let (b2,b1,b0) = b in (b1,b0,0)
@@ -47,6 +47,9 @@ sll b = let (b2,b1,b0) = b in (b1,b0,0)
 -- main : (Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit)
 main : (Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit)
 main = meas9 (cUa intA intB intN intX)
+--meas9 cUa2
+-- meas7 (cAdd3Mod (new 0,new 0,new 1,new 0, new 0, new 1, new 0) intB intN)
+       --meas9 (cUa intA intB intN intX)
 -- meas9 (cMul3ModI (new 0, new 1, new 1, new 1, new 1, new 0) (0,0,1) (1,0,0) (new 0, new 1, new 1)) 
 -- meas9 (cUa intA intB intN intX) 
 -- meas9 (cMul3Mod intA intB intN intX)
@@ -185,13 +188,13 @@ subBaddN : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
           -o !(Bit >< Bit >< Bit) 
           -o !(Bit >< Bit >< Bit) 
           -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
-subBaddN q b n = cAdd (cSub q b) n
+subBaddN q b n = cAdd (ccSub q b) n
 
 addBsubN : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
           -o !(Bit >< Bit >< Bit) 
           -o !(Bit >< Bit >< Bit) 
           -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
-addBsubN q b n = cSub (cAdd q b) n
+addBsubN q b n = cSub (ccAdd q b) n
 
 ccAdd : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
        -o !(Bit >< Bit >< Bit) 
