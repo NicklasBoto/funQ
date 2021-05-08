@@ -7,8 +7,8 @@ carry2 = new 1
 overflow : QBit
 overflow = new 0
 
-intAadd :  QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit
-intAadd = (new 1,  new 0,  new 1,  new 1,  new 1,  new 0,  new 0)
+intA' :  QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit
+intA' = (new 1,  new 0,  new 1,  new 0,  new 0,  new 1,  new 0)
 
 
 
@@ -40,19 +40,34 @@ sll b = let (b2,b1,b0) = b in (b1,b0,0)
 --    0 - 3: (should be) zeros
 --    6 - 4: result of intB + intA*intX mod intN
 --    8 - 7: overflow, control
--- NOTE: intN should not exceed 4, this is a constraint on how high the modulo can be (2^n/2, where
+-- NOTE: intN should not exceed 4, this is a constraint on how high the modulo can be ((2^n)/2, where
 -- n is the number of counting bits, in this case 3)
 --  
 
+-- main : (Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit)
 main : (Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit)
-main = meas9 (cUa intA intB intN intX)
-
-cUa : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
+main = meas9 cUa2
+-- meas9 (cMul3ModI (new 0, new 1, new 1, new 1, new 1, new 0) (0,0,1) (1,0,0) (new 0, new 1, new 1)) 
+-- meas9 (cUa intA intB intN intX) 
+-- meas9 (cMul3Mod intA intB intN intX)
+-- meas7 (cSub3Mod intA' intB intN)
+cUa : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
+   -o !(Bit >< Bit >< Bit) 
+   -o !(Bit >< Bit >< Bit) 
+   -o (QBit >< QBit >< QBit) 
+   -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
 cUa inA inB inN inX = let (x2,x1,x0,v,c,a3,a2,a1,a0)       = cMul3Mod inA inB inN inX in
-                      let (c1,x21,x11,x01,a31,a21,a11,a01) = cSwapAll c (a3,a2,a1,a0) (x2,x1,x0) in
-                      -- (x2,x1,x0,v,c,a3,a2,a1,a0)
-                      -- (v,c1,x21,x11,x01,a31,a21,a11,a01)
-                      cMul3ModI (c1,v,a31,a21,a11,a01) intBI inN (x21,x11,x01)
+                      let (c1,x21,x11,x01,a31,a21,a11,a01) = cSwap c (a3,a2,a1,a0) (x2,x1,x0) in
+                      mul3ModI (x21,x11,x01,v,c1,a31,a21,a11,a01)
+
+cUa1 : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
+   -o !(Bit >< Bit >< Bit) 
+   -o !(Bit >< Bit >< Bit) 
+   -o (QBit >< QBit >< QBit) 
+   -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
+cUa1 inA inB inN inX = let (x2,x1,x0,v,c,a3,a2,a1,a0)       = cMul3Mod inA inB inN inX in
+                      let (c1,x21,x11,x01,a31,a21,a11,a01) = cSwap c (a3,a2,a1,a0) (x2,x1,x0) in
+                      (x21,x11,x01,v,c1,a31,a21,a11,a01)
 
 
 
@@ -62,18 +77,26 @@ cUa inA inB inN inX = let (x2,x1,x0,v,c,a3,a2,a1,a0)       = cMul3Mod inA inB in
 -- orderfind = let (v,c,x2,x1,x0,a3,a2,a1,a0) = cUa2 (new 0, H (new 1), new 0, new 1, new 1, new 1, new 1, new 1, new 0) in
 --             let (v1,c1) = (v, meas (H c)) in
 --             let (v2,c2) = if c1 then (v1,H (new 0)) else (v1,H (new 0)) in
--- cUa2 : !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
--- cUa2 (v,c,x2,x1,x0,a3,a2,a1,a0) = cMul3ModI (v,c,a3,a2,a1,a0) intBI intN (x2,x1,x0)
+cUa2 : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
+cUa2 = let (x2,x1,x0,v,c,a3,a2,a1,a0) = (new 0, new 1, new 1, new 0, new 1, new 1, new 1, new 1, new 0) in
+          cMul3ModI (v,c,a3,a2,a1,a0) intBI intN (x2,x1,x0)
 
-cSwapAll : QBit -o (QBit >< QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
-cSwapAll c inA inX = let (a3,a2,a1,a0) = inA in
+cSwap : QBit 
+    -o (QBit >< QBit >< QBit >< QBit) 
+    -o (QBit >< QBit >< QBit) 
+    -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
+cSwap c inA inX = let (a3,a2,a1,a0) = inA in
                      let (x2,x1,x0) = inX in
                      let (c1,a31,x21)  = FREDKIN (c,a3,x2) in
                      let (c2,a21,x11)  = FREDKIN (c1,a2,x1) in
                      let (c3,a11,x01)  = FREDKIN (c2,a1,x0) in
                      (c3,x21,x11,x01,a31,a21,a11,a0)
 
-cMul3ModI : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
+cMul3ModI : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
+           -o !(Bit >< Bit >< Bit) 
+           -o !(Bit >< Bit >< Bit) 
+           -o (QBit >< QBit >< QBit) 
+           -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
 cMul3ModI inA inB inN inX = let (v,c,a3,a2,a1,a0)       = inA in
                             let (x2,x1,x0)              = inX in
                             let (x01,v1,c1,a31,a21,a11,a01) = cSub3Mod (x0,v,c,a3,a2,a1,a0) inB inN in
@@ -84,9 +107,12 @@ cMul3ModI inA inB inN inX = let (v,c,a3,a2,a1,a0)       = inA in
                             let (b21,b11,b01)           = sll (b2,b1,b0) in
                             let (x21,v5,c5,a33,a23,a13,a03) = cSub3Mod (x2,new 0,c4,a32,a22,a12,a02) (b21,b11,b01) inN in
                             (x21,x11,x01,v5,c5,a33,a23,a13,a03)
-                            -- (x11,v3,c3,a32,a22,a12,a02)
 
-cMul3Mod : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
+cMul3Mod : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
+          -o !(Bit >< Bit >< Bit) 
+          -o !(Bit >< Bit >< Bit) 
+          -o (QBit >< QBit >< QBit) 
+          -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
 cMul3Mod inA inB inN inX = let (v,c,a3,a2,a1,a0)           = inA in
                            let (x2,x1,x0)                  = inX in
                            let (x01,v1,c1,a31,a21,a11,a01) = cAdd3Mod (x0,v,c,a3,a2,a1,a0) inB inN in
@@ -99,7 +125,10 @@ cMul3Mod inA inB inN inX = let (v,c,a3,a2,a1,a0)           = inA in
                            (x21,x11,x01,v5,c5,a33,a23,a13,a03)
 
 
-cAdd3Mod : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
+cAdd3Mod : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
+          -o !(Bit >< Bit >< Bit) 
+          -o !(Bit >< Bit >< Bit) 
+          -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
 cAdd3Mod inA inB inN = let (x,v,c,a3,a2,a1,a0)            = inA in
                        let (a30,a20,a10,a00)              = QFT4      (a3,a2,a1,a0) in
                        let (x1,v1,c1,a31,a21,a11,a01)     = addBsubN  (x,v,c,a30,a20,a10,a00) inB inN in
@@ -111,7 +140,10 @@ cAdd3Mod inA inB inN = let (x,v,c,a3,a2,a1,a0)            = inA in
                        let (v6,c4)                        = SWAP      (v5,c3) in
                        restoreAnc (x2,v6,c4,a33,a23,a13,a03) inB
 
-cSub3Mod : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
+cSub3Mod : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
+          -o !(Bit >< Bit >< Bit) 
+          -o !(Bit >< Bit >< Bit) 
+          -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
 cSub3Mod inA inB inN = let (x,v,c,a3,a2,a1,a0)            = inA in
                        let (a30,a20,a10,a00)              = QFT4      (a3,a2,a1,a0) in
                        let (x1,v1,c1,a31,a21,a11,a01)     = subBaddN  (x,v,c,a30,a20,a10,a00) inB inN in
@@ -125,7 +157,9 @@ cSub3Mod inA inB inN = let (x,v,c,a3,a2,a1,a0)            = inA in
                       
 
       
-restoreAnc : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
+restoreAnc : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
+            -o !(Bit >< Bit >< Bit) 
+            -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
 restoreAnc inA inB =   let (x3,v8,c5,a34,a24,a14,a04)     = ccSub     inA inB in
                        let (a340,a240,a140,a040)          = QFTI4     (a34,a24,a14,a04) in
                        let (a341,v9)                      = CNOT      (X a340, v8) in
@@ -135,55 +169,41 @@ restoreAnc inA inB =   let (x3,v8,c5,a34,a24,a14,a04)     = ccSub     inA inB in
                        let (a350,a250,a150,a050)          = QFTI4     (a35,a25,a15,a05) in
                        (x4,v11,c5,a350,a250,a150,a050)
 
-reverseIfZero : (QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< !(Bit >< Bit >< Bit))
-reverseIfZero q n = let (a2,a1,a0)       = not3q q in
-                  let (t4,t3,t2,t1,t0) = toff4 (new 0, a2, new 0, a1, a0) in
-                  let (t4b,t2b)          = meas2 (t4,t2) in
-                  if t4b then 
-                    let (n2,n1,n0) = reverse n in (X t3,X t1,X t0,n2,n1,n0) 
-                    else let (n2,n1,n0) = n in (X t3,X t1,X t0,n2,n1,n0)
-
-reverse : !(!(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit))
-reverse b = let (b2,b1,b0) = b in (b0,b1,b2)
-
-toff4 : !((QBit >< QBit >< QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit >< QBit))
-toff4 q = let (a4,a3,a2,a1,a0) = q in
-          let (a01,a11,a21)    = TOFFOLI (a0,a1,a2) in
-          let (a22,a31,a41)    = TOFFOLI (a21,a3,a4) in
-          (a41,a31,a22,a11,a01)
-
-not3b : !(!(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit))
-not3b q = let (a,b,c) = q in 
-          let (a1,b1) = (if a then 0 else a, if b then 0 else b) in
-          let (b2,c1) = (b1, if c then 0 else c) in
-          (a1,b2,c1)
-not3q : !((QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit))
-not3q q = let (a,b,c) = q in (X a, X b, X c)
-
-subBaddN : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
+subBaddN : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
+          -o !(Bit >< Bit >< Bit) 
+          -o !(Bit >< Bit >< Bit) 
+          -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
 subBaddN q b n = cAdd (cSub q b) n
-addBsubN : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
+
+addBsubN : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
+          -o !(Bit >< Bit >< Bit) 
+          -o !(Bit >< Bit >< Bit) 
+          -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
 addBsubN q b n = cSub (cAdd q b) n
 
-qft4 : !((QBit >< QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit))
-qft4 q = swap4 (QFT4 (q))
-
-qfti4 : !((QBit >< QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit))
-qfti4 q =  (QFTI4 (swap4 q))
-
-ccAdd : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
+ccAdd : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
+       -o !(Bit >< Bit >< Bit) 
+       -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
 ccAdd q b = ccAdd3 (CCR4, CCR2, CCR1) q b
 
-cAdd : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
+cAdd : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
+      -o !(Bit >< Bit >< Bit) 
+      -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
 cAdd q b = cAdd3 (CR4, CR2, CR1) q b
 
-ccSub : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
+ccSub : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
+       -o !(Bit >< Bit >< Bit) 
+       -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
 ccSub q b = ccAdd3 (CCRI4, CCRI2, CCRI1) q b
 
-cSub : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) -o !(Bit >< Bit >< Bit) -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
+cSub : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
+      -o !(Bit >< Bit >< Bit) 
+      -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
 cSub q b = cAdd3 (CRI4, CRI2, CRI1) q ( b)
 
-ccAdd3 : !((!((QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)) >< !((QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)) >< !((QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit))) 
+ccAdd3 : !((!((QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit))
+         >< !((QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit)) 
+         >< !((QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit))) 
            -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
            -o !(Bit >< Bit >< Bit) 
            -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit))
@@ -212,17 +232,6 @@ cAdd3 g inA inB = let (x,v,c,a3,a2,a1,a0) = inA in
                 let (c5,a02) = if b1 then g1 (c4,a01) else (c4,a01) in
                 let (c6,a03) = if b0 then g2 (c5,a02)  else (c5,a02)  in
                 (x,v,c6,a3,a21,a12,a03)
-
-swap3 : !((QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit))
-swap3 q = let (a2,a1,a0) = q in
-           let (a21,a01) = SWAP (a2,a0) in
-           (a21,a1,a01)
-
-swap4 : !((QBit >< QBit >< QBit >< QBit) -o (QBit >< QBit >< QBit >< QBit))
-swap4 q = let (a3,a2,a1,a0) = q in
-          let (a21,a11) = SWAP (a2,a1) in
-          let (a31,a01)   = SWAP (a3,a0) in
-          (a31,a21,a11,a01)
 
 meas2 : (QBit >< QBit) -o (Bit >< Bit)
 meas2 q = let (a,b) = q in (meas a,meas b)
