@@ -26,7 +26,7 @@ intN : !(Bit >< Bit >< Bit)
 intN = (1,0,0)
 
 intX : QBit >< QBit >< QBit
-intX = (new 1, new 1, new 1)
+intX = (new 0, new 0, new 1)
 
 sll : !(!(Bit >< Bit >< Bit) -o !(Bit >< Bit >< Bit))
 sll b = let (b2,b1,b0) = b in (b1,b0,0)
@@ -46,7 +46,7 @@ sll b = let (b2,b1,b0) = b in (b1,b0,0)
 
 -- main : (Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit)
 main : (Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit)
-main = meas9 cUa2
+main = meas9 cUa intA intB intN intX
 -- meas9 (cMul3ModI (new 0, new 1, new 1, new 1, new 1, new 0) (0,0,1) (1,0,0) (new 0, new 1, new 1)) 
 -- meas9 (cUa intA intB intN intX) 
 -- meas9 (cMul3Mod intA intB intN intX)
@@ -73,10 +73,19 @@ cUa1 inA inB inN inX = let (x2,x1,x0,v,c,a3,a2,a1,a0)       = cMul3Mod inA inB i
 
 -- bUa1 : !(Bit >< Bit >< Bit)
 -- bUa1 = (0,1,1)
--- orderfind : Bit
--- orderfind = let (v,c,x2,x1,x0,a3,a2,a1,a0) = cUa2 (new 0, H (new 1), new 0, new 1, new 1, new 1, new 1, new 1, new 0) in
+-- orderfind : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
+--          -o !(Bit >< Bit >< Bit) 
+--          -o !(Bit >< Bit >< Bit) 
+--          -o (QBit >< QBit >< QBit) 
+--          -o (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
+-- orderfind inA inB inN inX = let (x2,x1,x0,v,c,a3,a2,a1,a0) = cUa inA inB inN inX in
 --             let (v1,c1) = (v, meas (H c)) in
 --             let (v2,c2) = if c1 then (v1,H (new 0)) else (v1,H (new 0)) in
+--             let (x21,x11,x01,v3,c3,a31,a21,a11,a01) = cUa (v2,c2,a3,a2,a1,a0) inB inN (x2,x1,x0) in
+--             let (v4,c4)                             = (v3, meas (cR T c1 c3)) in
+--             let ()
+
+
 cUa2 : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
 cUa2 = let (x2,x1,x0,v,c,a3,a2,a1,a0) = (new 0, new 1, new 1, new 0, new 1, new 1, new 1, new 1, new 0) in
           cMul3ModI (v,c,a3,a2,a1,a0) intBI intN (x2,x1,x0)
@@ -91,6 +100,9 @@ cSwap c inA inX = let (a3,a2,a1,a0) = inA in
                      let (c2,a21,x11)  = FREDKIN (c1,a2,x1) in
                      let (c3,a11,x01)  = FREDKIN (c2,a1,x0) in
                      (c3,x21,x11,x01,a31,a21,a11,a0)
+
+cR : !((QBit -o QBit) -o Bit -o QBit -o QBit)
+cR g b q = if b then g q else q
 
 cMul3ModI : !((QBit >< QBit >< QBit >< QBit >< QBit >< QBit) 
            -o !(Bit >< Bit >< Bit) 
