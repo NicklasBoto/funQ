@@ -13,5 +13,3 @@ $ stack install
 ```
 
 Make sure you have the install location on your `PATH` (stack will tell you where this is).
-
-![logo](funqy.png)
