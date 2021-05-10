@@ -17,6 +17,7 @@ import Data.Maybe
 import Data.Char
 import Data.Functor
 import Paths_qfunc
+import Text.Read
 import Data.Version
 import Text.Read (readMaybe)
 import AST.AST
@@ -102,9 +103,9 @@ helpCmd arg = case Map.lookup arg helpTexts of
 quitCmd, runCmd, verCmd, typeCmd, envCmd, loadCmd, clearCmd, delCmd :: String -> Repl ()
 quitCmd _ = abort
 runCmd paths  = case words paths of
-    (p:ps) -> if null ps then liftIO . Run.runIO $ p else liftIO $ Run.rundistest p (runs (head ps)) 
+    [p]    -> liftIO $ Run.runIO p
+    [p,r]  -> liftIO $ maybe (putStrLn "invalid arguments") (Run.rundistest p) (readMaybe r)
     _      -> printr "invalid arguments"
-    where runs = read . takeWhile isDigit 
 verCmd  _ = printr $ showVersion version
 typeCmd "" = mapM_ (printr . showType) =<< gets funs
     where showType (Func n t _) = n ++ " : " ++ show t
