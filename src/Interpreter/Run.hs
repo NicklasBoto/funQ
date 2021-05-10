@@ -21,7 +21,7 @@ import qualified Type.TypeChecker as TC
 import Data.List
 import Data.Maybe
 import Control.Monad.State.Lazy
-
+import System.Exit
 import Parser.Abs
 import qualified SemanticAnalysis.SemanticAnalysis as S
 
@@ -54,9 +54,18 @@ instance Show Error where
 
 -- | Runs funq on a file.
 runIO :: FilePath -> IO ()
-runIO path = runExceptT (readfile path >>= run) >>= \case
-  Left  err -> putStrLn $ "*** Exception, " ++ show err
-  Right val -> print val
+runIO path = runExceptT (check path) >>= \case
+  Left   e -> putStrLn ("*** Exception, " ++ show e) >> exitFailure 
+  Right fs -> if "main" `elem` fnames fs
+                then either (\e -> print e >> exitFailure) print =<< runExceptT (eval fs)
+                else putStrLn "*** Note:\nstatic anaylsis passed, no main function defined"
+
+runReplIO :: FilePath -> IO ()
+runReplIO path = runExceptT (check path) >>= \case
+  Left   e -> putStrLn ("*** Exception, " ++ show e)
+  Right fs -> if "main" `elem` fnames fs
+                then either print print =<< runExceptT (eval fs)
+                else putStrLn "*** Note:\nstatic anaylsis passed, no main function defined"
 
 runTerminalIO :: String -> IO ()
 runTerminalIO s = runExceptT (runTerminal s) >>= \case
@@ -65,7 +74,7 @@ runTerminalIO s = runExceptT (runTerminal s) >>= \case
 
 runTerminal :: String -> Run (I.Value, A.Type)
 runTerminal s = do
-  p@[A.Func _ _ term] <- parse s >>= semanticAnalysis >>= convertAST
+  p@[A.Func _ _ term] <- convertAST =<< semanticAnalysis =<< parse s
   typ <- toErr (TC.runCheck . TC.infer) TypeError id term
   val <- eval p
   return (val, typ)
@@ -101,13 +110,12 @@ runProgram p = do
   typecheck p
   val <- eval p
   typ <- case lookup "main" [(n,t) | A.Func n t _ <- p] of
-    Nothing -> throwError $ SemanticError S.NoMainFunction 
     Just  t -> return t
   return (val, typ)
 
 parseExp :: [Char] -> A.Term
 parseExp e = either semanticerror (const (fetchTerm (A.toIm prog))) (S.runAnalysis prog)
-  where prog = either syntaxerror id $ pProgram (myLexer ("main : T main = " ++ e)) 
+  where prog = either syntaxerror id $ pProgram (myLexer ("main : T main = " ++ e))
         fetchTerm [A.Func _ _ t] = t
         syntaxerror   e = errorWithoutStackTrace $ "*** Exception:\n" ++ e
         semanticerror e = errorWithoutStackTrace $ "*** Exception, semantic error:\n" ++ show e
@@ -117,35 +125,53 @@ checkProgram path = runExceptT (readfile path >>= parse >>= semanticAnalysis >>=
   Left  e -> errorWithoutStackTrace $ "*** Exception, " ++ show e
   Right p -> return p
 
+check :: FilePath -> Run A.Program
+check path = readfile path
+         >>= parse
+         >>= semanticAnalysis
+         >>= convertAST
+         >>= typecheck
+
 -- Utils 
+fnames :: A.Program -> [String]
+fnames = map (\(A.Func n _ _) -> n)
+
 toErr :: (i -> Either e v) -> (e -> Error) -> (v -> o) -> i -> Run o
 toErr f l r = ExceptT . return . bimap l r . f
 
 -- | Distribution runs of programs
 rundistest :: FilePath -> Int -> IO ()
-rundistest path runs = do
-  res <- runExceptT $ rundist path runs
-  case res of
-    Left err -> putStrLn $ "*** Exception, " ++ show err
-    Right r  -> gatherResults r
+rundistest path runs = runExceptT (check path) >>= \case
+  Left   e -> putStrLn ("*** Exception, " ++ show e) >> exitFailure 
+  Right fs -> if "main" `elem` fnames fs
+                then either (\e -> print e >> exitFailure) print =<< runExceptT (evaldist fs runs)
+                else putStrLn "*** Note:\nstatic anaylsis passed, no main function defined"
+
+rundistRepl :: FilePath -> Int -> IO ()
+rundistRepl path runs = runExceptT (check path) >>= \case
+  Left   e -> putStrLn ("*** Exception, " ++ show e)
+  Right fs -> if "main" `elem` fnames fs
+                then either print print =<< runExceptT (evaldist fs runs)
+                else putStrLn "*** Note:\nstatic anaylsis passed, no main function defined"
 
 rundist :: FilePath -> Int -> Run [I.Value]
-rundist path runs = do
-  a <- readfile path >>= parse >>= semanticAnalysis >>= convertAST >>= typecheck
-  evaldist a runs
+rundist path runs = readfile path 
+                >>= parse 
+                >>= semanticAnalysis 
+                >>= convertAST 
+                >>= typecheck 
+                >>= flip evaldist runs
 
 evaldist :: A.Program -> Int -> Run [I.Value]
 evaldist prg reps = replicateM reps $ eval prg
 
 gatherResults :: [I.Value] -> IO ()
-gatherResults vals = do
-  let nbits = lengthV $ head vals
-  let res = countUniques $ map readtup vals
-  let stats = stat (length vals) res
-  mapM_ (putStrLn . prettystats nbits) stats
+gatherResults vals = mapM_ (putStrLn . prettystats nbits) stats
     where lengthV :: I.Value -> Int
           lengthV (I.VBit b)   = 1
           lengthV (I.VTup _ v) = 1 + lengthV v
+          nbits = lengthV $ head vals
+          stats = stat (length vals) (countUniques $ map readtup vals)
 
 readtup :: I.Value -> Int
 readtup = toDec . catchBit . reverse . I.fromVTup
@@ -168,7 +194,7 @@ stat len ((a,b):as) = (a, dub b/dub len, b) : stat len as
 prettystats :: Int -> (Int, Double, Int) -> String
 prettystats len (a,b,c) = concatMap show ((fillzeros len . toBin) a) ++ ": " ++ "\t" ++ (show . truncateboi) b ++ "%" ++ "\t" ++ show c
   where truncateboi d = (fromIntegral . truncate) (10000*(d :: Double))/100
-        
+
 toBin :: Int -> [Int]
 toBin 0 = []
 toBin n | n `mod` 2 == 1 = toBin (n `div` 2) ++ [1]

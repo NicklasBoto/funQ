@@ -97,15 +97,15 @@ helpCmd [] = printr $ "Available commands:\n"
            ++ intercalate "\n" [fst x | x <- ops]
            ++ "\n\nFor info on a specific command type :help COMMAND (or :? COMMAND)"
 helpCmd arg = case Map.lookup arg helpTexts of
-    Nothing   -> printr $ "no such command: " ++ arg
+    Nothing   -> printr $ "-- no such command: " ++ arg
     Just help -> printr $ "Usage: " ++ arg ++ " " ++ help
 
 quitCmd, runCmd, verCmd, typeCmd, envCmd, loadCmd, clearCmd, delCmd :: String -> Repl ()
 quitCmd _ = abort
 runCmd paths  = case words paths of
-    [p]    -> liftIO $ Run.runIO p
-    [p,r]  -> liftIO $ maybe (putStrLn "invalid arguments") (Run.rundistest p) (readMaybe r)
-    _      -> printr "invalid arguments"
+    [p]    -> liftIO $ Run.runReplIO p
+    [p,r]  -> liftIO $ maybe (putStrLn "invalid arguments") (Run.rundistRepl p) (readMaybe r)
+    _      -> printr "-- invalid arguments"
 verCmd  _ = printr $ showVersion version
 typeCmd "" = mapM_ (printr . showType) =<< gets funs
     where showType (Func n t _) = n ++ " : " ++ show t
@@ -136,6 +136,7 @@ evalCmd line = case parse parseAssign "" line of
         (mval, mtyp) <- err =<< liftIO (runExceptT (Run.runProgram $ Func "main" typ term : env))
         addLinears term
         printr $ show mval ++ " : " ++ show mtyp
+    Right "main" -> printr "-- cannot define main function in interactive environment"
     Right name -> do
         let termString = tail $ dropWhile (/='=') line
             term = Run.parseExp termString

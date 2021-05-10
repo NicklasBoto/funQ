@@ -1,4 +1,5 @@
 {-# language LambdaCase #-}
+{-# language FlexibleInstances #-}
 
 module Interpreter.Interpreter where
 
@@ -10,18 +11,18 @@ import qualified FunQ as Q
 import Lib.QM (link)
 import qualified AST.AST as A
 
-data ValueError
-    = NotFunction String
-    | Fail String
+newtype ValueError = Fail String
 
 instance Show ValueError where
-    show (NotFunction s) = "Function " ++ s ++ " is not defined"
     show (Fail s) = s
 
 
 type Sig = M.Map String A.Term
 type FunctionValues = M.Map String Value
 type Eval = ExceptT ValueError (StateT FunctionValues Q.QM)
+
+fails :: String -> Eval a
+fails = throwError . Fail 
 
 -- | Environment type, stores bound variables & functions
 data Env = Env {
@@ -65,23 +66,23 @@ createEnv fs = Env { functions = M.fromList [(s, t) | (A.Func s _ t) <- fs],
 getMainTerm :: Env -> Eval A.Term
 getMainTerm env = case M.lookup "main" (functions env) of
     Just term -> return term
-    Nothing   -> throwError $ Fail "Main function not defined"
+    Nothing   -> fails "URK: getMainTerm.Nothing"
 
 -- | Term evaluator
 eval :: Env -> A.Term -> Eval Value
 eval env (A.Bit A.BZero) = return $ VBit 0
 eval env (A.Bit A.BOne)  = return $ VBit 1
 eval env (A.Abs t e)     = return $ VAbs (values env) t e
-eval env (A.Unit)        = return VUnit
+eval env A.Unit          = return VUnit
 eval env (A.Gate g)      = return $ VGate g
-eval env (A.New)         = return VNew
-eval env (A.Meas)        = return VMeas
+eval env A.New           = return VNew
+eval env A.Meas          = return VMeas
 
 eval env (A.Idx j) = if j >= fromIntegral (length (values env)) 
-    then throwError (Fail ("Index" ++ show j ++ "is too large"))
+    then fails "URK: eval.Idx.True"
     else return $ values env !! fromIntegral j
 
-eval env (A.Fun s) = do 
+eval env (A.Fun s) = 
     case M.lookup s (functions env) of
         Just t  -> do
             fs <- get
@@ -91,14 +92,14 @@ eval env (A.Fun s) = do
                     v <- eval env t
                     modify (M.insert s v)
                     return v
-        Nothing -> throwError $ NotFunction s
+        Nothing -> fail "URK: eval.Fun.Nothing"
 
 eval env (A.Tup t1 t2) = do
     v1 <- eval env t1
     v2 <- eval env t2
     return $ VTup v1 v2
 
-eval env (A.App t1 t2) = do
+eval env (A.App t1 t2) =
     case t1 of
         A.Gate g -> case g of
             A.GH      -> runGate  Q.hadamard t2 env
@@ -133,7 +134,7 @@ eval env (A.App t1 t2) = do
                 VNew -> eval env{ values = v2 : values env } (A.App A.New (A.Idx 0))
                 VMeas -> eval env{ values = v2 : values env } (A.App A.Meas (A.Idx 0))
                 (VGate g) -> eval env{ values = v2 : values env } (A.App (A.Gate g) (A.Idx 0))
-                _ -> throwError $ Fail $ "Can't apply " ++ show v1 ++ " with " ++ show v2
+                _ -> fail "URK: eval.App._._"
 
 eval env (A.IfEl t t1 t2) = do
     VBit b <- eval env t
