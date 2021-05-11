@@ -58,14 +58,14 @@ runIO path = runExceptT (check path) >>= \case
   Left   e -> putStrLn ("*** Exception, " ++ show e) >> exitFailure 
   Right fs -> if "main" `elem` fnames fs
                 then either (\e -> print e >> exitFailure) print =<< runExceptT (eval fs)
-                else putStrLn "*** Note:\nstatic anaylsis passed, no main function defined"
+                else putStrLn "*** Note:\nstatic analysis passed, no main function defined"
 
 runReplIO :: FilePath -> IO ()
 runReplIO path = runExceptT (check path) >>= \case
   Left   e -> putStrLn ("*** Exception, " ++ show e)
   Right fs -> if "main" `elem` fnames fs
                 then either print print =<< runExceptT (eval fs)
-                else putStrLn "*** Note:\nstatic anaylsis passed, no main function defined"
+                else putStrLn "*** Note:\nstatic analysis passed, no main function defined"
 
 runTerminalIO :: String -> IO ()
 runTerminalIO s = runExceptT (runTerminal s) >>= \case
@@ -145,14 +145,14 @@ rundistest path runs = runExceptT (check path) >>= \case
   Left   e -> putStrLn ("*** Exception, " ++ show e) >> exitFailure 
   Right fs -> if "main" `elem` fnames fs
                 then either (\e -> print e >> exitFailure) print =<< runExceptT (evaldist fs runs)
-                else putStrLn "*** Note:\nstatic anaylsis passed, no main function defined"
+                else putStrLn "*** Note:\nstatic analysis passed, no main function defined"
 
 rundistRepl :: FilePath -> Int -> IO ()
 rundistRepl path runs = runExceptT (check path) >>= \case
   Left   e -> putStrLn ("*** Exception, " ++ show e)
   Right fs -> if "main" `elem` fnames fs
                 then either print print =<< runExceptT (evaldist fs runs)
-                else putStrLn "*** Note:\nstatic anaylsis passed, no main function defined"
+                else putStrLn "*** Note:\nstatic analysis passed, no main function defined"
 
 rundist :: FilePath -> Int -> Run [I.Value]
 rundist path runs = readfile path 
