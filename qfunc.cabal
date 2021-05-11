@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 674d696fd269ab378b89680196666647a13552035e3a6f0d837aa84278201327
+-- hash: 8fb90093c5845bb269cfb098c194e04efdee78f32611be813244206d8199602e
 
 name:           qfunc
 version:        0.9.1-beta
@@ -49,15 +49,10 @@ library
       Parser.Skel
       SemanticAnalysis.SemanticAnalysis
       Type.TypeChecker
-      CoinFlip
-      Deutsch
-      DeutschJozsa
-      Teleport
   other-modules:
       Paths_qfunc
   hs-source-dirs:
       src
-      examples
   build-depends:
       MonadRandom
     , array

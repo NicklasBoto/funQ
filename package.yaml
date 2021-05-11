@@ -28,8 +28,8 @@ description:         Please see the README on GitHub at <https://github.com/Nick
 dependencies:
 - base >= 4.7 && < 5
 - hmatrix
-- bitvec
 - MonadRandom
+- bitvec
 - mtl
 - numbers
 - array
@@ -47,7 +47,6 @@ library:
       other-modules: Paths_pkg
   source-dirs: 
     - src
-    - examples
 
 executables:
   funq:
