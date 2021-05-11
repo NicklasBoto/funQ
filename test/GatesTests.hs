@@ -13,10 +13,10 @@ runTests = do
     b_sumOne <- quickCheckResult prop_sumOne
 
     putStrLn "QuickCheck tests sum of QState = 1 after applying gates"
-    b_sumG <- mapM quickCheckResult [prop_sum_hadamard, prop_sum_cnot, prop_sum_pauliX, prop_sum_pauliY, prop_sum_pauliZ]
+    b_sumG <- mapM (quickCheckResult . prop_gate_sum) [hadamard, cnot', pauliX, pauliY, pauliZ, urot 1, phasePi8, identity]
 
     putStrLn "QuickCheck tests that matrices are unitary"
-    b_unit <- quickCheckResult $ prop_unitary hmat
+    b_unit <- mapM (quickCheckResult . prop_unitary) [hmat, cmat, phasemat 3, pXmat, pYmat, pZmat, idmat] 
 
     a <- test_rev_gates
     putStrLn $ "Tests reversibility of gates on single qubits: " ++ show a
@@ -24,7 +24,7 @@ runTests = do
     b <- test_rev_cnot
     putStrLn $ "Tests reversibility of cnot with two qubits: " ++ show b
 
-    return $ all isSuccess $ b_sumOne : b_unit : b_sumG
+    return $ all isSuccess $ b_sumOne : b_unit ++ b_sumG
 
 
 -- | Checks that the given matrix is unitary
@@ -56,23 +56,6 @@ prop_gate_sum g q = TM.monadicIO $ do
 -- Basic quickCheck test, that unmodified QState sums to 1
 prop_sumOne :: QState -> Bool
 prop_sumOne (QState v) = norm_2 v == 1
-
--- | Can be run with QuickCheck to test 
-prop_sum_hadamard :: QState -> Property
-prop_sum_hadamard = prop_gate_sum hadamard
-
-prop_sum_cnot :: QState -> Property
-prop_sum_cnot = prop_gate_sum cnot'
-
-prop_sum_pauliX :: QState -> Property
-prop_sum_pauliX = prop_gate_sum pauliX
-
-prop_sum_pauliZ :: QState -> Property
-prop_sum_pauliZ = prop_gate_sum pauliZ
-
--- Currently failing
-prop_sum_pauliY :: QState -> Property
-prop_sum_pauliY = prop_gate_sum pauliY
 
 -- Test reversibility of gates 
 -- | Given a gate that takes a single qbit, applies it and checks reversibility 
