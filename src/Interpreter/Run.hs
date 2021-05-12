@@ -31,7 +31,6 @@ data Error
   = ParseError String
   | SemanticError S.SemanticError
   | TypeError TC.TypeError
-  | ValueError I.ValueError
   | NoSuchFile FilePath
 
 instance Exception Error
@@ -45,9 +44,6 @@ instance Show Error where
 
   show (TypeError (TC.TError where' why)) =
     "type error in function " ++ where' ++ ":\n" ++ show why
-
-  show (ValueError e) =
-    "value error:\n" ++ show e
 
   show (NoSuchFile f) =
     "file not found: " ++ f
@@ -100,7 +96,7 @@ typecheck :: A.Program -> Run A.Program
 typecheck = toErr TC.typecheck TypeError . const <*> id
 
 eval :: A.Program -> Run I.Value
-eval p = liftIO (Q.run $ I.interpret p) >>= ExceptT . return . first ValueError
+eval p = liftIO (Q.run $ I.interpret p)
 
 semanticAnalysis :: Program -> Run Program
 semanticAnalysis = toErr S.runAnalysis SemanticError . const <*> id

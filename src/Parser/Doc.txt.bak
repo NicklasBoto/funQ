@@ -44,9 +44,9 @@ The reserved words used in Parser are the following:
   | ``let`` | ``then`` |  |
 
 The symbols used in Parser are the following:
-  | * | ( | , | )
-  | = | . | ! | ><
-  | -o |  |  |
+  | * | $ | ( | ,
+  | ) | = | . | !
+  | >< | -o |  |
 
 ===Comments===
 Single-line comments begin with --.Multiple-line comments are  enclosed with {- and -}.
@@ -58,15 +58,17 @@ and **eps** (empty rule) belong to the BNF notation.
 All other symbols are terminals.
 
   | //Program// | -> | //[FunDec]//
-  | //Term3// | -> | //Var//
+  | //Term4// | -> | //Var//
   |  |  **|**  | //Bit//
   |  |  **|**  | //Gate//
   |  |  **|**  | //Tup//
   |  |  **|**  | ``*``
   |  |  **|**  | ``(`` //Term// ``)``
+  | //Term3// | -> | //Term3// ``$`` //Term4//
+  |  |  **|**  | //Term4//
   | //Term2// | -> | //Term2// //Term3//
   |  |  **|**  | //Term3//
-  | //Term1// | -> | ``if`` //Term2// ``then`` //Term// ``else`` //Term//
+  | //Term1// | -> | ``if`` //Term// ``then`` //Term// ``else`` //Term//
   |  |  **|**  | ``let`` ``(`` //LetVar// ``,`` //[LetVar]// ``)`` ``=`` //Term// ``in`` //Term//
   |  |  **|**  | //Lambda// //FunVar// //Type// ``.`` //Term//
   |  |  **|**  | //Term2//

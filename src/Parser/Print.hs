@@ -120,6 +120,7 @@ instance Print Parser.Abs.Term where
     Parser.Abs.TGate gate -> prPrec i 3 (concatD [prt 0 gate])
     Parser.Abs.TTup tup -> prPrec i 3 (concatD [prt 0 tup])
     Parser.Abs.TStar -> prPrec i 3 (concatD [doc (showString "*")])
+    Parser.Abs.TDolr term1 term2 -> prPrec i 2 (concatD [prt 2 term1, doc (showString "$"), prt 3 term2])
     Parser.Abs.TApp term1 term2 -> prPrec i 2 (concatD [prt 2 term1, prt 3 term2])
     Parser.Abs.TIfEl term1 term2 term3 -> prPrec i 1 (concatD [doc (showString "if"), prt 2 term1, doc (showString "then"), prt 0 term2, doc (showString "else"), prt 0 term3])
     Parser.Abs.TLet letvar letvars term1 term2 -> prPrec i 1 (concatD [doc (showString "let"), doc (showString "("), prt 0 letvar, doc (showString ","), prt 0 letvars, doc (showString ")"), doc (showString "="), prt 0 term1, doc (showString "in"), prt 0 term2])

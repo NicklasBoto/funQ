@@ -7,9 +7,10 @@ TGate . Term3 ::= Gate                                                   ;
 TTup  . Term3 ::= Tup                                                    ; 
 TStar . Term3 ::= "*"                                                    ;
 TApp  . Term2 ::= Term2 Term3                                            ; 
-TIfEl . Term1 ::= "if" Term "then" Term "else" Term                     ; 
+TIfEl . Term1 ::= "if" Term "then" Term "else" Term                      ; 
 TLet  . Term1 ::= "let" "(" LetVar "," [LetVar] ")" "=" Term "in" Term   ;
 TLamb . Term1 ::= Lambda FunVar Type "." Term                            ; 
+TDolr . Term1 ::= Term2 "$" Term1                                        ;
 coercions Term 3;
 
 LVar . LetVar ::= Var;

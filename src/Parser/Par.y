@@ -52,32 +52,33 @@ import Parser.Lex
 %tokentype {Token}
 %token
   '!' { PT _ (TS _ 1) }
-  '(' { PT _ (TS _ 2) }
-  ')' { PT _ (TS _ 3) }
-  '*' { PT _ (TS _ 4) }
-  ',' { PT _ (TS _ 5) }
-  '-o' { PT _ (TS _ 6) }
-  '.' { PT _ (TS _ 7) }
-  '=' { PT _ (TS _ 8) }
-  '><' { PT _ (TS _ 9) }
-  'Bit' { PT _ (TS _ 10) }
-  'CNOT' { PT _ (TS _ 11) }
-  'FREDKIN' { PT _ (TS _ 12) }
-  'H' { PT _ (TS _ 13) }
-  'I' { PT _ (TS _ 14) }
-  'QBit' { PT _ (TS _ 15) }
-  'S' { PT _ (TS _ 16) }
-  'SWAP' { PT _ (TS _ 17) }
-  'T' { PT _ (TS _ 18) }
-  'TOFFOLI' { PT _ (TS _ 19) }
-  'X' { PT _ (TS _ 20) }
-  'Y' { PT _ (TS _ 21) }
-  'Z' { PT _ (TS _ 22) }
-  'else' { PT _ (TS _ 23) }
-  'if' { PT _ (TS _ 24) }
-  'in' { PT _ (TS _ 25) }
-  'let' { PT _ (TS _ 26) }
-  'then' { PT _ (TS _ 27) }
+  '$' { PT _ (TS _ 2) }
+  '(' { PT _ (TS _ 3) }
+  ')' { PT _ (TS _ 4) }
+  '*' { PT _ (TS _ 5) }
+  ',' { PT _ (TS _ 6) }
+  '-o' { PT _ (TS _ 7) }
+  '.' { PT _ (TS _ 8) }
+  '=' { PT _ (TS _ 9) }
+  '><' { PT _ (TS _ 10) }
+  'Bit' { PT _ (TS _ 11) }
+  'CNOT' { PT _ (TS _ 12) }
+  'FREDKIN' { PT _ (TS _ 13) }
+  'H' { PT _ (TS _ 14) }
+  'I' { PT _ (TS _ 15) }
+  'QBit' { PT _ (TS _ 16) }
+  'S' { PT _ (TS _ 17) }
+  'SWAP' { PT _ (TS _ 18) }
+  'T' { PT _ (TS _ 19) }
+  'TOFFOLI' { PT _ (TS _ 20) }
+  'X' { PT _ (TS _ 21) }
+  'Y' { PT _ (TS _ 22) }
+  'Z' { PT _ (TS _ 23) }
+  'else' { PT _ (TS _ 24) }
+  'if' { PT _ (TS _ 25) }
+  'in' { PT _ (TS _ 26) }
+  'let' { PT _ (TS _ 27) }
+  'then' { PT _ (TS _ 28) }
   L_integ  { PT _ (TI $$) }
   L_FunVar { PT _ (T_FunVar $$) }
   L_Var { PT _ (T_Var $$) }
@@ -119,6 +120,7 @@ Term1 :: { Parser.Abs.Term }
 Term1 : 'if' Term 'then' Term 'else' Term { Parser.Abs.TIfEl $2 $4 $6 }
       | 'let' '(' LetVar ',' ListLetVar ')' '=' Term 'in' Term { Parser.Abs.TLet $3 $5 $8 $10 }
       | Lambda FunVar Type '.' Term { Parser.Abs.TLamb $1 $2 $3 $5 }
+      | Term2 '$' Term1 { Parser.Abs.TDolr $1 $3 }
       | Term2 { $1 }
 
 Term :: { Parser.Abs.Term }

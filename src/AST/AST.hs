@@ -147,6 +147,7 @@ makeImTerm env (P.TApp l r) = App (makeImTerm env l) (makeImTerm env r)
 makeImTerm env (P.TVar (P.Var "new")) = New
 makeImTerm env (P.TVar (P.Var "meas")) = Meas
 makeImTerm env (P.TVar (P.Var "measure")) = Meas
+makeImTerm env (P.TDolr f x) = App (makeImTerm env f) (makeImTerm env x)
 makeImTerm env (P.TVar var) =  case M.lookup (name var) env of
     Just idx -> Idx idx
     Nothing  -> Fun (name var)

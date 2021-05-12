@@ -19,7 +19,7 @@ $i = [$l $d _ ']     -- identifier character
 $u = [. \n]          -- universal: any character
 
 @rsyms =    -- symbols and non-identifier-like reserved words
-   \* | \( | \, | \) | \= | \. | \! | \> \< | \- "o"
+   \* | \( | \, | \) | \= | \. | \$ | \! | \> \< | \- "o"
 
 :-
 
@@ -121,7 +121,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "I" 14 (b "." 7 (b "*" 4 (b "(" 2 (b "!" 1 N N) (b ")" 3 N N)) (b "-o" 6 (b "," 5 N N) N)) (b "CNOT" 11 (b "><" 9 (b "=" 8 N N) (b "Bit" 10 N N)) (b "H" 13 (b "FREDKIN" 12 N N) N))) (b "Y" 21 (b "T" 18 (b "S" 16 (b "QBit" 15 N N) (b "SWAP" 17 N N)) (b "X" 20 (b "TOFFOLI" 19 N N) N)) (b "in" 25 (b "else" 23 (b "Z" 22 N N) (b "if" 24 N N)) (b "then" 27 (b "let" 26 N N) N)))
+resWords = b "I" 15 (b "." 8 (b ")" 4 (b "$" 2 (b "!" 1 N N) (b "(" 3 N N)) (b "," 6 (b "*" 5 N N) (b "-o" 7 N N))) (b "CNOT" 12 (b "><" 10 (b "=" 9 N N) (b "Bit" 11 N N)) (b "H" 14 (b "FREDKIN" 13 N N) N))) (b "Y" 22 (b "T" 19 (b "S" 17 (b "QBit" 16 N N) (b "SWAP" 18 N N)) (b "X" 21 (b "TOFFOLI" 20 N N) N)) (b "in" 26 (b "else" 24 (b "Z" 23 N N) (b "if" 25 N N)) (b "then" 28 (b "let" 27 N N) N)))
    where b s n = let bs = s
                  in  B bs (TS bs n)
 

@@ -45,8 +45,8 @@ The reserved words used in Parser are the following:
 
 The symbols used in Parser are the following:
   | * | ( | , | )
-  | = | . | ! | ><
-  | -o |  |  |
+  | = | . | $ | !
+  | >< | -o |  |
 
 ===Comments===
 Single-line comments begin with --.Multiple-line comments are  enclosed with {- and -}.
@@ -69,6 +69,7 @@ All other symbols are terminals.
   | //Term1// | -> | ``if`` //Term// ``then`` //Term// ``else`` //Term//
   |  |  **|**  | ``let`` ``(`` //LetVar// ``,`` //[LetVar]// ``)`` ``=`` //Term// ``in`` //Term//
   |  |  **|**  | //Lambda// //FunVar// //Type// ``.`` //Term//
+  |  |  **|**  | //Term2// ``$`` //Term1//
   |  |  **|**  | //Term2//
   | //Term// | -> | //Term1//
   | //LetVar// | -> | //Var//
