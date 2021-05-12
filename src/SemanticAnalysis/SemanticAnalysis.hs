@@ -8,11 +8,11 @@ import qualified Data.Set as Set
 import Data.Char ( digitToInt, isDigit, isLetter )
 
 data SemanticError
-  = FunNameMismatch String
-  | DuplicateFunction String
-  | UnknownGate String
-  | InvalidBit String
-  | TooManyArguments String
+  = FunNameMismatch String   -- ^ Definition and function signature names must match
+  | DuplicateFunction String -- ^ Function declared more than once  
+  | UnknownGate String       -- ^ A gate that is not defined in the language was used
+  | InvalidBit String        -- ^ Bit must be 0 or 1
+  | TooManyArguments String  -- ^ Too many arguments in function definition
 
 instance Show SemanticError where
   show (FunNameMismatch e) = "Name mismatch in function " ++ e
