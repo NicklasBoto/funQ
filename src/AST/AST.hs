@@ -157,23 +157,17 @@ makeImTerm env (P.TLet x [y] eq inn) = Let (makeImTerm env eq) (makeImTerm (letE
 makeImTerm env (P.TLet x (y:ys) eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv y x env) (P.TLet y ys (toTerm y) inn))
 makeImTerm env (P.TTup (P.Tuple t ts)) = foldr1 Tup $ map (makeImTerm env) (t:ts)
 
-makeImTerm _env (P.TBit (P.BBit 0)) = Bit BZero 
-makeImTerm _env (P.TBit (P.BBit 1)) = Bit BOne 
-makeImTerm _env (P.TGate (P.GIdent (P.GateIdent g))) 
+makeImTerm _env (P.TBit (P.BBit 0)) = Bit BZero
+makeImTerm _env (P.TBit (P.BBit 1)) = Bit BOne
+makeImTerm _env (P.TGate (P.GIdent (P.GateIdent g)))
     | init g == "QFT"  = Gate $ GQFT (nums g)
     | init g == "QFTI" = Gate $ GQFTI (nums g)
-    | takeWhile isLetter g == "CR" = Gate $ GCR (nums g) 
+    | takeWhile isLetter g == "CR" = Gate $ GCR (nums g)
     | takeWhile isLetter g == "CRI" = Gate $ GCRI (nums g)
     | takeWhile isLetter g == "CCR" = Gate $ GCCR (nums g)
     | takeWhile isLetter g == "CCRI" = Gate $ GCCRI (nums g)
-    where nums :: String -> Double
-          nums a
-            | length (onlyNums a) < 2 = (read . onlyNums) a
-            | otherwise    = let b = onlyNums a in read [head b]/read [last b]
-          onlyNums = dropWhile isLetter
-        --   nums (a:b) = (read . dropWhile isLetter) [a] / (read . dropWhile isLetter) b
-        --   nums a = (read . dropWhile isLetter) a
-
+    where nums :: Read a => String -> a 
+          nums = read . dropWhile isLetter
 
 
 
@@ -229,23 +223,24 @@ reverseImTerm env (Gate g)     = P.TGate $ reverseGate g
 reverseImTerm env (Tup l r)    = P.TTup $ P.Tuple (reverseImTerm env l) [reverseImTerm env r] -- FIXME
 reverseImTerm env (App  t1 t2) = P.TApp (reverseImTerm env t1) (reverseImTerm env t2)
 reverseImTerm env (IfEl c t e) = P.TIfEl (reverseImTerm env c) (reverseImTerm env t) (reverseImTerm env e)
-reverseImTerm env (Let eq inn) = P.TLet ((P.LVar . P.Var) $ 'x' : show env) 
-                               [(P.LVar . P.Var) $ 'x' : show (env+1)] (reverseImTerm env eq) (reverseImTerm (env + 2) inn)
+reverseImTerm env (Let eq inn) = P.TLet (P.LVar . P.Var $ 'x' : show env)
+                               [P.LVar . P.Var $ 'x' : show (env+1)] (reverseImTerm env eq) (reverseImTerm (env + 2) inn)
 reverseImTerm env (Abs type' term)  = P.TLamb (P.Lambda "\\") (P.FunVar ('x' : show env)) (reverseType type') (reverseImTerm (env+1) term)
 reverseImTerm env New          = P.TVar (P.Var "new")
 reverseImTerm env Meas         = P.TVar (P.Var "meas")
 reverseImTerm env Unit         = P.TStar
 
+reverseImGate :: p -> Term -> P.Term
 reverseImGate env (Gate GH) = P.TGate P.GH
 reverseImGate env (Gate GCNOT) = P.TGate P.GCNOT
 reverseImGate env (Gate GX) = P.TGate P.GX
 reverseImGate env (Gate GSWP) = P.TGate P.GSWP
-reverseImGate env (Gate (GCR n)) = P.TGate (P.GGate (P.GateIdent ("GCR" ++ show n)))
-reverseImGate env (Gate (GCRI n)) = P.TGate (P.GGate (P.GateIdent ("GCRI" ++ show n)))
-reverseImGate env (Gate (GCCR n)) = P.TGate (P.GGate (P.GateIdent ("GCCR" ++ show n)))
-reverseImGate env (Gate (GCCRI n)) = P.TGate (P.GGate (P.GateIdent ("GCCRI" ++ show n)))
-reverseImGate env (Gate (GQFT n)) = P.TGate (P.GGate (P.GateIdent ("GQFT" ++ show n)))
-reverseImGate env (Gate (GQFTI n)) = P.TGate (P.GGate (P.GateIdent ("GQFTI" ++ show n)))
+reverseImGate env (Gate (GCR n)) = P.TGate (P.GIdent (P.GateIdent $"GCR" ++ show n))
+reverseImGate env (Gate (GCRI n)) =P.TGate (P.GIdent (P.GateIdent $ "GCRI" ++ show n))
+reverseImGate env (Gate (GCCR n)) =P.TGate (P.GIdent (P.GateIdent $ "GCCR" ++ show n))
+reverseImGate env (Gate (GCCRI n)) =P.TGate (P.GIdent (P.GateIdent $ "GCCRI" ++ show n))
+reverseImGate env (Gate (GQFT n)) =P.TGate (P.GIdent (P.GateIdent $ "GQFT" ++ show n))
+reverseImGate env (Gate (GQFTI n)) =P.TGate (P.GIdent (P.GateIdent $ "GQFTI" ++ show n))
 run :: String -> Program
 run s = case pProgram (myLexer s) of
     Left s -> errorWithoutStackTrace s
@@ -291,7 +286,7 @@ reverseGate g = case g of
     GCNOT -> P.GCNOT
     GTOF  -> P.GTOF
     GSWP  -> P.GSWP
-    GFRDK -> P.GFRDK  
+    GFRDK -> P.GFRDK
     AST.AST.GT -> P.GT
     GQFT i -> P.GIdent $ P.GateIdent $ "QFT" ++ show i
     GQFTI i -> P.GIdent $ P.GateIdent $ "QFTI" ++ show i
