@@ -1,0 +1,10 @@
+balanced : (QBit >< QBit) -o QBit
+balanced qs = let (x,y) = qs in
+                let (x,y) = CNOT (X x, y)
+                    in (X x)
+
+deutsch : ((QBit >< QBit) -o QBit) -o !Bit
+deutsch oracle = measure (H (oracle (H (new 0), H (new 1))))
+
+main : !Bit
+main = deutsch balanced

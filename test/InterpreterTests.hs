@@ -2,17 +2,16 @@ module InterpreterTests(
     runTests,
 ) where
 import Control.Monad.Except (runExceptT, liftIO)
-import Interpreter.Main
+import Interpreter.Run
 
-runTests :: IO ()
+runTests :: IO Bool
 runTests = do
   -- runExceptT tar en exceptT-transformerad monad och kör den, tar ur den inre monaden ur exceptT
   -- och returnar Either left right
   res <- runExceptT (foldr runTest (pure 0) tests)
   case res of
-    Left err -> putStrLn $ "Interpreter test failed with error: " ++ show err
-    Right correct -> do
-      putStrLn $ "Succesful tests for interpreter " ++ show correct ++ "/" ++ show (length tests)
+    Left err -> putStrLn ("Interpreter test failed with error: " ++ show err) >> return False
+    Right correct -> putStrLn ("Succesful tests for interpreter " ++ show correct ++ "/" ++ show (length tests)) >> return True
 
 runTest :: (String, String) -> Run Int -> Run Int
 runTest (fileName, expectedValue) b = do

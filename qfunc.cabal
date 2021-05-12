@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 66c83e85bcf45be4bbfa764e8387fbb75e16e7ba1d9dc8ea2fea345bafdfc5f1
+-- hash: 8fb90093c5845bb269cfb098c194e04efdee78f32611be813244206d8199602e
 
 name:           qfunc
-version:        0.1.0.0
+version:        0.9.1-beta
 description:    Please see the README on GitHub at <https://github.com/NicklasBoto/qfunc#readme>
 homepage:       https://github.com/NicklasBoto/funQ#readme
 bug-reports:    https://github.com/NicklasBoto/funQ/issues
@@ -35,7 +35,7 @@ library
       AST.AST
       FunQ
       Interpreter.Interpreter
-      Interpreter.Main
+      Interpreter.Run
       Lib.Core
       Lib.Gates
       Lib.Internal.Core
@@ -47,30 +47,25 @@ library
       Parser.Par
       Parser.Print
       Parser.Skel
-      Parser.Test
       SemanticAnalysis.SemanticAnalysis
       Type.TypeChecker
-      CoinFlip
-      Deutsch
-      DeutschJozsa
-      Teleport
   other-modules:
       Paths_qfunc
   hs-source-dirs:
       src
-      examples
   build-depends:
       MonadRandom
     , array
     , base >=4.7 && <5
     , bitvec
     , containers
-    , haskeline
+    , exceptions
+    , haskeline >=0.8.0.0
     , hmatrix
-    , monad-parallel
     , mtl
     , numbers
     , parsec
+    , repline >=0.3.0.0
     , turtle
   if false
     other-modules:
@@ -80,6 +75,7 @@ library
 executable funq
   main-is: Main.hs
   other-modules:
+      Repl
       Paths_qfunc
   hs-source-dirs:
       app
@@ -90,13 +86,14 @@ executable funq
     , base >=4.7 && <5
     , bitvec
     , containers
-    , haskeline
+    , exceptions
+    , haskeline >=0.8.0.0
     , hmatrix
-    , monad-parallel
     , mtl
     , numbers
     , parsec
     , qfunc
+    , repline >=0.3.0.0
     , turtle
   default-language: Haskell2010
 
@@ -120,12 +117,13 @@ test-suite qfunc-test
     , base >=4.7 && <5
     , bitvec
     , containers
-    , haskeline
+    , exceptions
+    , haskeline >=0.8.0.0
     , hmatrix
-    , monad-parallel
     , mtl
     , numbers
     , parsec
     , qfunc
+    , repline >=0.3.0.0
     , turtle
   default-language: Haskell2010

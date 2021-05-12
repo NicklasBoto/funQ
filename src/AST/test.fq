@@ -1,8 +1,0 @@
-q : QBit
-q = H (new 0)_
-
-b : !Bit
-b = measure q
-
-main : !(Bit >< Bit)
-main = (b,b)

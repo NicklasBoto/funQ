@@ -34,6 +34,7 @@ data Term
     | TIfEl Term Term Term
     | TLet LetVar [LetVar] Term Term
     | TLamb Lambda FunVar Type Term
+    | TDolr Term Term
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
 data LetVar = LVar Var
@@ -57,7 +58,7 @@ data Arg = FArg Var
 data Type
     = TypeBit
     | TypeQbit
-    | TypeVoid
+    | TypeUnit
     | TypeDup Type
     | TypeTens Type Type
     | TypeFunc Type Type
@@ -75,6 +76,6 @@ data Gate
     | GTOF
     | GSWP
     | GFRDK
-    | GGate GateIdent
+    | GIdent GateIdent
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 

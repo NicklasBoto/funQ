@@ -37,22 +37,19 @@ Lambda literals are recognized by the regular expression
 The set of reserved words is the set of terminals appearing in the grammar. Those reserved words that consist of non-letter characters are called symbols, and they are treated in a different way from those that are similar to identifiers. The lexer follows rules familiar from languages like Haskell, C, and Java, including longest match and spacing conventions.
 
 The reserved words used in Parser are the following:
-  | ``Bit`` | ``CNOT`` | ``CR`` | ``CR2``
-  | ``CR2D`` | ``CR3`` | ``CR3D`` | ``CR4``
-  | ``CR4D`` | ``CR5`` | ``CR5D`` | ``CR8``
-  | ``CR8D`` | ``CRD`` | ``FREDKIN`` | ``H``
+  | ``Bit`` | ``CNOT`` | ``FREDKIN`` | ``H``
   | ``I`` | ``QBit`` | ``S`` | ``SWAP``
   | ``T`` | ``TOFFOLI`` | ``X`` | ``Y``
   | ``Z`` | ``else`` | ``if`` | ``in``
   | ``let`` | ``then`` |  |
 
 The symbols used in Parser are the following:
-  | * | ( | , | )
-  | = | . | ! | ><
-  | -o |  |  |
+  | * | $ | ( | ,
+  | ) | = | . | !
+  | >< | -o |  |
 
 ===Comments===
-Single-line comments begin with --.There are no multiple-line comments in the grammar.
+Single-line comments begin with --.Multiple-line comments are  enclosed with {- and -}.
 
 ==The syntactic structure of Parser==
 Non-terminals are enclosed between < and >.
@@ -61,15 +58,17 @@ and **eps** (empty rule) belong to the BNF notation.
 All other symbols are terminals.
 
   | //Program// | -> | //[FunDec]//
-  | //Term3// | -> | //Var//
+  | //Term4// | -> | //Var//
   |  |  **|**  | //Bit//
   |  |  **|**  | //Gate//
   |  |  **|**  | //Tup//
   |  |  **|**  | ``*``
   |  |  **|**  | ``(`` //Term// ``)``
+  | //Term3// | -> | //Term3// ``$`` //Term4//
+  |  |  **|**  | //Term4//
   | //Term2// | -> | //Term2// //Term3//
   |  |  **|**  | //Term3//
-  | //Term1// | -> | ``if`` //Term2// ``then`` //Term// ``else`` //Term//
+  | //Term1// | -> | ``if`` //Term// ``then`` //Term// ``else`` //Term//
   |  |  **|**  | ``let`` ``(`` //LetVar// ``,`` //[LetVar]// ``)`` ``=`` //Term// ``in`` //Term//
   |  |  **|**  | //Lambda// //FunVar// //Type// ``.`` //Term//
   |  |  **|**  | //Term2//
@@ -108,18 +107,6 @@ All other symbols are terminals.
   |  |  **|**  | ``TOFFOLI``
   |  |  **|**  | ``SWAP``
   |  |  **|**  | ``FREDKIN``
-  |  |  **|**  | ``CR``
-  |  |  **|**  | ``CRD``
-  |  |  **|**  | ``CR2``
-  |  |  **|**  | ``CR2D``
-  |  |  **|**  | ``CR3``
-  |  |  **|**  | ``CR3D``
-  |  |  **|**  | ``CR4``
-  |  |  **|**  | ``CR4D``
-  |  |  **|**  | ``CR5``
-  |  |  **|**  | ``CR5D``
-  |  |  **|**  | ``CR8``
-  |  |  **|**  | ``CR8D``
   |  |  **|**  | //GateIdent//
 
 

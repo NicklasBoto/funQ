@@ -7,9 +7,10 @@ TGate . Term3 ::= Gate                                                   ;
 TTup  . Term3 ::= Tup                                                    ; 
 TStar . Term3 ::= "*"                                                    ;
 TApp  . Term2 ::= Term2 Term3                                            ; 
-TIfEl . Term1 ::= "if" Term2 "then" Term "else" Term                     ; 
+TIfEl . Term1 ::= "if" Term "then" Term "else" Term                      ; 
 TLet  . Term1 ::= "let" "(" LetVar "," [LetVar] ")" "=" Term "in" Term   ;
 TLamb . Term1 ::= Lambda FunVar Type "." Term                            ; 
+TDolr . Term1 ::= Term2 "$" Term1                                        ;
 coercions Term 3;
 
 LVar . LetVar ::= Var;
@@ -31,6 +32,7 @@ FArg. Arg ::= Var ;
 separator Arg " ";
 
 comment "--" ; 
+comment "{-" "-}";
 
 token FunVar (lower (letter | digit | '_' | '\'')* (' ')* ':') ;
  
@@ -47,7 +49,7 @@ token Lambda '\\' ;
 --- Type ---
 TypeBit  . Type2  ::= "Bit"            ;
 TypeQbit . Type2  ::= "QBit"           ;
-TypeVoid . Type2  ::= "T"              ;
+TypeUnit . Type2  ::= "T"              ;
 TypeDup  . Type2  ::= "!" Type2        ;
 TypeTens . Type1  ::= Type2 "><" Type1 ;
 TypeFunc . Type1  ::= Type2 "-o" Type1 ;
@@ -65,4 +67,4 @@ GCNOT  . Gate ::= "CNOT"         ;
 GTOF   . Gate ::= "TOFFOLI"      ;
 GSWP   . Gate ::= "SWAP"         ;
 GFRDK  . Gate ::= "FREDKIN"      ;
-GGate  . Gate ::= GateIdent      ;
+GIdent . Gate ::= GateIdent      ;

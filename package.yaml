@@ -1,5 +1,5 @@
 name:                qfunc
-version:             0.1.0.0
+version:             0.9.1-beta
 github:              "NicklasBoto/funQ"
 license:             GPL-3
 author:
@@ -28,16 +28,18 @@ description:         Please see the README on GitHub at <https://github.com/Nick
 dependencies:
 - base >= 4.7 && < 5
 - hmatrix
-- bitvec
 - MonadRandom
+- bitvec
 - mtl
 - numbers
 - array
 - containers
 - haskeline
+- haskeline >= 0.8.0.0
+- repline >= 0.3.0.0
 - turtle
 - parsec
-- monad-parallel
+- exceptions
 
 library:
   when:
@@ -45,7 +47,6 @@ library:
       other-modules: Paths_pkg
   source-dirs: 
     - src
-    - examples
 
 executables:
   funq:

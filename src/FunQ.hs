@@ -19,7 +19,6 @@ module FunQ
     , QBit
     , Bit
     , QM
-    , io
     
     -- * Gates
     , pauliX

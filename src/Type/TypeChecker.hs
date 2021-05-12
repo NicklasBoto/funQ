@@ -13,7 +13,10 @@ import Data.String
 import Data.Maybe
 
 runCheck :: Check a -> Either TypeError a
-runCheck c = evalState (runReaderT (runExceptT c) M.empty) emptyErrorEnv
+runCheck c = runCheckWith c M.empty emptyErrorEnv
+
+runCheckWith :: Check a -> TopEnv -> ErrorEnv -> Either TypeError a
+runCheckWith c t = evalState (runReaderT (runExceptT c) t)
 
 -- | Typecheck a program.
 --   Returns TypeError on failure an unit on success.
@@ -48,7 +51,7 @@ data TypeError = TError String ErrorTypes
 
 instance Show TypeError where
     show (TError where' why) =
-        "Type error in function " ++ where' ++ ":\n" ++ show why
+        "type error in function " ++ where' ++ ":\n" ++ show why
 
 throwError :: ErrorTypes -> Check a
 throwError err = do
@@ -84,9 +87,7 @@ instance IsString Type where
 
 -- | Typecheck the program inside Check monad.
 typecheckP :: Program -> Check ()
-typecheckP program = do
-    -- checkNamesUnique program
-    mapM_ typecheckF program
+typecheckP = mapM_ typecheckF 
 
 -- Typechecks the function inside the check monad.
 typecheckF :: Function -> Check ()

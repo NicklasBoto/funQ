@@ -36,6 +36,12 @@ type Env = M.Map String Integer
 -- | Representation of functions 
 data Function = Func String Type Term
 
+instance Ord Function where
+    compare (Func a _ _) (Func b _ _) = compare a b
+
+instance Eq Function where
+   Func a _ _ == Func b _ _ = a == b
+
 type Program = [Function]
 
 fname :: P.FunVar -> String
@@ -82,7 +88,10 @@ data Gate
     | GCCR Double
     | GCCRI Double
     | GGate P.GateIdent
-  deriving (Eq, Ord, Show, Read)
+  deriving (Eq, Ord)
+
+instance Show Gate where
+    show = printTree . reverseGate
 
 data Bit = BZero | BOne
   deriving (Eq, Ord, Show, Read)
@@ -112,7 +121,7 @@ instance Show Type where
 convertType :: P.Type -> Type
 convertType P.TypeBit         = TypeBit
 convertType P.TypeQbit        = TypeQBit
-convertType P.TypeVoid        = TypeUnit
+convertType P.TypeUnit        = TypeUnit
 convertType (P.TypeDup type') = TypeDup (convertType type')
 convertType (P.TypeTens l r)  = convertType l :>< convertType r
 convertType (P.TypeFunc l r)  = convertType l :=> convertType r
@@ -121,7 +130,7 @@ convertType (P.TypeFunc l r)  = convertType l :=> convertType r
 reverseType :: Type -> P.Type
 reverseType TypeBit = P.TypeBit
 reverseType TypeQBit = P.TypeQbit
-reverseType TypeUnit = P.TypeVoid
+reverseType TypeUnit = P.TypeUnit
 reverseType (TypeDup type') = P.TypeDup (reverseType type')
 reverseType (l :>< r) = P.TypeTens (reverseType l) (reverseType r)
 reverseType (l :=> r) = P.TypeFunc (reverseType l) (reverseType r)
@@ -138,6 +147,7 @@ makeImTerm env (P.TApp l r) = App (makeImTerm env l) (makeImTerm env r)
 makeImTerm env (P.TVar (P.Var "new")) = New
 makeImTerm env (P.TVar (P.Var "meas")) = Meas
 makeImTerm env (P.TVar (P.Var "measure")) = Meas
+makeImTerm env (P.TDolr f x) = App (makeImTerm env f) (makeImTerm env x)
 makeImTerm env (P.TVar var) =  case M.lookup (name var) env of
     Just idx -> Idx idx
     Nothing  -> Fun (name var)
@@ -146,12 +156,13 @@ makeImTerm env (P.TIfEl cond true false) =
 makeImTerm env (P.TLet x [y] eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv y x env) inn)
 makeImTerm env (P.TLet x (y:ys) eq inn) = Let (makeImTerm env eq) (makeImTerm (letEnv y x env) (P.TLet y ys (toTerm y) inn))
 makeImTerm env (P.TTup (P.Tuple t ts)) = foldr1 Tup $ map (makeImTerm env) (t:ts)
-makeImTerm _env (P.TBit (P.BBit 0)) = Bit BZero
-makeImTerm _env (P.TBit (P.BBit 1)) = Bit BOne
-makeImTerm _env (P.TGate (P.GGate (P.GateIdent g)))
-    | init g == "QFT"  = Gate $ GQFT ((fromIntegral . truncate) (nums g))
-    | init g == "QFTI" = Gate $ GQFTI ((fromIntegral . truncate) (nums g))
-    | takeWhile isLetter g == "CR" = Gate $ GCR (nums g)
+
+makeImTerm _env (P.TBit (P.BBit 0)) = Bit BZero 
+makeImTerm _env (P.TBit (P.BBit 1)) = Bit BOne 
+makeImTerm _env (P.TGate (P.GIdent (P.GateIdent g))) 
+    | init g == "QFT"  = Gate $ GQFT (nums g)
+    | init g == "QFTI" = Gate $ GQFTI (nums g)
+    | takeWhile isLetter g == "CR" = Gate $ GCR (nums g) 
     | takeWhile isLetter g == "CRI" = Gate $ GCRI (nums g)
     | takeWhile isLetter g == "CCR" = Gate $ GCCR (nums g)
     | takeWhile isLetter g == "CCRI" = Gate $ GCCRI (nums g)
@@ -213,12 +224,13 @@ reverseImTerm env (Idx idx)    = P.TVar $ P.Var $ 'x' : show (env - idx - 1)
 reverseImTerm env (Fun s)      = P.TVar $ P.Var s
 reverseImTerm env (Bit BZero)  = P.TBit $ P.BBit 0
 reverseImTerm env (Bit BOne)   = P.TBit $ P.BBit 1
-reverseImTerm env p@(Gate g)   = reverseImGate env p--P.TGate P.GH -- undefined -- P.TGate g --FIXME
+
+reverseImTerm env (Gate g)     = P.TGate $ reverseGate g
 reverseImTerm env (Tup l r)    = P.TTup $ P.Tuple (reverseImTerm env l) [reverseImTerm env r] -- FIXME
 reverseImTerm env (App  t1 t2) = P.TApp (reverseImTerm env t1) (reverseImTerm env t2)
 reverseImTerm env (IfEl c t e) = P.TIfEl (reverseImTerm env c) (reverseImTerm env t) (reverseImTerm env e)
-reverseImTerm env (Let eq inn) = P.TLet (P.LVar . P.Var $ 'y' : show (env + 1))
-                               [P.LVar . P.Var $ 'x' : show env] (reverseImTerm env eq) (reverseImTerm (env + 2) inn)
+reverseImTerm env (Let eq inn) = P.TLet ((P.LVar . P.Var) $ 'x' : show env) 
+                               [(P.LVar . P.Var) $ 'x' : show (env+1)] (reverseImTerm env eq) (reverseImTerm (env + 2) inn)
 reverseImTerm env (Abs type' term)  = P.TLamb (P.Lambda "\\") (P.FunVar ('x' : show env)) (reverseType type') (reverseImTerm (env+1) term)
 reverseImTerm env New          = P.TVar (P.Var "new")
 reverseImTerm env Meas         = P.TVar (P.Var "meas")
@@ -236,7 +248,7 @@ reverseImGate env (Gate (GQFT n)) = P.TGate (P.GGate (P.GateIdent ("GQFT" ++ sho
 reverseImGate env (Gate (GQFTI n)) = P.TGate (P.GGate (P.GateIdent ("GQFTI" ++ show n)))
 run :: String -> Program
 run s = case pProgram (myLexer s) of
-    Left s -> error s
+    Left s -> errorWithoutStackTrace s
     Right p -> toIm p
 
 test :: String -> String
@@ -268,12 +280,22 @@ gateToASTGate g = case g of
     P.GSWP  -> GSWP
     P.GFRDK -> GFRDK
 
--- cause this might vanish from Parser.Abs
--- instance C.Show Type where
-  -- show (TypeVar (Variable s)) = s
-  -- show TypeBit = "Bit"
-  -- show TypeQbit = "QBit"
-  -- show TypeVoid = "⊤"
-  -- show (TypeDup t) = "!" C.++ C.show t
-  -- show (TypeTens l r) = C.show l C.++ " ⊗ " C.++ C.show r
-  -- show (TypeFunc l r) = C.show l C.++ " ⊸ " C.++ C.show r
+reverseGate :: Gate -> P.Gate
+reverseGate g = case g of
+    GH    -> P.GH
+    GX    -> P.GX
+    GY    -> P.GY
+    GZ    -> P.GZ
+    GI    -> P.GI
+    GS    -> P.GS
+    GCNOT -> P.GCNOT
+    GTOF  -> P.GTOF
+    GSWP  -> P.GSWP
+    GFRDK -> P.GFRDK  
+    AST.AST.GT -> P.GT
+    GQFT i -> P.GIdent $ P.GateIdent $ "QFT" ++ show i
+    GQFTI i -> P.GIdent $ P.GateIdent $ "QFTI" ++ show i
+    GCR i -> P.GIdent $ P.GateIdent $ "CR" ++ show (round i)
+    GCRI i -> P.GIdent $ P.GateIdent $ "CRI" ++ show (round i)
+    GCCR i -> P.GIdent $ P.GateIdent $ "CCR" ++ show (round i)
+    GCCRI i -> P.GIdent $ P.GateIdent $ "CCRI" ++ show (round i)
