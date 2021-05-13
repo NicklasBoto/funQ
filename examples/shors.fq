@@ -1,0 +1,15 @@
+init : !((QBit >< QBit >< QBit >< QBit >< QBit) -o QBit >< QBit >< QBit >< QBit >< QBit)
+init qs = let (a,b,c,d,e) = qs in
+          let (a,b,c) = QFT3 (a,b,c) in (a,b,c,d,e)
+
+shor : !((QBit >< QBit >< QBit >< QBit >< QBit) -o QBit >< QBit >< QBit >< QBit >< QBit)
+shor qs = let (a,b,c,d,e) = init qs in
+          let (b,c,d) = (H b, CNOT (c,d)) in
+          let (c,e) = CNOT (c,e) in
+          let (b,a) = CR2 (b,a) in
+          let (a,b,c) = (H a, CR4 (b,c)) in
+          let (a,c) = CR2 (a,c) in (a,b,c,d,e)
+
+main : Bit >< Bit >< Bit >< Bit >< Bit
+main = let (a,b,c,d,e) = shor (new 0, new 0, new 0, new 0, new 0) 
+       in (measure a, measure b, measure c, measure d, measure e)
