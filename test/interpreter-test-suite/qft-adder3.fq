@@ -17,7 +17,7 @@ intA : QBit >< QBit >< QBit >< QBit >< QBit >< QBit
 intA = (overflow, carry1, new 0, new 0, new 0, new 0)
 
 intB : !(Bit >< Bit >< Bit)
-intB = (0,0,1)
+intB = (0,1,1)
 
 intBI : !(Bit >< Bit >< Bit)
 intBI = (0,0,1)
@@ -45,8 +45,10 @@ sll b = let (b2,b1,b0) = b in (b1,b0,0)
 --  
 
 -- main : (Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit)
-main : (Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit)
-main = meas9 (cUa intA intB intN intX)
+main : (Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit >< Bit)
+main = let (v,c,x2,x1,x0,a3,a2,a1,a0,m5,m4,m3,m2,m1,m0) = orderfind intA intB intN intX in
+       let (v,x2,x1,x0,a3,a2,a1,a0) = (meas v, meas x2, meas x1, meas x0, meas a3, meas a2, meas a1, meas a0) in
+       (v,c,x2,x1,x0,a3,a2,a1,a0,m5,m4,m3,m2,m1,m0)
 --meas9 cUa2
 -- meas7 (cAdd3Mod (new 0,new 0,new 1,new 0, new 0, new 1, new 0) intB intN)
        --meas9 (cUa intA intB intN intX)
@@ -80,7 +82,7 @@ orderfind : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
          -o !(Bit >< Bit >< Bit) 
          -o !(Bit >< Bit >< Bit) 
          -o (QBit >< QBit >< QBit) 
-         -o (QBit >< Bit ><QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< !(Bit >< Bit >< Bit >< Bit >< Bit >< Bit))
+         -o (QBit >< Bit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< !(Bit >< Bit >< Bit >< Bit >< Bit >< Bit))
 orderfind inA inB inN inX = 
             let (x2,x1,x0,v,c,a3,a2,a1,a0) = cUa inA inB inN inX in
             let (v,m0) = (v, meas (H c)) in
@@ -105,7 +107,7 @@ orderfind inA inB inN inX =
             let (x2,x1,x0,v,c,a3,a2,a1,a0) = cUa (v,c,a3,a2,a1,a0) inB inN (x2,x1,x0) in
             let (v,m5) = (v, meas (cR4 Z (m0,m1,m2,m3,m4) c)) in
             let (v,c) = (v, new 0) in
-            (v,meas c, x2,x1,x0,a3,a2,a1,a0,m4,m4,m3,m2,m1,m0)
+            (v,meas c, x2,x1,x0,a3,a2,a1,a0,m4,m5,m3,m2,m1,m0)
 
 
 cUa2 : (QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit >< QBit)
