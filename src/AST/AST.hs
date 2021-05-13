@@ -163,6 +163,8 @@ makeImTerm _env (P.TGate (P.GIdent (P.GateIdent g)))
     | init g == "QFTI" = Gate $ GQFTI (nums g)
     | takeWhile isLetter g == "CR" = Gate $ GCR (nums g) 
     | takeWhile isLetter g == "CRI" = Gate $ GCRI (nums g)
+    | takeWhile isLetter g == "CCR" = Gate $ GCCR (nums g) 
+    | takeWhile isLetter g == "CCRI" = Gate $ GCCRI (nums g)
     where nums :: Read a => String -> a 
           nums = read . dropWhile isLetter
           
