@@ -1,0 +1,2 @@
+main : Bit >< Bit
+main = let (a,b) = (QFTI2 (CR12 (QFT2 (new 1, new 1)))) in (meas a, meas b)

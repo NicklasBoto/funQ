@@ -53,7 +53,7 @@ unknownGate fs = checkSemantics fs isValid genErr errorMsg
           | init g == "QFTI" && length g == 5 && digitToInt (last g) <= 5 = gs
           | takeWhile isLetter g == "CR" && all isDigit (dropWhile isLetter g) = gs
           | takeWhile isLetter g == "CRI" && all isDigit (dropWhile isLetter g) = gs
-          | takeWhile isLetter g == "CCR" && all isDigit (dropWhile isLetter g) = gs
+          | takeWhile isLetter g == "CCR" && all isDigit (dropWhile isLetter g) = gs 
           | takeWhile isLetter g == "CCRI" && all isDigit (dropWhile isLetter g) = gs
           | otherwise = gs ++ [g]
         unknownGates (TApp t1 t2) gs                  = gs ++ unknownGates t1 [] ++ unknownGates t2 []
@@ -61,6 +61,7 @@ unknownGate fs = checkSemantics fs isValid genErr errorMsg
         unknownGates (TLet _ _ t1 t2) gs              = gs ++ unknownGates t1 [] ++ unknownGates t2 []
         unknownGates (TLamb _ _ _ t1) gs              = gs ++ unknownGates t1 []
         unknownGates _ gs                             = gs
+
         genErr = UnknownGate
         errorMsg (FDecl _ _ (FDef _ _ t)) = intercalate ", " $ unknownGates t []
 
