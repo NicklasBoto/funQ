@@ -12,4 +12,4 @@ shor qs = let (a,b,c,d,e) = init qs in
 
 main : Bit >< Bit >< Bit >< Bit >< Bit
 main = let (a,b,c,d,e) = shor (new 0, new 0, new 0, new 0, new 0) 
-       in (measure a, measure b, measure c, measure d, measure e)
+       in (measure a, measure b, measure c, 0, 0)
