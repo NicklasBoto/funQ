@@ -1,0 +1,17 @@
+-- BV
+
+par : !(!(QBit -o QBit) -o !((QBit >< QBit) -o QBit >< QBit))
+par g qs = let (p,q) = qs in (g p, g q)
+
+groverOperator : !((QBit >< QBit) -o QBit >< QBit)
+groverOperator qs = let (p,q) = par X $ par H qs in 
+                    let (q,p) = CNOT (q, H p) in
+                    par H $ par X (H p, q)
+
+bernsteinVazirani : !((QBit >< QBit >< QBit) -o QBit >< QBit)
+bernsteinVazirani qs = let (a,b,c) = qs in
+                       let (c,b,a) = TOFFOLI (H c, H b, H $ X a) in
+                       groverOperator (b,c)
+
+main : Bit >< Bit
+main = let (a,b) = bernsteinVazirani (new 0, new 0, new 0) in (measure a, measure b)
