@@ -51,10 +51,10 @@ unknownGate fs = checkSemantics fs isValid genErr errorMsg
         unknownGates (TGate (GIdent (GateIdent g))) gs
           | init g == "QFT" && length g == 4 && digitToInt (last g) <= 5 = gs
           | init g == "QFTI" && length g == 5 && digitToInt (last g) <= 5 = gs
-          | takeWhile isLetter g == "CR" && all isDigit (dropWhile isLetter g) = gs
-          | takeWhile isLetter g == "CRI" && all isDigit (dropWhile isLetter g) = gs
-          | takeWhile isLetter g == "CCR" && all isDigit (dropWhile isLetter g) = gs 
-          | takeWhile isLetter g == "CCRI" && all isDigit (dropWhile isLetter g) = gs
+          | takeWhile isLetter g == "CR" && all isDigit (dropWhile isLetter g)   && length g > 2 = gs
+          | takeWhile isLetter g == "CRI" && all isDigit (dropWhile isLetter g)  && length g > 3 = gs
+          | takeWhile isLetter g == "CCR" && all isDigit (dropWhile isLetter g)  && length g > 3 = gs 
+          | takeWhile isLetter g == "CCRI" && all isDigit (dropWhile isLetter g) && length g > 4 = gs
           | otherwise = gs ++ [g]
         unknownGates (TApp t1 t2) gs                  = gs ++ unknownGates t1 [] ++ unknownGates t2 []
         unknownGates (TIfEl t1 t2 t3) gs              = gs ++ unknownGates t1 [] ++ unknownGates t2 [] ++ unknownGates t3 []
