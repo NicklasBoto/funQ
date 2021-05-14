@@ -1,0 +1,2 @@
+coinFlip : !Bit
+coinFlip = meas (H (new 0))
