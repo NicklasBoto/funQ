@@ -47,6 +47,11 @@ extra-deps:
 # Override default flag values for local packages and extra-deps
 # flags: {}
 
+ghc-options:
+  "$everything": -O2 -funfolding-use-threshold=16 -fexcess-precision -optc-ffast-math -optc-O3
+
+rebuild-ghc-options: true
+
 # Extra package databases containing global packages
 # extra-package-dbs: []
 
