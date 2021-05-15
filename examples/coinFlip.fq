@@ -1,2 +1,5 @@
 coinFlip : !Bit
-coinFlip = meas (H (new 0))
+coinFlip = measure (H (new 0))
+
+main : Bit
+main = coinFlip

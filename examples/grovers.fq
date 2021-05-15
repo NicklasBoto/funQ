@@ -1,4 +1,4 @@
--- grovers algorithm
+-- Grover's Algorithm
 
 par : !(!(QBit -o QBit) -o !((QBit >< QBit) -o QBit >< QBit))
 par g qs = let (p,q) = qs in (g p, g q)
@@ -6,14 +6,12 @@ par g qs = let (p,q) = qs in (g p, g q)
 diffuser : !((QBit >< QBit) -o QBit >< QBit)
 diffuser qs = par H $ CR1 $ par Z $ par H qs
 
+-- Encodes the list [2,5,1,7] with a winner of 7
 oracle : !((QBit >< QBit) -o QBit >< QBit)
 oracle = CR1
 
-init : !((QBit >< QBit) -o QBit >< QBit)
-init = par H
-
 grover : !(QBit -o QBit -o QBit >< QBit)
-grover q0 q1 = diffuser $ oracle $ init (q0,q1)
+grover q0 q1 = diffuser $ oracle $ par H (q0,q1)
 
 main : Bit >< Bit
 main = let (a,b) = grover (new 0) (new 0) in (measure a, measure b)
